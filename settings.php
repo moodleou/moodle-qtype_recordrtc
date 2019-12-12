@@ -15,12 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin administration pages are defined here.
+ * Admin settings for audio recorder.
  *
- * @package     
- * @category    
- * @copyright   
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   qtype_recordrtc
+ * @copyright 2019 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
+
+if ($ADMIN->fulltree) {
+
+    // Audio bitrate.
+    $name = get_string('audiobitrate', 'atto_recordrtc');
+    $desc = get_string('audiobitrate_desc', 'atto_recordrtc');
+    $default = '128000';
+    $setting = new admin_setting_configtext('qtype_recordrtc/audiobitrate', $name, $desc, $default, PARAM_INT, 8);
+    $settings->add($setting);
+
+    // Recording audio time limit.
+    $name = get_string('timelimit', 'atto_recordrtc');
+    $desc = get_string('timelimit_desc', 'atto_recordrtc');
+    $default = '120';
+    $setting = new admin_setting_configtext('qtype_recordrtc/timelimit', $name, $desc, $default, PARAM_INT, 8);
+    $settings->add($setting);
+}

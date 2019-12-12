@@ -16,8 +16,8 @@
 /**
  * Contains the helper class for the select missing words question type tests.
  *
- * @package    qtype
- * @copyright  Year Yourname
+ * @package    qtype_recordrtc
+ * @copyright  2013 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
@@ -25,14 +25,14 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot . '/question/type/questionbase.php');
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
-require_once($CFG->dirroot . '/question/type/YOURQTYPE/question.php');
+require_once($CFG->dirroot . '/question/type/recordrtc/question.php');
 /**
- * Unit tests for the YOURQTYPE question definition class.
+ * Unit tests for the recordrtc question definition class.
  *
- * @copyright  2012 Marcus Green
+ * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_YOURQTYPE_question_test extends advanced_testcase {
+class qtype_recordrtc_question_test extends advanced_testcase {
   
       public function test_get_expected_data() {
     }

@@ -15,20 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * YOURQTYPENAME question type version information.
+ * Recordrtc question type version information.
  *
- * @package    qtype
- * @subpackage YOURQTYPENAME
- * @copyright  THEYEAR YOURNAME (YOURCONTACTINFO)
-
+ * @package    qtype_recordrtc
+ * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'qtype_YOURQTYPENAME';
-$plugin->version   = 2013012900;
-
-$plugin->requires  = 2012062504;
-
-$plugin->maturity  = MATURITY_ALPHA;
+$plugin->component = 'qtype_recordrtc';
+$plugin->version   = 2019121200;
+$plugin->requires  = 2019051100;
+$plugin->maturity = MATURITY_STABLE;

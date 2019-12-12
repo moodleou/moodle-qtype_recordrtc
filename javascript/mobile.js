@@ -14,13 +14,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * support for the mdl35+ mobile app
- * This file is the equivalent of 
- * qtype/YOURQTYPENAME/classes/YOURQTYPENAME.ts in the core app
- * e.g.
- * https://github.com/moodlehq/moodlemobile2/blob/v3.5.0/src/addon/qtype/ddwtos/classes/ddwtos.ts
+ * Support for the mdl35+ mobile app.
  */
-
 
 var that = this;
 var result = {
@@ -42,7 +37,6 @@ var result = {
          // Treat the correct/incorrect icons.
         this.CoreQuestionHelperProvider.treatCorrectnessIcons(div);
 
- 
         if (div.querySelector('.readonly') !== null) {
             this.question.readonly = true;
         }
@@ -50,7 +44,7 @@ var result = {
             this.question.feedback = div.querySelector('.feedback');
             this.question.feedbackHTML = true;
         }
-        
+
          this.question.text = this.CoreDomUtilsProvider.getContentsOfElement(div, '.qtext');
 
         if (typeof this.question.text == 'undefined') {
@@ -60,7 +54,7 @@ var result = {
 
         // Wait for the DOM to be rendered.
         setTimeout(() => {
- 
+
         });
         return true;
     }

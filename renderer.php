@@ -15,27 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * YOURQTYPENAME question renderer class.
+ * Recordrtc question renderer class.
  *
- * @package    qtype
- * @subpackage YOURQTYPENAME
- * @copyright  THEYEAR YOURNAME (YOURCONTACTINFO)
-
+ * @package    qtype_recordrtc
+ * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 defined('MOODLE_INTERNAL') || die();
 
 
 /**
- * Generates the output for YOURQTYPENAME questions.
+ * Generates the output for recordrtc questions.
  *
- * @copyright  THEYEAR YOURNAME (YOURCONTACTINFO)
-
+ * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_YOURQTYPENAME_renderer extends qtype_renderer {
+class qtype_recordrtc_renderer extends qtype_renderer {
     public function formulation_and_controls(question_attempt $qa,
             question_display_options $options) {
 

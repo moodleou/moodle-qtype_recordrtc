@@ -15,12 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the editing form for the YOURQTYPENAME question type.
+ * Defines the editing form for the recordrtc question type.
  *
- * @package    qtype
- * @subpackage YOURQTYPENAME
- * @copyright  THEYEAR YOURNAME (YOURCONTACTINFO)
-
+ * @package    qtype_recordrtc
+ * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -29,32 +27,27 @@ defined('MOODLE_INTERNAL') || die();
 
 
 /**
- * YOURQTYPENAME question editing form definition.
+ * Recordrtc question editing form definition.
  *
- * @copyright  THEYEAR YOURNAME (YOURCONTACTINFO)
-
+ * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_YOURQTYPENAME_edit_form extends question_edit_form {
+class qtype_recordrtc_edit_form extends question_edit_form {
 
     protected function definition_inner($mform) {
-        //Add fields specific to this question type
-        //remove any that come with the parent class you don't want
-        
-        // To add combined feedback (correct, partial and incorrect).
-        $this->add_combined_feedback_fields(true);
-        // Adds hinting features.
-        $this->add_interactive_settings(true, true);
+        // TODO: Add interactive settings later when we can compare audio files.
+        //$this->add_interactive_settings(true, true);
     }
 
     protected function data_preprocessing($question) {
         $question = parent::data_preprocessing($question);
-        $question = $this->data_preprocessing_hints($question);
+        // TODO: Add interactive settings later when we can compare audio files.
+        //$question = $this->data_preprocessing_hints($question);
 
         return $question;
     }
 
     public function qtype() {
-        return 'YOURQTYPENAME';
+        return 'recordrtc';
     }
 }

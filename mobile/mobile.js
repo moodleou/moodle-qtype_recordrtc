@@ -14,14 +14,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * support for the mdl35+ mobile app. PHP calls this from within
- * classes/output/mobile.php
- * This file is the equivalent of 
- * qtype/YOURQTYPENAME/classes/YOURQTYPENAME.ts in the core app
- * e.g.
- * https://github.com/moodlehq/moodlemobile2/blob/v3.5.0/src/addon/qtype/ddwtos/classes/ddwtos.ts
+ * Support for the mdl35+ mobile app. PHP calls this from within classes/output/mobile.php.
  */
-
 
 var that = this;
 var result = {
@@ -37,14 +31,12 @@ var result = {
         const questiontext = div.querySelector('.qtext');
 
         // Replace Moodle's correct/incorrect and feedback classes with our own.
-        // Only do this if you want to use the standard classes
         this.CoreQuestionHelperProvider.replaceCorrectnessClasses(div);
         this.CoreQuestionHelperProvider.replaceFeedbackClasses(div);
 
          // Treat the correct/incorrect icons.
         this.CoreQuestionHelperProvider.treatCorrectnessIcons(div);
 
- 
         if (div.querySelector('.readonly') !== null) {
             this.question.readonly = true;
         }
@@ -52,23 +44,22 @@ var result = {
             this.question.feedback = div.querySelector('.feedback');
             this.question.feedbackHTML = true;
         }
-        
+
          this.question.text = this.CoreDomUtilsProvider.getContentsOfElement(div, '.qtext');
 
         if (typeof this.question.text == 'undefined') {
             this.logger.warn('Aborting because of an error parsing question.', this.question.name);
             return this.CoreQuestionHelperProvider.showComponentError(this.onAbort);
         }
-        
-        // Called by the reference in *.html to 
-        // (afterRender)="questionRendered()
+
+        // Called by the reference in *.html to (afterRender)="questionRendered()".
         this.questionRendered = function questionRendered() {
-            //do stuff that needs the question rendered before it can run.
+            // TODO: stuff that needs the question rendered before it can run.
         }
 
         // Wait for the DOM to be rendered.
         setTimeout(() => {
-            //put stuff here that will be pulled from the rendered question
+            // Put stuff here that will be pulled from the rendered question.
         });
         return true;
     }

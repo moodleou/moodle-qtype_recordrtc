@@ -15,36 +15,36 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * YOURQTYPENAME question type  capability definition
+ * recordrtc question type  capability definition
  *
- * @package    qtype_YOURQTYPENAME
- * @copyright  20XX Author Name
+ * @package    qtype_recordrtc
+ * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
 $addons = [
-    "qtype_YOURQTYPENAME" => [
+    "qtype_recordrtc" => [
         "handlers" => [ // Different places where the add-on will display content.
-            'YOURQTYPENAME' => [ // Handler unique name (can be anything).
+            'recordrtc' => [ // Handler unique name (can be anything).
                 'displaydata' => [
-                    'title' => 'YOURQTYPENAME question',
-                    'icon' => '/question/type/YOURQTYPENAME/pix/icon.gif',
+                    'title' => 'recordrtc question',
+                    'icon' => '/question/type/recordrtc/pix/icon.gif',
                     'class' => '',
                 ],
                 'delegate' => 'CoreQuestionDelegate', // Delegate (where to display the link to the add-on).
-                'method' => 'mobile_get_YOURQTYPENAME',
+                'method' => 'mobile_get_recordrtc',
                 'offlinefunctions' => [
-                    'mobile_get_YOURQTYPENAME' => [],// function in classes/output/mobile.php
+                    'mobile_get_recordrtc' => [], // Function in classes/output/mobile.php.
                 ], // Function needs caching for offline.
                 'styles' => [
-                    'url' => '/question/type/YOURQTYPENAME/mobile/styles_app.css',
+                    'url' => '/question/type/recordrtc/mobile/styles_app.css',
                     'version' => '1.00'
                 ]
             ]
         ],
         'lang' => [
-                    ['pluginname', 'qtype_YOURQTYPENAME'], // matching value in  lang/en/qtype_YOURQTYPENAME
+                    ['pluginname', 'qtype_recordrtc'], // Matching value in lang/en/qtype_recordrtc.
         ],
     ]
 ];

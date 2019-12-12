@@ -15,41 +15,41 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Mobile output class for qtype_YOURQTYPENAME
+ * Mobile output class for qtype_recordrtc
  *
- * @package    qtype_YOURQTYPENAME
- * @copyright  2018 YOUR NAME
+ * @package    qtype_recordrtc
+ * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace qtype_YOURQTYPENAME\output;
+namespace qtype_recordrtc\output;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Mobile output class for YOURQTYPENAME question type
+ * Mobile output class for recordrtc question type
  *
- * @package    qtype_YOURQTYPENAME
- * @copyright  20XX YOUR NAME
+ * @package    qtype_recordrtc
+ * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mobile {
 
     /**
-     * Returns the YOURQTYPENAME question type for the quiz the mobile app.
+     * Returns the recordrtc question type for the quiz the mobile app.
      *
      * @return void
      */
-    public static function mobile_get_YOURQTYPENAME() {
+    public static function mobile_get_recordrtc() {
         global $CFG;
         return [
             'templates' => [
                 [
                     'id' => 'main',
-                    'html' => file_get_contents($CFG->dirroot .'/question/type/YOURQTYPENAME/mobile/qtype-YOURQTYPENAME.html')
+                    'html' => file_get_contents($CFG->dirroot .'/question/type/recordrtc/mobile/addon-qtype-recordrtc.html')
                     ]
             ],
-            'javascript' => file_get_contents($CFG->dirroot . '/question/type/YOURQTYPENAME/mobile/mobile.js')
+            'javascript' => file_get_contents($CFG->dirroot . '/question/type/recordrtc/mobile/mobile.js')
         ];
     }
 }
