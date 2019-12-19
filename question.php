@@ -15,90 +15,74 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Recordrtc question definition class.
+ * Question class for the record audio (and video) question type.
  *
- * @package    qtype_recordrtc
- * @copyright  2019 The OPen University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   qtype_recordrtc
+ * @copyright 2019 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+
 /**
- * Represents a recordrtc question.
+ * A record audio (and video) question that is being attempted.
  *
- * @copyright  2019 The OPen University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2019 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_recordrtc_question extends question_graded_automatically_with_countback {
+class qtype_recordrtc_question extends question_with_responses {
+    public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
+        return question_engine::make_behaviour('manualgraded', $qa, $preferredbehaviour);
+    }
 
     public function get_expected_data() {
-        // TODO.
-        return array();
+        return ['recording' => question_attempt::PARAM_FILES];
     }
 
-    public function start_attempt(question_attempt_step $step, $variant) {
-        // TODO: Define this method.
-    }
-
-    /**
-     * Summarises the
-     * @return summary a string that summarises how the user responded. This
-     * is used in the quiz responses report
-     * */
     public function summarise_response(array $response) {
-        if (isset($response['answer'])) {
-            // TODO: Find the way to display a sting about the audio file to be used in the quiz responses report.
-            return 'a function returning a string providing info about the audio file';
+        if (!isset($response['recording'])) {
+            return null;
         }
-        return null;
+
+        $files = $response['recording']->get_files();
+        $file = reset($files);
+
+        if (!$file) {
+            return null;
+        }
+
+        return get_string('filex', 'qtype_recordrtc', $file->get_filename());
     }
 
     public function is_complete_response(array $response) {
-        // TODO: If $response indicate that an audio file does NOT exist then retune false.
-
-        return true;
+        return isset($response['recording']);
     }
 
     public function get_validation_error(array $response) {
         if ($this->is_complete_response($response)) {
-            return ''; // The audio file exist and is valid.
+            return '';
         }
-        // The audio file does not exist or need to be rerecorded.
-        return get_string('inputyouraudioresponse', 'qtype_recordrtc');
+        return get_string('pleaserecordsomething', 'qtype_recordrtc');
     }
 
     public function is_same_response(array $prevresponse, array $newresponse) {
-        // TODO: We may compare some metadata such as the length of the recording.
         return question_utils::arrays_same_at_key_missing_is_blank(
-                $prevresponse, $newresponse, 'answer');
+                $prevresponse, $newresponse, 'recording');
     }
 
     public function get_correct_response() {
-        // TODO: This will be done in the second/third phase of the audio question type when we can copare audio files.
+        // Not possible to give a correct response.
         return null;
     }
 
     public function check_file_access($qa, $options, $component, $filearea,
             $args, $forcedownload) {
-        // TODO.
-        if ($component == 'question' && $filearea == 'hint') {
-            return $this->check_hint_file_access($qa, $options, $args);
-
-        } else {
-            return parent::check_file_access($qa, $options, $component, $filearea,
-                    $args, $forcedownload);
+        if ($component == 'question' && $filearea == 'response_attachments') {
+            // Response recording always accessible.
+            return true;
         }
-    }
-
-    public function grade_response(array $response) {
-        // TODO: This can be done later, for now we call graded_state_for_fraction() to avoid error in question behaviours.
-        $fraction = 0;
-        return array($fraction, question_state::graded_state_for_fraction($fraction));
-    }
-
-    public function compute_final_grade($responses, $totaltries) {
-        // TODO: This can be implemented in later phases when we supporting interactive behaviour.
-        return 0;
+        return parent::check_file_access($qa, $options, $component, $filearea,
+                $args, $forcedownload);
     }
 }

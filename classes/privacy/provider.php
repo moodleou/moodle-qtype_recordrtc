@@ -15,22 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * RecordRTC question type upgrade code.
+ * Privacy provider for the record audio (and video) question type.
  *
- * @package    qtype_recordrtc
- * @copyright  2019 The Open University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   qtype_recordrtc
+ * @copyright 2019 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+namespace qtype_recordrtc\privacy;
+
 defined('MOODLE_INTERNAL') || die();
 
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\writer;
+
+
 /**
- * Upgrade code for the RecordRTC question type.
- * @param int $oldversion the version we are upgrading from.
+ * Privacy provider for the record audio (and video) question type.
  */
-function xmldb_qtype_recordrtc_upgrade($oldversion = 0) {
-    if ($oldversion < 2019121200) {
-        // TODO: To be done properly and modified accordingly when the database structure is clear.
-        upgrade_plugin_savepoint(true, 2019121200, 'qtype', 'recordrtc');
+class provider implements \core_privacy\local\metadata\null_provider {
+
+    public static function get_reason() : string {
+        return 'privacy:metadata';
     }
-    return true;
 }

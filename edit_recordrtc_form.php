@@ -15,40 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the editing form for the recordrtc question type.
+ * Defines the editing form for record audio (and video) questions.
  *
- * @package    qtype_recordrtc
- * @copyright  2019 The Open University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   qtype_recordrtc
+ * @copyright 2019 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 defined('MOODLE_INTERNAL') || die();
 
 
 /**
- * Recordrtc question editing form definition.
+ * The editing form for record audio (and video) questions.
  *
- * @copyright  2019 The Open University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2019 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_recordrtc_edit_form extends question_edit_form {
 
     protected function definition_inner($mform) {
-        // Set a fiedl as olaceholder for the Audio input.
-        $mform->addElement('hidden', 'audio');
-        $mform->setType('audio', PARAM_RAW);
-
-        // TODO: Add interactive settings later when we can compare audio files.
-        //$this->add_interactive_settings(true, true);
-    }
-
-    protected function data_preprocessing($question) {
-        $question = parent::data_preprocessing($question);
-        // TODO: Add interactive settings later when we can compare audio files.
-        //$question = $this->data_preprocessing_hints($question);
-
-        return $question;
+        // We only need the standard form fields.
     }
 
     public function qtype() {

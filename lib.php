@@ -15,22 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Serve question type files
+ * Standard Moodle hooks for the record audio (and video) question type.
  *
- * @since      2.0
- * @package    qtype_recordrtc
- * @copyright  2019 The Open University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   qtype_recordrtc
+ * @copyright 2019 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 defined('MOODLE_INTERNAL') || die();
 
-
 /**
- * Checks file access for recordrtc questions.
- * @package  qtype_recordrtc
+ * Checks file access for the record audio (and video) question type.
+ *
  * @category files
+ *
  * @param stdClass $course course object
  * @param stdClass $cm course module object
  * @param stdClass $context context object
@@ -38,10 +36,9 @@ defined('MOODLE_INTERNAL') || die();
  * @param array $args extra arguments
  * @param bool $forcedownload whether or not force download
  * @param array $options additional options affecting the file serving
- * @return bool
  */
 function qtype_recordrtc_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
-    global $DB, $CFG;
+    global $CFG;
     require_once($CFG->libdir . '/questionlib.php');
     question_pluginfile($course, $context, 'qtype_recordrtc', $filearea, $args, $forcedownload, $options);
 }

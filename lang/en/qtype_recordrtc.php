@@ -17,27 +17,31 @@
 /**
  * Strings for component 'qtype_recordrtc', language 'en', branch 'MOODLE_38_STABLE'
  *
- * @package    qtype
- * @subpackage recordrtc
- * @copyright  2019 The Open University
-
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   qtype_recordrtc
+ * @copyright 2019 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-$string['pluginname'] = 'RecordRTC';
-$string['pluginname_help'] = 'RecordRTC ia an audio question type providing students with a audio recording widgit which collects students responses.
-Students record their answers, listen to their recording, rerecord if needed, and submit thier recorded message as their response to the question.';
+
+$string['audiobitrate'] = 'Audio bitrate';
+$string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality)';
+$string['filex'] = 'File {$a}';
+$string['pleaserecordsomething'] = 'Please record something.';
+$string['pluginname'] = 'Record audio question type';
+$string['pluginname_help'] = 'Students respond by recording some audio directly in their web browser, which can then be graded manually.';
 $string['pluginname_link'] = 'question/type/recordrtc';
-$string['pluginnameadding'] = 'Adding a RecordRTC question';
-$string['pluginnameediting'] = 'Editing a RecordRTC question';
-$string['pluginnamesummary'] = 'RecordRTC ia an audio question type providing students with a audio recording widgit which collects students responses.
-Students record their answers, listen to their recording, rerecord if needed, and submit thier recorded message as their response to the question.';
+$string['pluginnameadding'] = 'Adding a record audio question';
+$string['pluginnameediting'] = 'Editing a record audio question';
+$string['pluginnamesummary'] = 'Students respond by recording some audio directly in their web browser, which can then be graded manually.';
+$string['privacy:metadata'] = 'The Record audio question type plugin does not store any personal data.';
+$string['timelimit'] = 'Time limit in seconds';
+$string['timelimit_desc'] = 'Maximum recording length allowed for the audio/video clips';
+
+// TODO clean up the unused strings below, and re-sort the whole file.
 
 $string['allowedtypes'] = 'Allowed types';
 $string['allowedtypes_desc'] = 'Which recording buttons should appear in Atto. In addition to this setting, there are also capabilities which can control access to the buttons to particular users in particular contexts.';
 $string['attachrecording'] = 'Attach recording';
 $string['audioandvideo'] = 'Audio and video';
-$string['audiobitrate'] = 'Audio bitrate';
-$string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality)';
 $string['audiortc'] = 'Record audio';
 $string['gumabort'] = 'Something strange happened which prevented the webcam/microphone from being used';
 $string['gumabort_title'] = 'Something happened';
@@ -74,8 +78,6 @@ $string['recordrtc:recordvideo'] = 'Record video directly into the text editor';
 $string['settings'] = 'RecordRTC settings';
 $string['startrecording'] = 'Start recording';
 $string['stoprecording'] = 'Stop recording';
-$string['timelimit'] = 'Time limit in seconds';
-$string['timelimit_desc'] = 'Maximum recording length allowed for the audio/video clips';
 $string['uploadaborted'] = 'Upload aborted:';
 $string['uploadfailed'] = 'Upload failed:';
 $string['uploadfailed404'] = 'Upload failed: file too large';

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Admin settings for audio recorder.
+ * Admin settings for the record audio (and video) question type.
  *
  * @package   qtype_recordrtc
  * @copyright 2019 The Open University
@@ -27,15 +27,15 @@ defined('MOODLE_INTERNAL') || die();
 if ($ADMIN->fulltree) {
 
     // Audio bitrate.
-    $name = get_string('audiobitrate', 'atto_recordrtc');
-    $desc = get_string('audiobitrate_desc', 'atto_recordrtc');
+    $name = get_string('audiobitrate', 'qtype_recordrtc');
+    $desc = get_string('audiobitrate_desc', 'qtype_recordrtc');
     $default = '128000';
     $setting = new admin_setting_configtext('qtype_recordrtc/audiobitrate', $name, $desc, $default, PARAM_INT, 8);
     $settings->add($setting);
 
-    // Recording audio time limit.
-    $name = get_string('timelimit', 'atto_recordrtc');
-    $desc = get_string('timelimit_desc', 'atto_recordrtc');
+    // Recording time limit.
+    $name = get_string('timelimit', 'qtype_recordrtc');
+    $desc = get_string('timelimit_desc', 'qtype_recordrtc');
     $default = '120';
     $setting = new admin_setting_configtext('qtype_recordrtc/timelimit', $name, $desc, $default, PARAM_INT, 8);
     $settings->add($setting);
