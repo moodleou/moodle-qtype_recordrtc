@@ -35,6 +35,10 @@ defined('MOODLE_INTERNAL') || die();
 class qtype_recordrtc_edit_form extends question_edit_form {
 
     protected function definition_inner($mform) {
+        // Set a fiedl as olaceholder for the Audio input.
+        $mform->addElement('hidden', 'audio');
+        $mform->setType('audio', PARAM_RAW);
+
         // TODO: Add interactive settings later when we can compare audio files.
         //$this->add_interactive_settings(true, true);
     }
