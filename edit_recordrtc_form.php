@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot . '/question/type/edit_question_form.php');
+
 
 /**
  * The editing form for record audio (and video) questions.

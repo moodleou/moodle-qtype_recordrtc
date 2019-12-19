@@ -36,4 +36,30 @@ require_once($CFG->dirroot . '/question/type/recordrtc/question.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_recordrtc extends question_type {
+
+    public function is_manual_graded() {
+        return true;
+    }
+
+    public function response_file_areas() {
+        return ['recording'];
+    }
+
+    public function export_to_xml($question, qformat_xml $format, $extra = null) {
+        // We don't need to export any settings (yet) but we need to return a non-empty string
+        // to tell the system that we support export.
+        return ' ';
+    }
+
+    public function import_from_xml($data, $question, qformat_xml $format, $extra=null) {
+        $questiontype = $data['@']['type'];
+        if ($questiontype != $this->name()) {
+            return false;
+        }
+
+        $qo = $format->import_headers($data);
+        $qo->qtype = $questiontype;
+
+        return $qo;
+    }
 }

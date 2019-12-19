@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<quiz>
+<!-- question: 1 -->
+  <question type="recordrtc">
+    <name>
+      <text>Record audio question</text>
+    </name>
+    <questiontext format="html">
+      <text><![CDATA[<p>Please record yourself talking about Moodle.</p>]]></text>
+    </questiontext>
+    <generalfeedback format="html">
+      <text><![CDATA[<p>I hope you spoke clearly and coherently.</p>]]></text>
+    </generalfeedback>
+    <defaultgrade>1</defaultgrade>
+    <penalty>0</penalty>
+    <hidden>0</hidden>
+    <idnumber></idnumber>
+  </question>
+</quiz>
