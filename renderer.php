@@ -82,15 +82,9 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         from one question to another in a quiz and some code to disable the input fields
         once a quesiton is submitted/marked */
 
-
-        /* if ($qa->get_state() == question_state::$invalid) {
-            $result .= html_writer::nonempty_tag('div',
-                    $question->get_validation_error(array('answer' => $currentanswer)),
-                    array('class' => 'validationerror'));
-        }*/
-
-      $startrecordingbutton = "
-        <div class= \"qtype_recordrtc container-fluid\" id=\"\">
+        $questionuniqueid = $qa->get_outer_question_div_unique_id();
+        $startrecordingbutton = "
+        <div class= \"qtype_recordrtc container-fluid\" id=\"$questionuniqueid\">
             <div class=\"row hide\">
                 <div class=\"col-xs-12\">
                     <div id=\"alert-danger\" class=\"alert alert-danger\"><strong>Insecure connection!</strong> Your browser might not allow this plugin to work unless it is used either over HTTPS or from localhost</div>
@@ -110,14 +104,12 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             </div>
         </div>";
 
-//      $stoprecording = "
-//      <div class=\"atto_recordrtc container-fluid\" id=\"\">
-//          <div class=\"row hide\">
-//            <div class=\"col-xs-12\"><div id=\"alert-danger\" class=\"alert alert-danger\"><strong>Insecure connection!</strong> Your browser might not allow this plugin to work unless it is used either over HTTPS or from localhost</div></div></div><div class=\"row hide\"><div class=\"col-xs-1\"></div><div class=\"col-xs-10\"><audio id=\"player\"></audio></div><div class=\"col-xs-1\"></div></div><div class=\"row\" id=\"yui_3_17_2_1_1576749864475_1396\"><div class=\"col-xs-1\"></div><div class=\"col-xs-10\" id=\"yui_3_17_2_1_1576749864475_1395\"><button id=\"start-stop\" class=\"btn btn-lg btn-block btn-danger\">Stop recording (<span id=\"minutes\">01</span>:<span id=\"seconds\">49</span>)</button></div><div class=\"col-xs-1\"></div></div><div class=\"row hide\"><div class=\"col-xs-3\"></div><div class=\"col-xs-6\"><button id=\"upload\" class=\"btn btn-primary btn-block\">Attach recording</button></div><div class=\"col-xs-3\"></div></div>
-//      </div>";
-
+        // TODO get right max-upload-size.
         $recordagainbutton = "
-        <div class=\"atto_recordrtc container-fluid\" id=\"\">
+        <div class=\"atto_recordrtc container-fluid\" data-audio-bitrate='" .
+                    get_config('qtype_recordrtc', 'audiobitrate') .
+                    "' data-timelimit='" . get_config('qtype_recordrtc', 'timelimit') .
+                    "' data-max-upload-size='100000000'>
             <div class=\"row hide\">
                 <div class=\"col-xs-12\">
                     <div id=\"alert-danger\" class=\"alert alert-danger\"><strong>Insecure connection!</strong> Your browser might not allow this plugin to work unless it is used either over HTTPS or from localhost</div>
@@ -135,16 +127,11 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             </div>
         </div>";
 
-        //$PAGE->requires->strings_for_js($this->atto_recordrtc_strings_for_js(), 'atto_recordrtc');
-        $PAGE->requires->js_call_amd('qtype_recordrtc/recordrtc', 'init', [$this->atto_recordrtc_strings_for_js()]);
+        $strings =  $this->qtype_recordrtc_strings_for_js();
+        $PAGE->requires->strings_for_js($strings, 'qtype_recordrtc');
+        $PAGE->requires->js_call_amd('qtype_recordrtc/avrecording', 'init', [$qa->get_outer_question_div_unique_id()]);
 
         if ($qa->get_state_class(true) === 'notyetanswered') {
-            $html = "
-<div class='qtype_recordrtc container-fluid'>            
-<audio width=\"800\" height=\"2\" controls>
-  Your browser does not support the audio tag.
-</audio>
-</div>";            $result .= $html;
             $result .= $startrecordingbutton;
         } else {
             $result .= $recordagainbutton;
@@ -230,7 +217,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
     /**
      * Initialise the js strings required for this module.
      */
-    public function atto_recordrtc_strings_for_js()
+    public function qtype_recordrtc_strings_for_js()
     {
         global $PAGE;
 
@@ -270,8 +257,6 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             'uploadfailed404',
             'uploadaborted'
         );
-
-        $PAGE->requires->strings_for_js($strings, 'atto_recordrtc');
         return $strings;
    }
 
