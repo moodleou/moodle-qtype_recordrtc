@@ -79,4 +79,74 @@ class qtype_recordrtc_test_helper extends question_test_helper {
 
         return $questiondata;
     }
+
+    /**
+     * Creates an empty draft area for the recording.
+     *
+     * @return int The draft area's itemid.
+     */
+    protected static function make_recording_draft_area() {
+        $draftid = 0;
+        $contextid = 0;
+
+        $component = 'question';
+        $filearea = 'response_recording';
+
+        // Create an empty file area.
+        file_prepare_draft_area($draftid, $contextid, $component, $filearea, null);
+        return $draftid;
+    }
+
+    /**
+     * Creates a recording in the provided draft area.
+     *
+     * @param int $draftid The itemid for the draft area in which the file should be created.
+     * @param string $fixturefile The name of the file in the fixtures folder to copy.
+     */
+    public static function add_recording_to_draft_area(int $draftid, string $fixturefile) {
+        global $USER;
+
+        $fs = get_file_storage();
+        $usercontext = context_user::instance($USER->id);
+
+        // If there is already a recording present, delete it.
+        $fs->delete_area_files($usercontext->id, 'user', 'draft', $draftid);
+
+        // Create the file in the provided draft area.
+        $fileinfo = [
+            'contextid' => $usercontext->id,
+            'component' => 'user',
+            'filearea'  => 'draft',
+            'itemid'    => $draftid,
+            'filepath'  => '/',
+            'filename'  => 'recording.ogg',
+        ];
+        $fs->create_file_from_pathname($fileinfo, __DIR__ . '/fixtures/' . $fixturefile);
+    }
+
+    /**
+     * Generates a draft file area that contains the given fixture file as a file called recording.ogg.
+     * You should ensure that a user is logged in with setUser before you run this function.
+     *
+     * @param string $fixturefile The name of the file in the fixtures folder to copy.
+     * @return int The itemid of the generated draft file area.
+     */
+    public static function make_recording_in_draft_area(string $fixturefile) {
+        $draftid = self::make_recording_draft_area();
+        self::add_recording_to_draft_area($draftid, $fixturefile);
+        return $draftid;
+    }
+
+    /**
+     * Generates a question_file_saver that contains the given fixture file
+     * as a file called recording.ogg. You should ensure that a user is logged
+     * in with setUser before you run this function.
+     *
+     * @param string $fixturefile The name of the file in the fixtures folder to copy.
+     * @return question_file_saver a question_file_saver that contains the given amount of dummy files, for use in testing.
+     */
+    public static function make_recording_saver(string $fixturefile) {
+        return new question_file_saver(self::make_recording_in_draft_area($fixturefile),
+                'question', 'response_recording');
+    }
 }

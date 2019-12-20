@@ -26,18 +26,89 @@ global $CFG;
 require_once($CFG->dirroot . '/question/type/questionbase.php');
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 require_once($CFG->dirroot . '/question/type/recordrtc/question.php');
+
+
 /**
- * Unit tests for the recordrtc question definition class.
+ * Unit tests for the record audio (and video) question definition class.
  *
  * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_recordrtc_question_test extends advanced_testcase {
-  
-      public function test_get_expected_data() {
-    }
-  
-      public function test_compute_final_grade() {
 
+    /**
+     * Get a question instance to test.
+     *
+     * @return qtype_recordrtc_question the question.
+     */
+    protected function get_a_test_question() {
+        return test_question_maker::make_question('recordrtc');
+    }
+
+    /**
+     * @return array get an audio question an a non-blank response.
+     */
+    protected function get_a_test_question_and_response() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $q = $this->get_a_test_question();
+        $response = ['recording' =>
+                qtype_recordrtc_test_helper::make_recording_saver('moodle-tim.ogg')];
+        return [$q, $response];
+
+    }
+
+    public function test_summarise_response_blank() {
+        $q = $this->get_a_test_question();
+        $this->assertNull($q->summarise_response([]));
+    }
+
+    public function test_summarise_response_with_file() {
+        [$q, $response] = $this->get_a_test_question_and_response();
+        $this->assertEquals('File recording.ogg', $q->summarise_response($response));
+    }
+
+    public function test_is_complete_response_blank() {
+        $q = $this->get_a_test_question();
+        $this->assertFalse($q->is_complete_response([]));
+    }
+
+    public function test_is_complete_response_with_file() {
+        [$q, $response] = $this->get_a_test_question_and_response();
+        $this->assertTrue($q->is_complete_response($response));
+    }
+
+    public function test_get_validation_error_blank() {
+        $q = $this->get_a_test_question();
+        $this->assertEquals('Please record something.', $q->get_validation_error([]));
+    }
+
+    public function test_get_validation_error_with_file() {
+        [$q, $response] = $this->get_a_test_question_and_response();
+        $this->assertEquals('', $q->get_validation_error($response));
+    }
+
+    public function test_is_same_response_both_blank() {
+        $q = $this->get_a_test_question();
+        $this->assertTrue($q->is_same_response([], []));
+    }
+
+    public function test_is_same_response_one_blank() {
+        [$q, $response] = $this->get_a_test_question_and_response();
+        $this->assertFalse($q->is_same_response([], $response));
+    }
+
+    public function test_is_same_response_same_files() {
+        [$q, $response] = $this->get_a_test_question_and_response();
+        $this->assertTrue($q->is_same_response($response, $response));
+    }
+
+    public function test_is_same_response_different_files() {
+        [$q, $response] = $this->get_a_test_question_and_response();
+        $otherresponse = ['recording' =>
+                qtype_recordrtc_test_helper::make_recording_saver('moodle-sharon.ogg')];
+
+        $this->assertFalse($q->is_same_response($response, $otherresponse));
     }
 }

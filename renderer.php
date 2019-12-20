@@ -149,6 +149,13 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         } else {
             $result .= $recordagainbutton;
         }
+
+        // Prepare a draft file area to store the recording, and put
+        // its id in a hidden form field.
+        $dreftitemid = $qa->prepare_response_files_draft_itemid(
+                'recording', $options->context->id);
+        $result .= html_writer::empty_tag('input', ['type' => 'hidden',
+                'name' => $qa->get_qt_field_name('recording'), 'value' => $dreftitemid]);
         return $result;
     }
 

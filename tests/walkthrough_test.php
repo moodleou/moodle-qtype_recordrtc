@@ -13,11 +13,113 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
- * Contains the helper class for the select missing words question type tests.
+ * Unit tests for what happens when a record audio (and video) question is attempted.
  *
  * @package    qtype_recordrtc
  * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
+
+
+/**
+ * Unit tests for what happens when a record audio (and video) question is attempted.
+ */
+class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_base {
+
+    /**
+     * Helper to get the qa of the qusetion being attempted.
+     *
+     * @return question_attempt
+     */
+    protected function get_qa() {
+        return $this->quba->get_question_attempt($this->slot);
+    }
+    /**
+     * Simulate a user submitting the recording from the given fixture file.
+     *
+     * @param string $fixturefile name of the file to submit.
+     */
+    protected function process_submission_of_file(string $fixturefile) {
+        $this->render();
+        if (!preg_match('/name="' . preg_quote($this->get_qa()->get_qt_field_name('recording')) .
+                '" value="(\d+)"/', $this->currentoutput, $matches)) {
+            print_object($this->currentoutput);
+            throw new coding_exception('Draft item id not found.');
+        }
+        $draftid = $matches[1];
+        qtype_recordrtc_test_helper::add_recording_to_draft_area($draftid, $fixturefile);
+        $this->process_submission(['recording' => $draftid]);
+    }
+
+    public function test_deferred_feedback_html_editor_with_files_attempt_on_last() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create an essay question in the DB.
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $cat = $generator->create_question_category();
+        $question = $generator->create_question('recordrtc', 'audio', ['category' => $cat->id]);
+
+        // Start attempt at the question.
+        $q = question_bank::load_question($question->id);
+        $this->start_attempt_at_question($q, 'deferredfeedback', 1);
+
+        $this->check_current_state(question_state::$todo);
+        $this->check_current_mark(null);
+        $this->check_step_count(1);
+        $this->assertEquals('manualgraded', $this->get_qa()->get_behaviour_name());
+
+        // Process a response and check the expected result.
+        $this->process_submission_of_file('moodle-tim.ogg');
+
+        $this->check_current_state(question_state::$complete);
+        $this->check_current_mark(null);
+        $this->check_step_count(2);
+        $this->save_quba();
+
+        // Save the same response again, and verify no new step is created.
+        $this->load_quba();
+        $this->process_submission_of_file('moodle-tim.ogg');
+
+        $this->check_current_state(question_state::$complete);
+        $this->check_current_mark(null);
+        $this->check_step_count(2);
+
+        // Now submit all and finish.
+        $this->finish();
+        $this->check_current_state(question_state::$needsgrading);
+        $this->check_current_mark(null);
+        $this->check_step_count(3);
+        $this->save_quba();
+
+        // Now start a new attempt based on the old one.
+        $this->load_quba();
+        $oldqa = $this->get_question_attempt();
+
+        $q = question_bank::load_question($question->id);
+        $this->quba = question_engine::make_questions_usage_by_activity('unit_test',
+                context_system::instance());
+        $this->quba->set_preferred_behaviour('deferredfeedback');
+        $this->slot = $this->quba->add_question($q, 1);
+        $this->quba->start_question_based_on($this->slot, $oldqa);
+
+        $this->check_current_state(question_state::$complete);
+        $this->check_current_mark(null);
+        $this->check_step_count(1);
+        $this->save_quba();
+
+        // Now save the same response again, and ensure that a new step is not created.
+        $this->process_submission_of_file('moodle-tim.ogg');
+
+        $this->check_current_state(question_state::$complete);
+        $this->check_current_mark(null);
+        $this->check_step_count(1);
+    }
+}
