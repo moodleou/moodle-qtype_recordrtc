@@ -40,4 +40,3 @@ Feature: Preview record audio questions
     And I switch to "questionpreview" window
     # TODO find a way to simulate responding.
     And I switch to the main window
-

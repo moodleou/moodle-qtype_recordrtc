@@ -65,7 +65,7 @@ class qtype_recordrtc_question_test extends advanced_testcase {
     }
 
     public function test_summarise_response_with_file() {
-        [$q, $response] = $this->get_a_test_question_and_response();
+        list($q, $response) = $this->get_a_test_question_and_response();
         $this->assertEquals('File recording.ogg', $q->summarise_response($response));
     }
 
@@ -75,7 +75,7 @@ class qtype_recordrtc_question_test extends advanced_testcase {
     }
 
     public function test_is_complete_response_with_file() {
-        [$q, $response] = $this->get_a_test_question_and_response();
+        list($q, $response) = $this->get_a_test_question_and_response();
         $this->assertTrue($q->is_complete_response($response));
     }
 
@@ -85,7 +85,7 @@ class qtype_recordrtc_question_test extends advanced_testcase {
     }
 
     public function test_get_validation_error_with_file() {
-        [$q, $response] = $this->get_a_test_question_and_response();
+        list($q, $response) = $this->get_a_test_question_and_response();
         $this->assertEquals('', $q->get_validation_error($response));
     }
 
@@ -95,17 +95,17 @@ class qtype_recordrtc_question_test extends advanced_testcase {
     }
 
     public function test_is_same_response_one_blank() {
-        [$q, $response] = $this->get_a_test_question_and_response();
+        list($q, $response) = $this->get_a_test_question_and_response();
         $this->assertFalse($q->is_same_response([], $response));
     }
 
     public function test_is_same_response_same_files() {
-        [$q, $response] = $this->get_a_test_question_and_response();
+        list($q, $response) = $this->get_a_test_question_and_response();
         $this->assertTrue($q->is_same_response($response, $response));
     }
 
     public function test_is_same_response_different_files() {
-        [$q, $response] = $this->get_a_test_question_and_response();
+        list($q, $response) = $this->get_a_test_question_and_response();
         $otherresponse = ['recording' =>
                 qtype_recordrtc_test_helper::make_recording_saver('moodle-sharon.ogg')];
 

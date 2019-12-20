@@ -15,8 +15,10 @@
 //
 
 /**
- * Java script to make qtype recordrtc work with this library.
- * abstructmodule, commonmodule, compatcheckmodule, audiomodule, videomodule
+ * JavaScript to the recording work.
+ *
+ * We would like to thank the creators of atto_recordrtc, whose
+ * work inspired this.
  *
  * @package    qtype_recordrtc
  * @copyright  2019 The Open University

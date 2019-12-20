@@ -4,7 +4,7 @@ dist: xenial
 sudo: required
 
 services:
-  mysql
+  - mysql
 
 addons:
   firefox: "47.0.1"

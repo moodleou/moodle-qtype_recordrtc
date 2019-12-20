@@ -58,7 +58,9 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                     '" data-max-upload-size="' . $uploadfilesizelimit . '">
             <div class="row hide">
                 <div class="col-xs-12">
-                    <div id="alert-danger" class="alert alert-danger"><strong>Insecure connection!</strong> Your browser might not allow this plugin to work unless it is used either over HTTPS or from localhost</div>
+                    <div id="alert-danger" class="alert alert-danger">
+                        <strong>Insecure connection!</strong>
+                        Your browser might not allow this plugin to work unless it is used either over HTTPS or from localhost</div>
                 </div>
             </div>
             <div class="row hide">
@@ -83,7 +85,6 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         // Add a hidden form field with the draft item id.
         $result .= html_writer::empty_tag('input', ['type' => 'hidden',
                 'name' => $qa->get_qt_field_name('recording'), 'value' => $draftitemid]);
-
 
         if ($qa->get_state() == question_state::$invalid) {
             $result .= html_writer::nonempty_tag('div',
