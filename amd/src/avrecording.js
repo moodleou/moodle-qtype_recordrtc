@@ -34,8 +34,8 @@ define(['jquery'], function($) {
             // A helper for making a Moodle alert appear.
             // Subject is the content of the alert (which error the alert is for).
             // Possibility to add on-alert-close event.
-            show_alert: function (subject, onCloseEvent) {
-                Y.use('moodle-core-notification-alert', function () {
+            showAlert: function(subject, onCloseEvent) {
+                Y.use('moodle-core-notification-alert', function() {
                     var dialogue = new M.core.alert({
                         title: M.util.get_string(subject + '_title', 'qtype_recordrtc'),
                         message: M.util.get_string(subject, 'qtype_recordrtc')
@@ -48,9 +48,9 @@ define(['jquery'], function($) {
             },
 
             // Handle getUserMedia errors.
-            handle_gum_errors: function (error, commonConfig) {
+            handleGumErrors: function(error, commonConfig) {
                 var btnLabel = M.util.get_string('recordingfailed', 'qtype_recordrtc'),
-                    treatAsStopped = function () {
+                    treatAsStopped = function() {
                         commonConfig.onMediaStopped(btnLabel);
                     };
 
@@ -58,16 +58,11 @@ define(['jquery'], function($) {
                 var stringName = 'gum' + error.name.replace('Error', '').toLowerCase();
 
                 // After alert, proceed to treat as stopped recording, or close dialogue.
-                if (stringName !== 'gumsecurity') {
-                    t.abstractmodule.show_alert(stringName, treatAsStopped);
-                } else {
-                    t.abstractmodule.show_alert(stringName, function () {
-                    });
-                }
+                t.abstractmodule.showAlert(stringName, treatAsStopped);
             },
 
             // Select best options for the recording codec.
-            select_rec_options: function (recType) {
+            selectRecOptions: function(recType) {
                 var types, options;
 
                 if (recType === 'audio') {
@@ -90,7 +85,7 @@ define(['jquery'], function($) {
                     };
                 }
 
-                var compatTypes = types.filter(function (type) {
+                var compatTypes = types.filter(function(type) {
                     return window.MediaRecorder.isTypeSupported(type);
                 });
 
@@ -100,11 +95,12 @@ define(['jquery'], function($) {
                 return options;
             }
         },
+
         /**
          * Library functions for commonmodule
          */
         commonmodule: {
-            // Unitialized variables to be used by the other modules.
+            // Uninitialized variables to be used by the other modules.
             questionDiv: null,
             audioBitRate: null,
             timelimit: null,
@@ -125,13 +121,13 @@ define(['jquery'], function($) {
             maxUploadSize: null,
 
             // Capture webcam/microphone stream.
-            capture_user_media: function (mediaConstraints, successCallback, errorCallback) {
+            captureUserMedia: function(mediaConstraints, successCallback, errorCallback) {
                 window.navigator.mediaDevices.getUserMedia(mediaConstraints).then(successCallback).catch(errorCallback);
             },
 
             // Add chunks of audio/video to array when made available.
-            handle_data_available: function (event) {
-                var am = t.abstractmodule, cm = t.commonmodule, ccm = t.compatcheckmodule;
+            handleDataAvailable: function(event) {
+
                 // Push recording slice to array.
                 t.commonmodule.chunks.push(event.data);
                 // Size of all recorded data so far.
@@ -144,7 +140,7 @@ define(['jquery'], function($) {
                         window.localStorage.setItem('alerted', 'true');
 
                         t.commonmodule.startStopBtn.simulate('click');
-                        t.abstractmodule.show_alert('nearingmaxsize');
+                        t.abstractmodule.showAlert('nearingmaxsize');
                     } else {
                         window.localStorage.removeItem('alerted');
                     }
@@ -154,7 +150,7 @@ define(['jquery'], function($) {
             },
 
             // Handle recording end.
-            handle_stop: function () {
+            handleStop: function() {
                 // Set source of audio player.
                 var blob = new window.Blob(t.commonmodule.chunks, {type: t.commonmodule.mediaRecorder.mimeType});
                 t.commonmodule.player.attr('src', window.URL.createObjectURL(blob));
@@ -171,29 +167,29 @@ define(['jquery'], function($) {
                 t.commonmodule.uploadBtn.attr('disabled', false);
 
                 // Handle when upload button is clicked.
-                t.commonmodule.uploadBtn.on('click', function () {
+                t.commonmodule.uploadBtn.on('click', function() {
                     // Trigger error if no recording has been made.
                     if (t.commonmodule.chunks.length === 0) {
-                        t.abstractmodule.show_alert('norecordingfound');
+                        t.abstractmodule.showAlert('norecordingfound');
                     } else {
                         t.commonmodule.uploadBtn.attr('disabled', true);
 
                         // Upload recording to server.
-                        t.commonmodule.upload_to_server(t.commonmodule.recType, function (progress, fileURLOrError) {
+                        t.commonmodule.uploadToServer(t.commonmodule.recType, function(progress, fileURLOrError) {
                             if (progress === 'ended') { // Insert annotation in text.
                                 t.commonmodule.uploadBtn.attr('disabled', false);
                                 t.commonmodule.insert_annotation(t.commonmodule.recType, fileURLOrError);
                             } else if (progress === 'upload-failed') { // Show error message in upload button.
                                 t.commonmodule.uploadBtn.attr('disabled', false);
                                 t.commonmodule.uploadBtn.innerText =
-                                M.util.get_string('uploadfailed', 'qtype_recordrtc') + ' ' + fileURLOrError;
+                                    M.util.get_string('uploadfailed', 'qtype_recordrtc') + ' ' + fileURLOrError;
                             } else if (progress === 'upload-failed-404') { // 404 error = File too large in Moodle.
                                 t.commonmodule.uploadBtn.attr('disabled', false);
                                 t.commonmodule.uploadBtn.innerText = M.util.get_string('uploadfailed404', 'qtype_recordrtc');
                             } else if (progress === 'upload-aborted') {
                                 t.commonmodule.uploadBtn.attr('disabled', false);
                                 t.commonmodule.uploadBtn.innerText =
-                                M.util.get_string('uploadaborted', 'qtype_recordrtc') + ' ' + fileURLOrError;
+                                    M.util.get_string('uploadaborted', 'qtype_recordrtc') + ' ' + fileURLOrError;
                             } else {
                                 t.commonmodule.uploadBtn.innerText = progress;
                             }
@@ -203,15 +199,14 @@ define(['jquery'], function($) {
             },
 
             // Get everything set up to start recording.
-            start_recording: function (type, stream) {
-                console.log('========== Entering start_recording');
-                // The options for the recording codecs and bitrates.
-                var options = t.abstractmodule.select_rec_options(type);
+            startRecording: function(type, stream) {
+                // The options for the recording codecs and bit rates.
+                var options = t.abstractmodule.selectRecOptions(type);
                 t.commonmodule.mediaRecorder = new window.MediaRecorder(stream, options);
 
                 // Initialize MediaRecorder events and start recording.
-                t.commonmodule.mediaRecorder.ondataavailable = t.commonmodule.handle_data_available;
-                t.commonmodule.mediaRecorder.onstop = t.commonmodule.handle_stop;
+                t.commonmodule.mediaRecorder.ondataavailable = t.commonmodule.handleDataAvailable;
+                t.commonmodule.mediaRecorder.onstop = t.commonmodule.handleStop;
                 t.commonmodule.mediaRecorder.start(1000); // Capture in 1s chunks. Must be set to work with Firefox.
 
                 // Mute audio, distracting while recording.
@@ -223,16 +218,15 @@ define(['jquery'], function($) {
                 var timerText = M.util.get_string('stoprecording', 'qtype_recordrtc');
                 timerText += ' (<span id="minutes"></span>:<span id="seconds"></span>)';
                 t.commonmodule.startStopBtn.innerHtml = timerText;
-                t.commonmodule.set_time();
-                t.commonmodule.countdownTicker = window.setInterval(t.commonmodule.set_time, 1000);
+                t.commonmodule.setTime();
+                t.commonmodule.countdownTicker = window.setInterval(t.commonmodule.setTime, 1000);
 
                 // Make button clickable again, to allow stopping recording.
                 t.commonmodule.startStopBtn.attr('disabled', false);
             },
 
             // Get everything set up to stop recording.
-            stop_recording: function (stream) {
-                console.log('========== Entering stop_recording');
+            stopRecording: function(stream) {
                 // Stop recording stream.
                 t.commonmodule.mediaRecorder.stop();
 
@@ -244,14 +238,14 @@ define(['jquery'], function($) {
             },
 
             // Upload recorded audio/video to server.
-            upload_to_server: function (type, callback) {
+            uploadToServer: function(type, callback) {
                 var xhr = new window.XMLHttpRequest();
 
                 // Get src media of audio/video tag.
-                xhr.open('GET', t.commonmodule.player.get('src'), true);
+                xhr.open('GET', t.commonmodule.player.attr('src'), true);
                 xhr.responseType = 'blob';
 
-                xhr.onload = function () {
+                xhr.onload = function() {
                     if (xhr.status === 200) { // If src media was successfully retrieved.
                         // blob is now the media that the audio/video tag's src pointed to.
                         var blob = this.response;
@@ -263,7 +257,7 @@ define(['jquery'], function($) {
 
                         // Create FormData to send to PHP filepicker-upload script.
                         var formData = new window.FormData(),
-                            filepickerOptions = t.commonmodule.saveFileUrl;
+                            filepickerOptions = t.commonmodule.saveFileUrl,
                             repositoryKeys = window.Object.keys(filepickerOptions.repositories);
 
                         formData.append('repo_upload_file', blob, fileName);
@@ -284,8 +278,8 @@ define(['jquery'], function($) {
 
                         // Pass FormData to PHP script using XHR.
                         var uploadEndpoint = M.cfg.wwwroot + '/repository/repository_ajax.php?action=upload';
-                        t.commonmodule.make_xmlhttprequest(uploadEndpoint, formData,
-                            function (progress, responseText) {
+                        t.commonmodule.makeXmlHttpRequest(uploadEndpoint, formData,
+                            function(progress, responseText) {
                                 if (progress === 'upload-ended') {
                                     callback('ended', window.JSON.parse(responseText).url);
                                 } else {
@@ -300,10 +294,10 @@ define(['jquery'], function($) {
             },
 
             // Handle XHR sending/receiving/status.
-            make_xmlhttprequest: function (url, data, callback) {
+            makeXmlHttpRequest: function(url, data, callback) {
                 var xhr = new window.XMLHttpRequest();
 
-                xhr.onreadystatechange = function () {
+                xhr.onreadystatechange = function() {
                     if ((xhr.readyState === 4) && (xhr.status === 200)) { // When request is finished and successful.
                         callback('upload-ended', xhr.responseText);
                     } else if (xhr.status === 404) { // When request returns 404 Not Found.
@@ -311,15 +305,16 @@ define(['jquery'], function($) {
                     }
                 };
 
-                xhr.upload.onprogress = function (event) {
-                    callback(Math.round(event.loaded / event.total * 100) + "% " + M.util.get_string('uploadprogress', 'qtype_recordrtc'));
+                xhr.upload.onprogress = function(event) {
+                    callback(Math.round(event.loaded / event.total * 100) + "% " +
+                        M.util.get_string('uploadprogress', 'qtype_recordrtc'));
                 };
 
-                xhr.upload.onerror = function (error) {
+                xhr.upload.onerror = function(error) {
                     callback('upload-failed', error);
                 };
 
-                xhr.upload.onabort = function (error) {
+                xhr.upload.onabort = function(error) {
                     callback('upload-aborted', error);
                 };
 
@@ -329,7 +324,7 @@ define(['jquery'], function($) {
             },
 
             // Makes 1min and 2s display as 1:02 on timer instead of 1:2, for example.
-            pad: function (val) {
+            pad: function(val) {
                 var valString = val + "";
 
                 if (valString.length < 2) {
@@ -341,79 +336,24 @@ define(['jquery'], function($) {
 
             // Functionality to make recording timer count down.
             // Also makes recording stop when time limit is hit.
-            set_time: function () {
+            setTime: function() {
                 t.commonmodule.countdownSeconds--;
 
-                t.commonmodule.startStopBtn.one('span#seconds').innerText = t.commonmodule.pad(t.commonmodule.countdownSeconds % 60);
-                t.commonmodule.startStopBtn.one('span#minutes').innerText = t.commonmodule.pad(window.parseInt(t.commonmodule.countdownSeconds / 60, 10));
+                t.commonmodule.startStopBtn.one('span#seconds').innerText =
+                    t.commonmodule.pad(t.commonmodule.countdownSeconds % 60);
+                t.commonmodule.startStopBtn.one('span#minutes').innerText =
+                    t.commonmodule.pad(window.parseInt(t.commonmodule.countdownSeconds / 60, 10));
 
                 if (t.commonmodule.countdownSeconds === 0) {
                     t.commonmodule.startStopBtn.simulate('click');
                 }
-            },
-
-            // Generates link to recorded annotation to be inserted.
-            create_annotation: function (type, recording_url) {
-                var html = '';
-                if (type == 'audio') {
-                    html = "<audio controls='true'>";
-                } else { // Must be video.
-                    html = "<video controls='true'>";
-                }
-
-                html += "<source src='" + recording_url + "'>" + recording_url;
-
-                if (type == 'audio') {
-                    html += "</audio>";
-                } else { // Must be video.
-                    html += "</video>";
-                }
-
-                return html;
-            },
-
-            // Inserts link to annotation in editor text area.
-            insert_annotation: function (type, recording_url) {
-                var annotation = t.commonmodule.create_annotation(type, recording_url);
-
-                // Insert annotation link.
-                // If user pressed "Cancel", just go back to main recording screen.
-                if (!annotation) {
-                    t.commonmodule.uploadBtn.innerText = M.util.get_string('attachrecording', 'qtype_recordrtc');
-                } else {
-                }
             }
         },
-        /**
-         *
-         */
-        compatcheckmodule: {
-            // Show alert and close plugin if browser does not support WebRTC at all.
-            check_has_gum: function () {
-                if (!(navigator.mediaDevices && window.MediaRecorder)) {
-                    t.abstractmodule.show_alert('nowebrtc', function () {
-                    });
-                }
-            },
 
-            // Notify and redirect user if plugin is used from insecure location.
-            check_secure: function () {
-                var isSecureOrigin = (window.location.protocol === 'https:') ||
-                    (window.location.host.indexOf('localhost') !== -1);
-
-                if (!isSecureOrigin) {
-                    t.commonmodule.alertDanger.parent().parent().removeClass('hide');
-                }
-            }
-        },
-        /**
-         *
-         */
         audiomodule: {
-            init: function (questionId) {
-                console.log('========== Entering init');
+            init: function(questionId) {
                 // Assignment of global variables.
-                t.commonmodule.questionDiv = $(document.getElementById(questionId)); // Allows access to the editor's "this" context.
+                t.commonmodule.questionDiv = $(document.getElementById(questionId));
                 t.commonmodule.audioBitRate = t.commonmodule.questionDiv.data('audioBitRate');
                 t.commonmodule.timelimit = t.commonmodule.questionDiv.data('timelimit');
                 t.commonmodule.alertWarning = t.commonmodule.questionDiv.find('div#alert-warning');
@@ -426,14 +366,13 @@ define(['jquery'], function($) {
                 t.commonmodule.maxUploadSize = t.commonmodule.questionDiv.data('maxUploadSize');
 
                 // Show alert and close plugin if WebRTC is not supported.
-                t.compatcheckmodule.check_has_gum();
+                t.compatcheckmodule.checkHasGum();
 
                 // Show alert and redirect user if connection is not secure.
-                t.compatcheckmodule.check_secure();
+                t.compatcheckmodule.checkIsHttps();
 
                 // Run when user clicks on "record" button.
-                t.commonmodule.startStopBtn.on('click', function () {
-                    console.log('========== Entering startStopBtn on click');
+                t.commonmodule.startStopBtn.on('click', function() {
                     t.commonmodule.startStopBtn.attr('disabled', true);
 
                     // If button is displaying "Start Recording" or "Record Again".
@@ -457,14 +396,14 @@ define(['jquery'], function($) {
                         // Initialize common configurations.
                         var commonConfig = {
                             // When the stream is captured from the microphone/webcam.
-                            onMediaCaptured: function (stream) {
+                            onMediaCaptured: function(stream) {
                                 // Make audio stream available at a higher level by making it a property of the common module.
                                 t.commonmodule.stream = stream;
-                                t.commonmodule.start_recording(t.commonmodule.recType, t.commonmodule.stream);
+                                t.commonmodule.startRecording(t.commonmodule.recType, t.commonmodule.stream);
                             },
 
                             // Revert button to "Record Again" when recording is stopped.
-                            onMediaStopped: function (btnLabel) {
+                            onMediaStopped: function(btnLabel) {
                                 t.commonmodule.startStopBtn.innerText = btnLabel;
                                 t.commonmodule.startStopBtn.attr('disabled', false);
                                 t.commonmodule.startStopBtn.removeClass('btn-danger');
@@ -472,24 +411,24 @@ define(['jquery'], function($) {
                             },
 
                             // Handle recording errors.
-                            onMediaCapturingFailed: function (error) {
-                                t.abstractmodule.handle_gum_errors(error, commonConfig);
+                            onMediaCapturingFailed: function(error) {
+                                t.abstractmodule.handleGumErrors(error, commonConfig);
                             }
                         };
 
                         // Capture audio stream from microphone.
-                        t.audiomodule.capture_audio(commonConfig);
+                        t.audiomodule.captureAudio(commonConfig);
                     } else { // If button is displaying "Stop Recording".
                         // First of all clears the countdownTicker.
                         window.clearInterval(t.commonmodule.countdownTicker);
 
                         // Disable "Record Again" button for 1s to allow background processing (closing streams).
-                        window.setTimeout(function () {
+                        window.setTimeout(function() {
                             t.commonmodule.startStopBtn.attr('disabled', false);
                         }, 1000);
 
                         // Stop recording.
-                        t.commonmodule.stop_recording(t.commonmodule.stream);
+                        t.commonmodule.stopRecording(t.commonmodule.stream);
 
                         // Change button to offer to record again.
                         t.commonmodule.startStopBtn.innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
@@ -500,17 +439,15 @@ define(['jquery'], function($) {
             },
 
             // Setup to get audio stream from microphone.
-            capture_audio: function (config) {
-                console.log(config);
-                var cm = t.commonmodule;
-                t.commonmodule.capture_user_media(
+            captureAudio: function(config) {
+                t.commonmodule.captureUserMedia(
                     // Media constraints.
                     {
                         audio: true
                     },
 
                     // Success callback.
-                    function (audioStream) {
+                    function(audioStream) {
                         // Set audio player source to microphone stret.abstractmodule.
                         t.commonmodule.playerDOM.srcObject = audioStream;
 
@@ -518,21 +455,17 @@ define(['jquery'], function($) {
                     },
 
                     // Error callback.
-                    function (error) {
+                    function(error) {
                         config.onMediaCapturingFailed(error);
                     }
                 );
             }
         },
 
-        /**
-         *
-         */
         videomodule: {
-            init: function (scope) {
-                var am = t.abstractmodule, cm = t.commonmodule, ccm = t.compatcheckmodule;
+            init: function(questionId) {
                 // Assignment of global variables.
-                t.commonmodule.questionDiv = $(document.getElementById(questionId)); // Allows access to the editor's "this" context.
+                t.commonmodule.questionDiv = $(document.getElementById(questionId));
                 t.commonmodule.audioBitRate = t.commonmodule.questionDiv.data('audioBitRate');
                 t.commonmodule.timelimit = t.commonmodule.questionDiv.data('timelimit');
                 t.commonmodule.alertWarning = t.commonmodule.questionDiv.find('div#alert-warning');
@@ -545,18 +478,18 @@ define(['jquery'], function($) {
                 t.commonmodule.maxUploadSize = t.commonmodule.questionDiv.data('maxUploadSize');
 
                 // Show alert and close plugin if WebRTC is not supported.
-                t.compatcheckmodule.check_has_gum();
+                t.compatcheckmodule.checkHasGum();
                 // Show alert and redirect user if connection is not secure.
-                t.compatcheckmodule.check_secure();
+                t.compatcheckmodule.checkIsHttps();
 
                 // Run when user clicks on "record" button.
-                t.commonmodule.startStopBtn.on('click', function () {
+                t.commonmodule.startStopBtn.on('click', function() {
                     t.commonmodule.startStopBtn.attr('disabled', true);
 
                     // If button is displaying "Start Recording" or "Record Again".
-                    if ((t.commonmodule.startStopBtn.get('textContent') === M.util.get_string('startrecording', 'qtype_recordrtc')) ||
-                        (t.commonmodule.startStopBtn.get('textContent') === M.util.get_string('recordagain', 'qtype_recordrtc')) ||
-                        (t.commonmodule.startStopBtn.get('textContent') === M.util.get_string('recordingfailed', 'qtype_recordrtc'))) {
+                    if ((t.commonmodule.startStopBtn.innerText === M.util.get_string('startrecording', 'qtype_recordrtc')) ||
+                        (t.commonmodule.startStopBtn.innerText === M.util.get_string('recordagain', 'qtype_recordrtc')) ||
+                        (t.commonmodule.startStopBtn.innerText === M.util.get_string('recordingfailed', 'qtype_recordrtc'))) {
                         // Make sure the upload button is not shown.
                         t.commonmodule.uploadBtn.parent().parent().addClass('hide');
 
@@ -572,16 +505,16 @@ define(['jquery'], function($) {
                         // Initialize common configurations.
                         var commonConfig = {
                             // When the stream is captured from the microphone/webct.abstractmodule.
-                            onMediaCaptured: function (stream) {
+                            onMediaCaptured: function(stream) {
                                 // Make video stream available at a higher level by making it a property of the common module.
                                 t.commonmodule.stream = stream;
                                 t.commonmodule.stream = stream;
 
-                                t.commonmodule.start_recording(t.commonmodule.recType, t.commonmodule.stream);
+                                t.commonmodule.startRecording(t.commonmodule.recType, t.commonmodule.stream);
                             },
 
                             // Revert button to "Record Again" when recording is stopped.
-                            onMediaStopped: function (btnLabel) {
+                            onMediaStopped: function(btnLabel) {
                                 t.commonmodule.startStopBtn.innerText = btnLabel;
                                 t.commonmodule.startStopBtn.attr('disabled', false);
                                 t.commonmodule.startStopBtn.removeClass('btn-danger');
@@ -589,8 +522,8 @@ define(['jquery'], function($) {
                             },
 
                             // Handle recording errors.
-                            onMediaCapturingFailed: function (error) {
-                                t.abstractmodule.handle_gum_errors(error, commonConfig);
+                            onMediaCapturingFailed: function(error) {
+                                t.abstractmodule.handleGumErrors(error, commonConfig);
                             }
                         };
 
@@ -599,18 +532,18 @@ define(['jquery'], function($) {
                         t.commonmodule.player.attr('controls', false);
 
                         // Capture audio+video stream from webcam/microphone.
-                        t.videomodule.capture_audio_video(commonConfig);
+                        t.videomodule.captureAudioVideo(commonConfig);
                     } else { // If button is displaying "Stop Recording".
                         // First of all clears the countdownTicker.
                         window.clearInterval(t.commonmodule.countdownTicker);
 
                         // Disable "Record Again" button for 1s to allow background processing (closing streams).
-                        window.setTimeout(function () {
+                        window.setTimeout(function() {
                             t.commonmodule.startStopBtn.attr('disabled', false);
                         }, 1000);
 
                         // Stop recording.
-                        t.commonmodule.stop_recording(t.commonmodule.stream);
+                        t.commonmodule.stopRecording(t.commonmodule.stream);
 
                         // Change button to offer to record again.
                         t.commonmodule.startStopBtn.innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
@@ -621,9 +554,8 @@ define(['jquery'], function($) {
             },
 
             // Setup to get audio+video stream from microphone/webcam.
-            capture_audio_video: function (config) {
-                var cm = t.commonmodule;
-                t.commonmodule.capture_user_media(
+            captureAudioVideo: function(config) {
+                t.commonmodule.captureUserMedia(
                     // Media constraints.
                     {
                         audio: true,
@@ -634,7 +566,7 @@ define(['jquery'], function($) {
                     },
 
                     // Success callback.
-                    function (audioVideoStream) {
+                    function(audioVideoStream) {
                         // Set video player source to microphone+webcam stream, and play it back as it's recording.
                         t.commonmodule.playerDOM.srcObject = audioVideoStream;
                         t.commonmodule.playerDOM.play();
@@ -643,17 +575,36 @@ define(['jquery'], function($) {
                     },
 
                     // Error callback.
-                    function (error) {
+                    function(error) {
                         config.onMediaCapturingFailed(error);
                     }
                 );
             }
         },
 
-        init: function (questionId) {
-            M.util.js_pending('rtc');
+        compatcheckmodule: {
+            // Show alert and close plugin if browser does not support WebRTC at all.
+            checkHasGum: function() {
+                if (!(navigator.mediaDevices && window.MediaRecorder)) {
+                    // TODO show unsupported message.
+                }
+            },
+
+            // Notify and redirect user if plugin is used from insecure location.
+            checkIsHttps: function() {
+                var isSecureOrigin = (window.location.protocol === 'https:') ||
+                    (window.location.host.indexOf('localhost') !== -1);
+
+                if (!isSecureOrigin) {
+                    t.commonmodule.alertDanger.parent().parent().removeClass('hide');
+                }
+            }
+        },
+
+        init: function(questionId) {
+            M.util.js_pending('init-' + questionId);
             t.audiomodule.init(questionId);
-            M.util.js_complete('rtc');
+            M.util.js_complete('init-' + questionId);
         }
     };
 

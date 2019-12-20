@@ -50,7 +50,6 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
         $this->render();
         if (!preg_match('/name="' . preg_quote($this->get_qa()->get_qt_field_name('recording')) .
                 '" value="(\d+)"/', $this->currentoutput, $matches)) {
-            print_object($this->currentoutput);
             throw new coding_exception('Draft item id not found.');
         }
         $draftid = $matches[1];
