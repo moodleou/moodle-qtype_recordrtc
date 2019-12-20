@@ -50,34 +50,29 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         // TODO get URL of existing file, if there is one.
         $recordingurl = '';
 
+        // TODO use langauge strings for the warnings.
+
         // Recording UI.
         $result .= '
-        <div class="container-fluid" data-audio-bitrate="' .
-                    get_config('qtype_recordrtc', 'audiobitrate') .
-                    '" data-timelimit="' . get_config('qtype_recordrtc', 'timelimit') .
-                    '" data-max-upload-size="' . $uploadfilesizelimit . '">
-            <div class="row hide">
-                <div class="col-xs-12">
-                    <div id="alert-danger" class="alert alert-danger">
-                        <strong>Insecure connection!</strong>
-                        Your browser might not allow this plugin to work unless it is used either over HTTPS or from localhost</div>
-                </div>
+            <div class="hide alert alert-danger https-warning">
+                <h5>' . get_string('insecurewarningtitle', 'qtype_recordrtc') . '</h5>
+                <p>' . get_string('insecurewarning', 'qtype_recordrtc') . '</div>
             </div>
-            <div class="row hide">
-                <div class="col-xs-1"></div>
-                <div class="col-xs-10"><audio id="player">
+            <div class="hide alert alert-danger no-webrtc-warning">
+                <h5>' . get_string('nowebrtctitle', 'qtype_recordrtc') . '</h5>
+                <p>' . get_string('nowebrtc', 'qtype_recordrtc') . '</div>
+            </div>
+            <div class="hide media-player">
+                <audio>
                     <source src="' . $recordingurl . '">
-                </audio></div>
-                <div class="col-xs-1"></div>
+                </audio>
             </div>
-            <div class="row">
-                <div class="col-xs-1"></div>
-                <div class="col-xs-10">
-                    <button id="start-stop" class="btn btn-lg btn-outline-danger btn-block">Start recording</button>
-                </div>
-                <div class="col-xs-1"></div>
-            </div>
-        </div>';
+            <div class="record-button" data-audio-bitrate="' . get_config('qtype_recordrtc', 'audiobitrate') .
+                    '" data-timelimit="' . get_config('qtype_recordrtc', 'time-limit') .
+                    '" data-max-upload-size="' . $uploadfilesizelimit . '">
+                <button type="button" class="btn btn-outline-danger">' .
+                        get_string('startrecording', 'qtype_recordrtc') . '</button>
+            </div>';
 
         $PAGE->requires->strings_for_js($this->strings_for_js(), 'qtype_recordrtc');
         $PAGE->requires->js_call_amd('qtype_recordrtc/avrecording', 'init', [$qa->get_outer_question_div_unique_id()]);
@@ -97,8 +92,6 @@ class qtype_recordrtc_renderer extends qtype_renderer {
     public function strings_for_js() {
         return ['audiortc',
             'videortc',
-            'nowebrtc_title',
-            'nowebrtc',
             'gumabort_title',
             'gumabort',
             'gumnotallowed_title',
@@ -115,8 +108,6 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             'gumsecurity',
             'gumtype_title',
             'gumtype',
-            'insecurealert_title',
-            'insecurealert',
             'startrecording',
             'recordagain',
             'stoprecording',
