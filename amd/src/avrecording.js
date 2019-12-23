@@ -33,11 +33,11 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      * @return {string} 'ok' if it looks OK, else 'nowebrtc' or 'nothttps' if there is a problem.
      */
     function checkCanWork() {
-        if (!(navigator.mediaDevices && window.MediaRecorder)) {
+        if (!(navigator.mediaDevices && MediaRecorder)) {
             return 'nowebrtc';
         }
 
-        if (!(window.location.protocol === 'https:' || window.location.host.indexOf('localhost') !== -1)) {
+        if (!(location.protocol === 'https:' || location.host.indexOf('localhost') !== -1)) {
             return 'nothttps';
         }
 
@@ -103,6 +103,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * @param {Event} e
          */
         function handleButtonClick(e) {
+            Log.debug('Start/stop button clicked.');
             e.preventDefault();
             switch (button.dataset.state) {
                 case 'new':
@@ -183,13 +184,13 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             if (bytesRecordedSoFar >= settings.maxUploadSize) {
 
                 // Extra check to avoid alerting twice.
-                if (!window.localStorage.getItem('alerted')) {
-                    window.localStorage.setItem('alerted', 'true');
+                if (!localStorage.getItem('alerted')) {
+                    localStorage.setItem('alerted', 'true');
                     stopRecording();
                     owner.showAlert('nearingmaxsize');
 
                 } else {
-                    window.localStorage.removeItem('alerted');
+                    localStorage.removeItem('alerted');
                 }
             }
 
@@ -203,7 +204,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         function stopRecording() {
             // Disable the button while things change. Gets re-enabled once recording is underway.
             button.disabled = true;
-            window.setTimeout(function() {
+            setTimeout(function() {
                 button.disabled = false;
             }, 1000);
 
@@ -278,17 +279,19 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         function startCountdownTimer() {
             secondsRemaining = settings.timeLimit + 1;
 
-            button.innerHtml = M.util.get_string('stoprecording', 'qtype_recordrtc') + ' (<span></span>)';
+            button.innerHTML = M.util.get_string('stoprecording', 'qtype_recordrtc') + ' (<span></span>)';
             updateTimerDisplay();
-            countdownTicker = window.setInterval(updateTimerDisplay, 1000);
+            countdownTicker = setInterval(updateTimerDisplay, 1000);
         }
 
         /**
          * Stop the countdown timer.
          */
         function stopCountdownTimer() {
-            window.clearInterval(countdownTicker);
-            countdownTicker = 0;
+            if (countdownTicker !== 0) {
+                clearInterval(countdownTicker);
+                countdownTicker = 0;
+            }
         }
 
         /**

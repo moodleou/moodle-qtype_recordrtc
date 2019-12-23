@@ -47,8 +47,6 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         // TODO get URL of existing file, if there is one.
         $recordingurl = '';
 
-        // TODO use langauge strings for the warnings.
-
         // Recording UI.
         $result .= '
             <div class="hide alert alert-danger https-warning">
@@ -74,7 +72,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         $setting = [
             'audioBitRate' => get_config('qtype_recordrtc', 'audiobitrate'),
             'videoBitRate' => 0, // TODO.
-            'timeLimit' => get_config('qtype_recordrtc', 'time-limit'),
+            'timeLimit' => get_config('qtype_recordrtc', 'timelimit'),
             'maxUploadSize' => $uploadfilesizelimit,
         ];
 
