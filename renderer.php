@@ -44,9 +44,6 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         // Question text.
         $result = html_writer::tag('div', $question->format_questiontext($qa), ['class' => 'qtext']);
 
-        // TODO get right max-upload-size.
-        $uploadfilesizelimit = 100000000;
-
         // TODO get URL of existing file, if there is one.
         $recordingurl = '';
 
@@ -67,15 +64,23 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                     <source src="' . $recordingurl . '">
                 </audio>
             </div>
-            <div class="record-button" data-audio-bitrate="' . get_config('qtype_recordrtc', 'audiobitrate') .
-                    '" data-timelimit="' . get_config('qtype_recordrtc', 'time-limit') .
-                    '" data-max-upload-size="' . $uploadfilesizelimit . '">
-                <button type="button" class="btn btn-outline-danger">' .
+            <div class="record-button">
+                <button type="button" class="btn btn-outline-danger" data-state="new">' .
                         get_string('startrecording', 'qtype_recordrtc') . '</button>
             </div>';
 
+        // TODO get right max-upload-size.
+        $uploadfilesizelimit = 100000000;
+        $setting = [
+            'audioBitRate' => get_config('qtype_recordrtc', 'audiobitrate'),
+            'videoBitRate' => 0, // TODO.
+            'timeLimit' => get_config('qtype_recordrtc', 'time-limit'),
+            'maxUploadSize' => $uploadfilesizelimit,
+        ];
+
         $PAGE->requires->strings_for_js($this->strings_for_js(), 'qtype_recordrtc');
-        $PAGE->requires->js_call_amd('qtype_recordrtc/avrecording', 'init', [$qa->get_outer_question_div_unique_id()]);
+        $PAGE->requires->js_call_amd('qtype_recordrtc/avrecording', 'init',
+                [$qa->get_outer_question_div_unique_id(), $setting]);
 
         // Add a hidden form field with the draft item id.
         $result .= html_writer::empty_tag('input', ['type' => 'hidden',
