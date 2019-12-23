@@ -135,7 +135,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             // Empty the array containing the previously recorded chunks.
             chunks = [];
             bytesRecordedSoFar = 0;
-            Log.debug('Audio question type: Starting recording with media constraints');
+            Log.debug('Audio question: Starting recording with media constraints');
             Log.debug(type.mediaConstraints);
             navigator.mediaDevices.getUserMedia(type.mediaConstraints)
                 .then(handleCaptureStarting)
@@ -152,13 +152,13 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
 
             // Initialize MediaRecorder events and start recording.
             var options = getRecordingOptions();
-            Log.debug('Audio question type: creating recorder with opptions');
+            Log.debug('Audio question: creating recorder with opptions');
             Log.debug(options);
             mediaRecorder = new MediaRecorder(stream, options);
 
             mediaRecorder.ondataavailable = handleDataAvailable;
             mediaRecorder.onstop = handleRecordingHasStopped;
-            Log.debug('Audio question type: starting recording.');
+            Log.debug('Audio question: starting recording.');
             mediaRecorder.start(1000); // Capture in one-second chunks. Firefox requires that.
 
             // Setup the UI for during recording.
@@ -177,7 +177,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * @param {BlobEvent} event
          */
         function handleDataAvailable(event) {
-            Log.debug('Audio question type: chunk of ' + event.data.size + ' bytes received.');
+            Log.debug('Audio question: chunk of ' + event.data.size + ' bytes received.');
 
             // Check there is space to store the next chunk, and if not stop.
             bytesRecordedSoFar += event.data.size;
@@ -217,7 +217,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             button.classList.add('btn-outline-danger');
 
             // Ask the recording to stop.
-            Log.debug('Audio question type: stopping recording.');
+            Log.debug('Audio question: stopping recording.');
             mediaRecorder.stop();
 
             // Also stop each individual MediaTrack.
@@ -232,8 +232,9 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          */
         function handleRecordingHasStopped() {
             // Set source of audio player.
-            Log.debug('Audio question type: recording stopped.');
+            Log.debug('Audio question: recording stopped.');
             var blob = new Blob(chunks, {type: mediaRecorder.mimeType});
+            mediaElement.srcObject = null;
             mediaElement.src = URL.createObjectURL(blob);
 
             // Show audio player with controls enabled, and unmute.
@@ -258,7 +259,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * @param {DOMException} error
          */
         function handleCaptureFailed(error) {
-            Log.debug('Audio question type: error received');
+            Log.debug('Audio question: error received');
             Log.debug(error);
 
             button.innerText = M.util.get_string('recordingfailed', 'qtype_recordrtc');

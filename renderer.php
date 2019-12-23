@@ -62,6 +62,8 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                     <source src="' . $recordingurl . '">
                 </audio>
             </div>
+            <div class="hide saving-message">
+            </div>
             <div class="record-button">
                 <button type="button" class="btn btn-outline-danger" data-state="new">' .
                         get_string('startrecording', 'qtype_recordrtc') . '</button>
