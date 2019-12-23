@@ -25,7 +25,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
+define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
 
     /**
      * Verify that the question type can work. If not, show a warning.
@@ -54,8 +54,8 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
      *  - saving:    buttons shows a progress indicator.
      *  - recorded:  button shows 'Record again'.
      *
-     * @param {AudioSettings|VideoSettings} type
-     * @param {HTMLAudioElement|HTMLVideoElement} mediaElement
+     * @param {(AudioSettings|VideoSettings)} type
+     * @param {HTMLMediaElement } mediaElement
      * @param {HTMLButtonElement} button
      * @param {Object} owner
      * @param {Object} settings
@@ -95,7 +95,7 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
          */
         var countdownTicker = 0;
 
-        $(button).on('click', handleButtonClick);
+        button.addEventListener('click', handleButtonClick);
 
         /**
          * Handles clicks on the start/stop button.
@@ -119,21 +119,23 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
          * Start recording (because the button was clicked).
          */
         function startRecording() {
-            $(button).attr('disabled', true); // Gets re-enabled once recording is underway.
+            button.disabled = true;
 
             if (type.hidePlayerDuringRecording) {
-                $(mediaElement).closest('div').addClass('hide');
+                mediaElement.parentElement.classList.add('hide');
             } else {
-                $(mediaElement).closest('div').removeClass('hide');
+                mediaElement.parentElement.classList.remove('hide');
             }
 
             // Change look of recording button.
-            $(button).removeClass('btn-outline-danger');
-            $(button).addClass('btn-danger');
+            button.classList.remove('btn-outline-danger');
+            button.classList.add('btn-danger');
 
             // Empty the array containing the previously recorded chunks.
             chunks = [];
             bytesRecordedSoFar = 0;
+            Log.debug('Audio question type: Starting recording with media constraints');
+            Log.debug(type.mediaConstraints);
             navigator.mediaDevices.getUserMedia(type.mediaConstraints)
                 .then(handleCaptureStarting)
                 .catch(handleCaptureFailed);
@@ -148,20 +150,24 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
             mediaStream = stream;
 
             // Initialize MediaRecorder events and start recording.
-            mediaRecorder = new MediaRecorder(stream, getRecordingOptions());
+            var options = getRecordingOptions();
+            Log.debug('Audio question type: creating recorder with opptions');
+            Log.debug(options);
+            mediaRecorder = new MediaRecorder(stream, options);
 
             mediaRecorder.ondataavailable = handleDataAvailable;
             mediaRecorder.onstop = handleRecordingHasStopped;
-            mediaRecorder.start(1000); // Capture in 1s chunks. Must be set to work with Firefox.
+            Log.debug('Audio question type: starting recording.');
+            mediaRecorder.start(1000); // Capture in one-second chunks. Firefox requires that.
 
             // Setup the UI for during recording.
             mediaElement.srcObject = stream;
-            mediaElement.attr('muted', true);
+            mediaElement.setAttribute('muted', '');
             button.dataset.state = 'recording';
             startCountdownTimer();
 
             // Make button clickable again, to allow stopping recording.
-            button.attr('disabled', false);
+            button.disabled = false;
         }
 
         /**
@@ -170,6 +176,7 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
          * @param {BlobEvent} event
          */
         function handleDataAvailable(event) {
+            Log.debug('Audio question type: chunk of ' + event.data.size + ' bytes received.');
 
             // Check there is space to store the next chunk, and if not stop.
             bytesRecordedSoFar += event.data.size;
@@ -194,21 +201,22 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
          * Start recording (because the button was clicked or because we have reached a limit).
          */
         function stopRecording() {
-            // Disable the button while things change.
-            $(button).attr('disabled', true);
+            // Disable the button while things change. Gets re-enabled once recording is underway.
+            button.disabled = true;
             window.setTimeout(function() {
-                $(button).attr('disabled', false);
+                button.disabled = false;
             }, 1000);
 
             // Stop the count-down timer.
             stopCountdownTimer();
 
             // Update the button.
-            $(button).innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
-            $(button).removeClass('btn-danger');
-            $(button).addClass('btn-outline-danger');
+            button.innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
+            button.classList.remove('btn-danger');
+            button.classList.add('btn-outline-danger');
 
             // Ask the recording to stop.
+            Log.debug('Audio question type: stopping recording.');
             mediaRecorder.stop();
 
             // Also stop each individual MediaTrack.
@@ -223,22 +231,23 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
          */
         function handleRecordingHasStopped() {
             // Set source of audio player.
+            Log.debug('Audio question type: recording stopped.');
             var blob = new Blob(chunks, {type: mediaRecorder.mimeType});
-            $(mediaElement).attr('src', URL.createObjectURL(blob));
+            mediaElement.src = URL.createObjectURL(blob);
 
             // Show audio player with controls enabled, and unmute.
-            $(mediaElement).attr('muted', false);
-            $(mediaElement).attr('controls', true);
-            $(mediaElement).closest('div').removeClass('hide');
+            mediaElement.muted = false;
+            mediaElement.controls = true;
+            mediaElement.parentElement.classList.remove('hide');
 
-            $(button).innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
-            $(button).attr('disabled', false);
-            $(button).removeClass('btn-danger');
-            $(button).addClass('btn-outline-danger');
+            button.innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
+            button.disabled = false;
+            button.classList.remove('btn-danger');
+            button.classList.add('btn-outline-danger');
             button.dataset.state = 'recorded';
 
             if (chunks.length > 0) {
-                owner.notifyRecordingComplete();
+                owner.notifyRecordingComplete(this);
             }
         }
 
@@ -248,10 +257,13 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
          * @param {DOMException} error
          */
         function handleCaptureFailed(error) {
-            $(button).innerText = M.util.get_string('recordingfailed', 'qtype_recordrtc');
-            $(button).attr('disabled', false);
-            $(button).removeClass('btn-danger');
-            $(button).addClass('btn-outline-danger');
+            Log.debug('Audio question type: error received');
+            Log.debug(error);
+
+            button.innerText = M.util.get_string('recordingfailed', 'qtype_recordrtc');
+            button.disabled = false;
+            button.classList.remove('btn-danger');
+            button.classList.add('btn-outline-danger');
             button.dataset.state = 'new';
 
             // Changes 'CertainError' -> 'gumcertain' to match language string names.
@@ -266,7 +278,7 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
         function startCountdownTimer() {
             secondsRemaining = settings.timeLimit + 1;
 
-            $(button).innerHtml = M.util.get_string('stoprecording', 'qtype_recordrtc') + ' (<span></span>)';
+            button.innerHtml = M.util.get_string('stoprecording', 'qtype_recordrtc') + ' (<span></span>)';
             updateTimerDisplay();
             countdownTicker = window.setInterval(updateTimerDisplay, 1000);
         }
@@ -287,7 +299,7 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
 
             var secs = secondsRemaining % 60;
             var mins = Math.round((secondsRemaining - secs) / 60);
-            $(button).find('span').innerText = pad(mins) + ':' + pad(secs);
+            button.querySelector('span').innerText = pad(mins) + ':' + pad(secs);
 
             if (secondsRemaining === 0) {
                 stopRecording();
@@ -409,9 +421,9 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
             var options = {};
 
             // Get the relevant bit rates from settings.
-            options.audioBitsPerSecond = parseInt(settings.audioBitRate);
+            options.audioBitsPerSecond = parseInt(settings.audioBitRate, 10);
             if (type.name === 'video') {
-                options.videoBitsPerSecond = parseInt(settings.videoBitRate);
+                options.videoBitsPerSecond = parseInt(settings.videoBitRate, 10);
             }
 
             // Go through our list of mimeTypes, and take the first one that will work.
@@ -478,10 +490,10 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
         // Check if the RTC API can work here.
         var result = checkCanWork();
         if (result === 'nowebrtc') {
-            $(questionDiv).find('.no-webrtc-warning').removeClass('hide');
+            questionDiv.querySelector('.no-webrtc-warning').classList.remove('hide');
             return;
         } else if (result === 'nothttps') {
-            $(questionDiv).find('.https-warning').removeClass('hide');
+            questionDiv.querySelector('.https-warning').classList.remove('hide');
             return;
         }
 
@@ -494,8 +506,8 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
         }
 
         // Get the key UI elements.
-        var button = $(questionDiv).find('.record-button button')[0];
-        var mediaElement = $(questionDiv).find('.media-player ' + type)[0];
+        var button = questionDiv.querySelector('.record-button button');
+        var mediaElement = questionDiv.querySelector('.media-player ' + type);
 
         // Make the callback functions available.
         this.showAlert = showAlert;
@@ -510,6 +522,7 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
          * Show a modal alert.
          *
          * @param {string} subject Subject is the content of the alert (which error the alert is for).
+         * @return {Promise}
          */
         function showAlert(subject) {
             return ModalFactory.create({
@@ -528,7 +541,8 @@ define(['jquery', 'core/modal_factory'], function($, ModalFactory) {
          * @param {Recorder} recorder the recorder.
          */
         function notifyRecordingComplete(recorder) {
-            recorder.uploadMediaToServer();
+            Log.debug(recorder);
+//            recorder.uploadMediaToServer();
         }
 
         // function uploadStatus() {
