@@ -119,7 +119,7 @@ class qtype_recordrtc_test_helper extends question_test_helper {
             'filearea'  => 'draft',
             'itemid'    => $draftid,
             'filepath'  => '/',
-            'filename'  => 'recording.ogg',
+            'filename'  => qtype_recordrtc::AUDIO_FILENAME,
         ];
         $fs->create_file_from_pathname($fileinfo, __DIR__ . '/fixtures/' . $fixturefile);
     }

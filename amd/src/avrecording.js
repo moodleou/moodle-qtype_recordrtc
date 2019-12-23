@@ -57,12 +57,17 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      * @param {(AudioSettings|VideoSettings)} type
      * @param {HTMLMediaElement } mediaElement
      * @param {HTMLButtonElement} button
+     * @param {HTMLElement} uploadProgressElement
      * @param {Object} owner
      * @param {Object} settings
      * @constructor
      */
     function Recorder(type, mediaElement,
-                      button, owner, settings) {
+                      button, uploadProgressElement, owner, settings) {
+        /**
+         * @type {Recorder} reference to this recorder, for use in event handlers.
+         */
+        var recorder = this;
 
         /**
          * @type {MediaStream} during recording, the stream of incoming media.
@@ -96,6 +101,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         var countdownTicker = 0;
 
         button.addEventListener('click', handleButtonClick);
+        this.uploadMediaToServer = uploadMediaToServer; // Make this method available.
 
         /**
          * Handles clicks on the start/stop button.
@@ -127,6 +133,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             } else {
                 mediaElement.parentElement.classList.remove('hide');
             }
+            uploadProgressElement.classList.add('hide');
 
             // Change look of recording button.
             button.classList.remove('btn-outline-danger');
@@ -181,7 +188,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
 
             // Check there is space to store the next chunk, and if not stop.
             bytesRecordedSoFar += event.data.size;
-            if (bytesRecordedSoFar >= settings.maxUploadSize) {
+            if (settings.maxUploadSize >= 0 && bytesRecordedSoFar >= settings.maxUploadSize) {
 
                 // Extra check to avoid alerting twice.
                 if (!localStorage.getItem('alerted')) {
@@ -249,7 +256,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             button.dataset.state = 'recorded';
 
             if (chunks.length > 0) {
-                owner.notifyRecordingComplete(this);
+                owner.notifyRecordingComplete(recorder);
             }
         }
 
@@ -327,94 +334,102 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             }
         }
 
-        // /**
-        //  *
-        //  * @param callback
-        //  */
-        // function uploadMediaToServer(callback) {
-        //     var xhr = new window.XMLHttpRequest();
-        //
-        //     // Get src media of audio/video tag.
-        //     var player = questionDiv.find('.media-player ' + type);
-        //     xhr.open('GET', player.attr('src'), true);
-        //     xhr.responseType = 'blob';
-        //
-        //     xhr.onload = function() {
-        //         if (xhr.status === 200) { // If src media was successfully retrieved.
-        //             // blob is now the media that the audio/video tag's src pointed to.
-        //             var blob = this.response;
-        //
-        //             // Generate filename with random ID and file extension.
-        //             var fileName = (Math.random() * 1000).toString().replace('.', '');
-        //             fileName += (type === 'audio') ? '-audio.ogg'
-        //                 : '-video.webm';
-        //
-        //             // Create FormData to send to PHP filepicker-upload script.
-        //             var formData = new window.FormData(),
-        //                 filepickerOptions = t.commonmodule.saveFileUrl,
-        //                 repositoryKeys = window.Object.keys(filepickerOptions.repositories);
-        //
-        //             formData.append('repo_upload_file', blob, fileName);
-        //             formData.append('itemid', filepickerOptions.itemid);
-        //
-        //             for (var i = 0; i < repositoryKeys.length; i++) {
-        //                 if (filepickerOptions.repositories[repositoryKeys[i]].type === 'upload') {
-        //                     formData.append('repo_id', filepickerOptions.repositories[repositoryKeys[i]].id);
-        //                     break;
-        //                 }
-        //             }
-        //
-        //             formData.append('env', filepickerOptions.env);
-        //             formData.append('sesskey', M.cfg.sesskey);
-        //             formData.append('client_id', filepickerOptions.client_id);
-        //             formData.append('savepath', '/');
-        //             formData.append('ctx_id', filepickerOptions.context.id);
-        //
-        //             // Pass FormData to PHP script using XHR.
-        //             var uploadEndpoint = M.cfg.wwwroot + '/repository/repository_ajax.php?action=upload';
-        //             t.commonmodule.makeXmlHttpRequest(uploadEndpoint, formData,
-        //                 function(progress, responseText) {
-        //                     if (progress === 'upload-ended') {
-        //                         callback('ended', window.JSON.parse(responseText).url);
-        //                     } else {
-        //                         callback(progress);
-        //                     }
-        //                 }
-        //             );
-        //         }
-        //     };
-        //
-        //     xhr.send();
-        // }
-        //
-        // function makeXmlHttpRequest(url, data, callback) {
-        //     var xhr = new window.XMLHttpRequest();
-        //
-        //     xhr.onreadystatechange = function() {
-        //         if ((xhr.readyState === 4) && (xhr.status === 200)) { // When request is finished and successful.
-        //             callback('upload-ended', xhr.responseText);
-        //         } else if (xhr.status === 404) { // When request returns 404 Not Found.
-        //             callback('upload-failed-404');
-        //         }
-        //     };
-        //
-        //     xhr.upload.onprogress = function(event) {
-        //         callback(Math.round(event.loaded / event.total * 100) + "% " +
-        //             M.util.get_string('uploadprogress', 'qtype_recordrtc'));
-        //     };
-        //
-        //     xhr.upload.onerror = function(error) {
-        //         callback('upload-failed', error);
-        //     };
-        //
-        //     xhr.upload.onabort = function(error) {
-        //         callback('upload-aborted', error);
-        //     };
-        //
-        //     // POST FormData to PHP script that handles uploading/saving.
-        //     xhr.open('POST', url);
-        //     xhr.send(data);
-        // }
+        /**
+         * Upload the recorded media back to Moodle.
+         */
+        function uploadMediaToServer() {
+            setUploadMessage('uploadpreparing');
+            uploadProgressElement.classList.remove('hide');
+
+            var fetchRequest = new XMLHttpRequest();
+
+            // Get media of audio/video tag.
+            fetchRequest.open('GET', mediaElement.src);
+            fetchRequest.responseType = 'blob';
+            fetchRequest.addEventListener('load', handleRecordingFetched);
+            fetchRequest.send();
+        }
+
+        /**
+         * Callback called once we have the data from the media element.
+         *
+         * @param {ProgressEvent} e
+         */
+        function handleRecordingFetched(e) {
+            var fetchRequest = e.target;
+            if (fetchRequest.status !== 200) {
+                // No data.
+                return;
+            }
+
+            // Blob is now the media that the audio/video tag's src pointed to.
+            var blob = fetchRequest.response;
+
+            // Create FormData to send to PHP filepicker-upload script.
+            var formData = new FormData();
+            formData.append('repo_upload_file', blob, type.recordingFilename);
+            formData.append('sesskey', M.cfg.sesskey);
+            formData.append('repo_id', settings.uploadRepositoryId);
+            formData.append('itemid', settings.draftItemId);
+            formData.append('savepath', '/');
+            formData.append('ctx_id', settings.contextId);
+            formData.append('overwrite', 1);
+
+            var uploadRequest = new XMLHttpRequest();
+            uploadRequest.addEventListener('readystatechange', handleUploadReadyStateChanged);
+            uploadRequest.upload.addEventListener('progress', handleUploadProgress);
+            uploadRequest.addEventListener('error', handleUploadError);
+            uploadRequest.addEventListener('abort', handleUploadAbort);
+            uploadRequest.open('POST', M.cfg.wwwroot + '/repository/repository_ajax.php?action=upload');
+            uploadRequest.send(formData);
+        }
+
+        /**
+         * Callback for when the upload completes.
+         * @param {ProgressEvent} e
+         */
+        function handleUploadReadyStateChanged(e) {
+            var uploadRequest = e.target;
+            if (uploadRequest.readyState === 4 && uploadRequest.status === 200) {
+                // When request finished and successful.
+                setUploadMessage('uploadcomplete');
+            } else if (uploadRequest.status === 404) {
+                setUploadMessage('uploadfailed404');
+            }
+        }
+
+        /**
+         * Callback for updating the upload progress.
+         * @param {ProgressEvent} e
+         */
+        function handleUploadProgress(e) {
+            setUploadMessage('uploadprogress', Math.round(e.loaded / e.total * 100) + '%');
+        }
+
+        /**
+         * Callback for when the upload fails with an error.
+         */
+        function handleUploadError() {
+            setUploadMessage('uploadfailed');
+        }
+
+        /**
+         * Callback for when the upload fails with an error.
+         */
+        function handleUploadAbort() {
+            setUploadMessage('uploadaborted');
+        }
+
+        /**
+         * Display a progress message in the upload progress area.
+         *
+         * @param {string} langString
+         * @param {Object|String} a optional variable to populate placeholder with
+         */
+        function setUploadMessage(langString, a) {
+            uploadProgressElement.querySelector('small').innerText =
+                    M.util.get_string(langString, 'qtype_recordrtc', a);
+        }
 
         /**
          * Select best options for the recording codec.
@@ -448,6 +463,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      */
     var AudioSettings = {
         name: 'audio',
+        recordingFilename: 'recording.ogg',
         hidePlayerDuringRecording: true,
         mediaConstraints: {
             audio: true
@@ -464,6 +480,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      */
     var VideoSettings = {
         name: 'video',
+        recordingFilename: 'recording.webm',
         hidePlayerDuringRecording: false,
         mediaConstraints: {
             audio: true,
@@ -512,13 +529,14 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         // Get the key UI elements.
         var button = questionDiv.querySelector('.record-button button');
         var mediaElement = questionDiv.querySelector('.media-player ' + type);
+        var uploadProgressElement = questionDiv.querySelector('.saving-message');
 
         // Make the callback functions available.
         this.showAlert = showAlert;
         this.notifyRecordingComplete = notifyRecordingComplete;
 
         // Create the recorder.
-        new Recorder(typeInfo, mediaElement, button, this, settings);
+        new Recorder(typeInfo, mediaElement, button, uploadProgressElement, this, settings);
 
         M.util.js_complete('init-' + questionId);
 
@@ -545,26 +563,8 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * @param {Recorder} recorder the recorder.
          */
         function notifyRecordingComplete(recorder) {
-            Log.debug(recorder);
-//            recorder.uploadMediaToServer();
+            recorder.uploadMediaToServer();
         }
-
-        // function uploadStatus() {
-        //     // Upload recording to server.
-        //     t.commonmodule.uploadToServer(function(progress, fileURLOrError) {
-        //         if (progress === 'ended') { // Insert annotation in text.
-        //         } else if (progress === 'upload-failed') { // Show error message in upload button.
-        //             M.util.get_string('uploadfailed', 'qtype_recordrtc') + ' ' + fileURLOrError;
-        //         } else if (progress === 'upload-failed-404') { // 404 error = File too large in Moodle.
-        //             M.util.get_string('uploadfailed404', 'qtype_recordrtc');
-        //         } else if (progress === 'upload-aborted') {
-        //             M.util.get_string('uploadaborted', 'qtype_recordrtc') + ' ' + fileURLOrError;
-        //         } else {
-        //             progress;
-        //         }
-        //     });
-        //
-        // }
     }
 
     return {

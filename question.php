@@ -40,6 +40,29 @@ class qtype_recordrtc_question extends question_with_responses {
         return ['recording' => question_attempt::PARAM_FILES];
     }
 
+    /**
+     * Get the upload file size limit that applies here.
+     *
+     * @param context $context the context we are in.
+     * @return int max size in bytes.
+     */
+    public function get_upload_size_limit(context $context) {
+        global $CFG;
+
+        // This logic is roughly copied from lib/form/filemanager.php.
+
+        // Get the course file size limit.
+        $coursebytes = $maxbytes = 0;
+        list($context, $course, $cm) = get_context_info_array($context->id);
+        if (is_object($course)) {
+            $coursebytes = $course->maxbytes;
+        }
+
+        // TODO should probably also get the activity file size limit, but filemanager doesn't.
+
+        return get_user_max_upload_file_size($context, $CFG->maxbytes, $coursebytes);
+    }
+
     public function summarise_response(array $response) {
         if (!isset($response['recording'])) {
             return null;

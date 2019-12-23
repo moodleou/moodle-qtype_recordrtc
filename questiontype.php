@@ -36,6 +36,8 @@ require_once($CFG->dirroot . '/question/type/recordrtc/question.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_recordrtc extends question_type {
+    /** @var string name of the audio recording within the file area. */
+    const AUDIO_FILENAME = 'recording.ogg';
 
     public function is_manual_graded() {
         return true;
