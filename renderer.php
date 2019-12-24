@@ -91,11 +91,11 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             $result .= '
                 <div class="hide alert alert-danger https-warning">
                     <h5>' . get_string('insecurewarningtitle', 'qtype_recordrtc') . '</h5>
-                    <p>' . get_string('insecurewarning', 'qtype_recordrtc') . '</div>
+                    <p>' . get_string('insecurewarning', 'qtype_recordrtc') . '</p>
                 </div>
                 <div class="hide alert alert-danger no-webrtc-warning">
                     <h5>' . get_string('nowebrtctitle', 'qtype_recordrtc') . '</h5>
-                    <p>' . get_string('nowebrtc', 'qtype_recordrtc') . '</div>
+                    <p>' . get_string('nowebrtc', 'qtype_recordrtc') . '</p>
                 </div>
                 <div class="' . $mediaplayerinitiallyhidden . 'media-player">
                     <audio controls>
