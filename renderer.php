@@ -37,76 +37,98 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         global $PAGE;
         $question = $qa->get_question();
         $existingresponsefiles = $qa->get_last_qt_files('recording', $options->context->id);
-
-        // Question text.
-        $result = html_writer::tag('div', $question->format_questiontext($qa), ['class' => 'qtext']);
-
-        $repositories = repository::get_instances(
-                ['type' => 'upload', 'currentcontext' => $options->context->id]);
-        if (empty($repositories)) {
-            throw new moodle_exception('errornouploadrepo', 'moodle');
-        }
-        $uploadrepository = reset($repositories); // Get the first (and only) upload repo.
-
-        // Prepare a draft file area to store the recording.
-        $draftitemid = $qa->prepare_response_files_draft_itemid(
-                'recording', $options->context->id);
-
-        $recordingurl = '';
-        $state = 'new';
-        $label = get_string('startrecording', 'qtype_recordrtc');
-        $mediaplayerinitiallyhidden = 'hide ';
+        $existingresponsefile = null;
         foreach ($existingresponsefiles as $file) {
             if ($file->get_filename() === qtype_recordrtc::AUDIO_FILENAME) {
-                $recordingurl = moodle_url::make_draftfile_url($draftitemid, '/', qtype_recordrtc::AUDIO_FILENAME);
-                $state = 'recorded';
-                $label = get_string('recordagain', 'qtype_recordrtc');
-                $mediaplayerinitiallyhidden = '';
+                $existingresponsefile = $file;
                 break;
             }
         }
 
-        // Recording UI.
-        $result .= '
-            <div class="hide alert alert-danger https-warning">
-                <h5>' . get_string('insecurewarningtitle', 'qtype_recordrtc') . '</h5>
-                <p>' . get_string('insecurewarning', 'qtype_recordrtc') . '</div>
-            </div>
-            <div class="hide alert alert-danger no-webrtc-warning">
-                <h5>' . get_string('nowebrtctitle', 'qtype_recordrtc') . '</h5>
-                <p>' . get_string('nowebrtc', 'qtype_recordrtc') . '</div>
-            </div>
-            <div class="' . $mediaplayerinitiallyhidden . 'media-player">
-                <audio controls>
-                    <source src="' . $recordingurl . '">
-                </audio>
-            </div>
-            <div class="hide saving-message">
-                <small></small>
-            </div>
-            <div class="record-button">
-                <button type="button" class="btn btn-outline-danger" data-state="' . $state . '">' . $label . '</button>
-            </div>';
+        // Question text.
+        $result = html_writer::tag('div', $question->format_questiontext($qa), ['class' => 'qtext']);
 
-        $uploadfilesizelimit = $question->get_upload_size_limit($options->context);
+        if ($options->readonly) {
+            if ($existingresponsefile) {
+                // Playback UI.
+                $recordingurl = $qa->get_response_file_url($existingresponsefile);
+                $result .= '
+                    <div class="media-player">
+                        <audio controls>
+                            <source src="' . $recordingurl . '">
+                        </audio>
+                    </div>';
+            } else {
+                // Message to say there is no recording.
+                $result .= html_writer::div(get_string('norecording', 'qtype_recordrtc'),
+                        'alert alert-secondary');
+            }
 
-        $setting = [
-            'audioBitRate' => get_config('qtype_recordrtc', 'audiobitrate'),
-            'videoBitRate' => get_config('qtype_recordrtc', 'videobitrate'),
-            'timeLimit' => get_config('qtype_recordrtc', 'timelimit'),
-            'maxUploadSize' => $uploadfilesizelimit,
-            'uploadRepositoryId' => $uploadrepository->id,
-            'contextId' => $options->context->id,
-            'draftItemId' => $draftitemid,
-        ];
+        } else {
+            $repositories = repository::get_instances(
+                    ['type' => 'upload', 'currentcontext' => $options->context->id]);
+            if (empty($repositories)) {
+                throw new moodle_exception('errornouploadrepo', 'moodle');
+            }
+            $uploadrepository = reset($repositories); // Get the first (and only) upload repo.
 
-        $PAGE->requires->strings_for_js($this->strings_for_js(), 'qtype_recordrtc');
-        $PAGE->requires->js_call_amd('qtype_recordrtc/avrecording', 'init',
-                [$qa->get_outer_question_div_unique_id(), $setting]);
+            // Prepare a draft file area to store the recording.
+            $draftitemid = $qa->prepare_response_files_draft_itemid(
+                    'recording', $options->context->id);
 
-        // Add a hidden form field with the draft item id.
-        $result .= html_writer::empty_tag('input', ['type' => 'hidden',
-                'name' => $qa->get_qt_field_name('recording'), 'value' => $draftitemid]);
+            $recordingurl = '';
+            $state = 'new';
+            $label = get_string('startrecording', 'qtype_recordrtc');
+            $mediaplayerinitiallyhidden = 'hide ';
+            if ($existingresponsefile) {
+                $recordingurl = moodle_url::make_draftfile_url($draftitemid, '/', qtype_recordrtc::AUDIO_FILENAME);
+                $state = 'recorded';
+                $label = get_string('recordagain', 'qtype_recordrtc');
+                $mediaplayerinitiallyhidden = '';
+            }
+
+            // Recording UI.
+            $result .= '
+                <div class="hide alert alert-danger https-warning">
+                    <h5>' . get_string('insecurewarningtitle', 'qtype_recordrtc') . '</h5>
+                    <p>' . get_string('insecurewarning', 'qtype_recordrtc') . '</div>
+                </div>
+                <div class="hide alert alert-danger no-webrtc-warning">
+                    <h5>' . get_string('nowebrtctitle', 'qtype_recordrtc') . '</h5>
+                    <p>' . get_string('nowebrtc', 'qtype_recordrtc') . '</div>
+                </div>
+                <div class="' . $mediaplayerinitiallyhidden . 'media-player">
+                    <audio controls>
+                        <source src="' . $recordingurl . '">
+                    </audio>
+                </div>
+                <div class="hide saving-message">
+                    <small></small>
+                </div>
+                <div class="record-button">
+                    <button type="button" class="btn btn-outline-danger" data-state="' . $state . '">' . $label . '</button>
+                </div>';
+
+            // Add a hidden form field with the draft item id.
+            $result .= html_writer::empty_tag('input', ['type' => 'hidden',
+                    'name' => $qa->get_qt_field_name('recording'), 'value' => $draftitemid]);
+
+            // Initialise the JavaScript.
+            $uploadfilesizelimit = $question->get_upload_size_limit($options->context);
+            $setting = [
+                'audioBitRate' => get_config('qtype_recordrtc', 'audiobitrate'),
+                'videoBitRate' => get_config('qtype_recordrtc', 'videobitrate'),
+                'timeLimit' => get_config('qtype_recordrtc', 'timelimit'),
+                'maxUploadSize' => $uploadfilesizelimit,
+                'uploadRepositoryId' => $uploadrepository->id,
+                'contextId' => $options->context->id,
+                'draftItemId' => $draftitemid,
+            ];
+
+            $PAGE->requires->strings_for_js($this->strings_for_js(), 'qtype_recordrtc');
+            $PAGE->requires->js_call_amd('qtype_recordrtc/avrecording', 'init',
+                    [$qa->get_outer_question_div_unique_id(), $setting]);
+        }
 
         if ($qa->get_state() == question_state::$invalid) {
             $result .= html_writer::nonempty_tag('div',

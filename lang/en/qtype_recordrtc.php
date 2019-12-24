@@ -45,6 +45,7 @@ $string['insecurewarning'] = 'Your browser might not allow this plugin to work u
 $string['insecurewarningtitle'] = 'Insecure connection';
 $string['nearingmaxsize'] = 'You have attained the maximum size limit for file uploads';
 $string['nearingmaxsize_title'] = 'Recording stopped';
+$string['norecording'] = 'No recording';
 $string['nowebrtc'] = 'Your browser offers limited or no support for WebRTC technologies yet, and cannot be used with this type of question. Please switch or upgrade your browser.';
 $string['nowebrtctitle'] = 'WebRTC not supported';
 $string['pleaserecordsomething'] = 'Please record something.';

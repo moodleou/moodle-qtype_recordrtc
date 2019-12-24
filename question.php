@@ -101,7 +101,7 @@ class qtype_recordrtc_question extends question_with_responses {
 
     public function check_file_access($qa, $options, $component, $filearea,
             $args, $forcedownload) {
-        if ($component == 'question' && $filearea == 'response_attachments') {
+        if ($component == 'question' && $filearea == 'response_recording') {
             // Response recording always accessible.
             return true;
         }
