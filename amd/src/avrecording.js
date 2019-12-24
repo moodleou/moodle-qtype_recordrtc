@@ -203,6 +203,11 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
 
             // Store the next chunk of data.
             chunks.push(event.data);
+
+            // Notify form-change-checker that there is now unsaved data.
+            if (typeof M.core_formchangechecker !== 'undefined') {
+                M.core_formchangechecker.set_form_changed();
+            }
         }
 
         /**
