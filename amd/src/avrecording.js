@@ -510,7 +510,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      * @constructor
      */
     function RecordRtcQuestion(questionId, settings, type) {
-        M.util.js_pending('init-' + questionId);
         var questionDiv = document.getElementById(questionId);
 
         // Check if the RTC API can work here.
@@ -542,8 +541,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
 
         // Create the recorder.
         new Recorder(typeInfo, mediaElement, button, uploadProgressElement, this, settings);
-
-        M.util.js_complete('init-' + questionId);
 
         /**
          * Show a modal alert.
@@ -580,7 +577,9 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * @param {Object} settings like audio bit rate.
          */
         init: function(questionId, settings) {
+            M.util.js_pending('init-' + questionId);
             new RecordRtcQuestion(questionId, settings, 'audio');
+            M.util.js_complete('init-' + questionId);
         }
     };
 });
