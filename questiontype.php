@@ -46,6 +46,25 @@ class qtype_recordrtc extends question_type {
     public function response_file_areas() {
         return ['recording'];
     }
+    public function extra_question_fields() {
+        return array('qtype_recordrtc_options', 'mediatype', 'timelimitinseconds');
+    }
+
+    public function save_question_options($formdata) {
+        global $DB;
+        $context = $formdata->context; // TODO: Do is actually need the context?
+
+        $options = $DB->get_record('qtype_recordrtc_options', array('questionid' => $formdata->id));
+        if (!$options) {
+            $options = new stdClass();
+            $options->questionid = $formdata->id;
+            $options->id = $DB->insert_record('qtype_recordrtc_options', $options);
+        }
+        $options->mediatype = isset($formdata->mediatype) ? $formdata->mediatype : qtype_recordrtc_question::MEDIATYPE_AUDIO;
+        $options->timelimitinseconds = isset($options->timelimitinseconds) ?
+                $options->timelimitinseconds : qtype_recordrtc_question::TIMELIMIT_DEFAULT;
+        $DB->update_record('qtype_recordrtc_options', $options);
+    }
 
     public function export_to_xml($question, qformat_xml $format, $extra = null) {
         // We don't need to export any settings (yet) but we need to return a non-empty string

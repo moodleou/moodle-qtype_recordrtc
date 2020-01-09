@@ -22,8 +22,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['audio'] = 'Audio';
 $string['audiobitrate'] = 'Audio bitrate';
 $string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality)';
+$string['err_timliemit'] = 'Max recording time is <b>{$a->max}</b> seconds, you have set the \'Time limit in seconds\' to <b>{$a->current}</b> seconds for this question!';
+$string['err_videonotyet'] = 'Current only revording audio is possible, recording video will be added soon!';
 $string['filex'] = 'File {$a}';
 $string['gumabort'] = 'Something strange happened which prevented the webcam/microphone from being used';
 $string['gumabort_title'] = 'Something happened';
@@ -41,6 +44,9 @@ $string['gumsecurity'] = 'Your browser does not support recording over an insecu
 $string['gumsecurity_title'] = 'No support for insecure connection';
 $string['gumtype'] = 'Tried to get stream from the webcam/microphone, but no constraints were specified';
 $string['gumtype_title'] = 'No constraints specified';
+$string['mediatype'] = 'Media type';
+$string['mediatype_dec'] = 'Currently this works only with audio, but video will be added soon.';
+$string['mediatype_help'] = 'Currently this works only with audio, but video will be added soon.';
 $string['insecurewarning'] = 'Your browser might not allow this plugin to work unless it is used either over HTTPS or from localhost.';
 $string['insecurewarningtitle'] = 'Insecure connection';
 $string['nearingmaxsize'] = 'You have attained the maximum size limit for file uploads';
@@ -56,17 +62,20 @@ $string['pluginnameadding'] = 'Adding a record audio question';
 $string['pluginnameediting'] = 'Editing a record audio question';
 $string['pluginnamesummary'] = 'Students respond by recording some audio directly in their web browser, which can then be graded manually.';
 $string['privacy:metadata'] = 'The Record audio question type plugin does not store any personal data.';
+$string['settingoptions'] = 'Setting options';
 $string['recordagain'] = 'Record again';
 $string['recordingfailed'] = 'Recording failed, try again';
 $string['startrecording'] = 'Start recording';
 $string['stoprecording'] = 'Stop recording';
 $string['timelimit'] = 'Time limit in seconds';
 $string['timelimit_desc'] = 'Maximum recording length allowed for the audio/video clips';
+$string['timelimit_help'] = 'Maximum recording length allowed for the audio/video clips';
 $string['uploadaborted'] = 'Saving aborted';
 $string['uploadcomplete'] = 'Recording saved';
 $string['uploadfailed'] = 'Saving the recording failed';
 $string['uploadfailed404'] = 'Saving the recording failed: the file is probably too large';
 $string['uploadpreparing'] = 'Preparing to save ...';
 $string['uploadprogress'] = 'Saving recording ({$a}) ...';
+$string['video'] = 'Video';
 $string['videobitrate'] = 'Video bitrate';
 $string['videobitrate_desc'] = 'Quality of video recording (larger number means higher quality)';

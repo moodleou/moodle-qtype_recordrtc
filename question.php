@@ -32,6 +32,14 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_recordrtc_question extends question_with_responses {
+
+    /** Mediatype audio */
+    const MEDIATYPE_AUDIO = 1;
+    /** Mediatype VIDEO */
+    const MEDIATYPE_VIDEO = 2;
+    /** Time limit default in seconds*/
+    const TIMELIMIT_DEFAULT = 30;
+
     public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
         global $CFG;
         if (is_readable($CFG->dirroot . '/question/behaviour/selfassess/behaviour.php') &&

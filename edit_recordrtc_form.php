@@ -35,8 +35,43 @@ require_once($CFG->dirroot . '/question/type/edit_question_form.php');
  */
 class qtype_recordrtc_edit_form extends question_edit_form {
 
+
     protected function definition_inner($mform) {
-        // We only need the standard form fields.
+        // Header for setting options
+        $mform->addElement('header', 'settingoptionsheader', get_string('settingoptions', 'qtype_recordrtc'));
+
+        // Field for mediatype.
+        $options = [qtype_recordrtc_question::MEDIATYPE_AUDIO => 'audio', qtype_recordrtc_question::MEDIATYPE_VIDEO => 'video'];
+        $mform->addElement('select', 'mediatype', get_string('mediatype', 'qtype_recordrtc'), $options);
+        $mform->addHelpButton('mediatype', 'mediatype', 'qtype_recordrtc');
+        $mform->setDefault('mediatype', qtype_recordrtc_question::MEDIATYPE_AUDIO);
+
+        // Field for timelimitinseconds. TODO: Find a way to display inline the Time and Time unit fields afetr sanity check messgae
+//        $mform->addElement('duration', 'timelimitinseconds', get_string('timelimit', 'qtype_recordrtc'));
+//        $mform->setType('timelimitinseconds', PARAM_INT);
+//        $mform->addHelpButton('timelimitinseconds', 'timelimit', 'qtype_recordrtc');
+//        $mform->setDefault('timelimitinseconds', qtype_recordrtc_question::TIMELIMIT_DEFAULT);
+
+        // Field for timelimitinseconds.
+        $mform->addElement('text', 'timelimitinseconds', get_string('timelimit', 'qtype_recordrtc'), ['size' =>'6']);
+        $mform->setType('timelimitinseconds', PARAM_INT);
+        $mform->addHelpButton('timelimitinseconds', 'timelimit', 'qtype_recordrtc');
+        $mform->setDefault('timelimitinseconds', qtype_recordrtc_question::TIMELIMIT_DEFAULT);
+    }
+
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        if ($data['mediatype'] == qtype_recordrtc_question::MEDIATYPE_VIDEO) {
+            $errors['mediatype'] = get_string('err_videonotyet', 'qtype_recordrtc');
+        }
+        $maxtimelimit = get_config('qtype_recordrtc', 'timelimit');
+        if ($data['timelimitinseconds'] === 0 || $data['timelimitinseconds'] > $maxtimelimit) {
+            $a = new stdClass();
+            $a->max = $maxtimelimit;
+            $a->current = $data['timelimitinseconds'];
+            $errors['timelimitinseconds'] = get_string('err_timliemit', 'qtype_recordrtc', $a);
+        }
+        return $errors;
     }
 
     public function qtype() {

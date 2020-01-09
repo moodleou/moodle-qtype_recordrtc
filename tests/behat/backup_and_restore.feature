@@ -30,6 +30,7 @@ Feature: Test duplicating a quiz containing record audio questions
       | Schema | Course name | Course 2 |
     And I navigate to "Question bank" in current page administration
     And I choose "Edit question" action for "Record audio question" in the question bank
+    And I pause
     Then the following fields match these values:
       | Question name    | Record audio question                               |
       | Question text    | <p>Please record yourself talking about Moodle.</p> |

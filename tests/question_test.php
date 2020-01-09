@@ -42,7 +42,7 @@ class qtype_recordrtc_question_test extends advanced_testcase {
      * @return qtype_recordrtc_question the question.
      */
     protected function get_a_test_question() {
-        return test_question_maker::make_question('recordrtc');
+        return test_question_maker::make_question('recordrtc', 'audio');
     }
 
     /**
