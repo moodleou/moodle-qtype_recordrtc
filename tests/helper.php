@@ -42,7 +42,7 @@ class qtype_recordrtc_test_helper extends question_test_helper {
         test_question_maker::initialise_a_question($q);
         $q->name = 'Record audio question';
         $q->questiontext = '<p>Please record yourself talking about Moodle.</p>';
-        $q->mediatype = $q::MEDIATYPE_AUDIO;
+        $q->mediatype = 'audio';
         $q->timelimitinseconds = 30;
         $q->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
         $q->qtype = question_bank::get_qtype('recordrtc');
@@ -59,8 +59,8 @@ class qtype_recordrtc_test_helper extends question_test_helper {
 
         $fromform->name = 'Record audio question';
         $fromform->questiontext = ['text' => '<p>Please record yourself talking about Moodle.</p>', 'format' => FORMAT_HTML];
-        $fromform->mediatype = 1; // Default.
-        $fromform->timelimitinseconds = 30; // Default.
+        $fromform->mediatype = 'audio';
+        $fromform->timelimitinseconds = 30;
         $fromform->defaultmark = 1.0;
         $fromform->generalfeedback = ['text' => '<p>I hope you spoke clearly and coherently.</p>', 'format' => FORMAT_HTML];
 
@@ -80,6 +80,11 @@ class qtype_recordrtc_test_helper extends question_test_helper {
         $questiondata->name = 'Record audio question';
         $questiondata->questiontext = '<p>Please record yourself talking about Moodle.</p>';
         $questiondata->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
+        $questiondata->defaultmark = 1.0;
+
+        $questiondata->options = new stdClass();
+        $questiondata->options->mediatype = 'audio';
+        $questiondata->options->timelimitinseconds = 30;
 
         return $questiondata;
     }

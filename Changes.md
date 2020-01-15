@@ -1,5 +1,10 @@
 # Change log for the Record audio (and video) question type
 
+## Changes in 1.0
+
+* Maximum recording length can be set by the question author.
+
+
 ## Changes in 0.9.1
 
 * Changes required to work with the new self-assessment question behaviour.

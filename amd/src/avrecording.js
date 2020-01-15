@@ -64,26 +64,40 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      */
     function Recorder(type, mediaElement,
                       button, uploadProgressElement, owner, settings) {
-
-        /* @type {Recorder} reference to this recorder, for use in event handlers. */
+        /**
+         * @type {Recorder} reference to this recorder, for use in event handlers.
+         */
         var recorder = this;
 
-        /* @type {MediaStream} during recording, the stream of incoming media. */
+        /**
+         * @type {MediaStream} during recording, the stream of incoming media.
+         */
         var mediaStream = null;
 
-        /* @type {MediaRecorder} the recorder that is capturing stream. */
+        /**
+         * @type {MediaRecorder} the recorder that is capturing stream.
+         */
         var mediaRecorder = null;
 
-        /* @type {Blob[]} the chunks of data that have been captured so far duing the current recording. */
+        /**
+         * @type {Blob[]} the chunks of data that have been captured so far duing the current recording.
+         */
         var chunks = [];
 
-        /* @type {number} number of bytes recorded so far, so we can auto-stop before hitting Moodle's file-size limit. */
+        /**
+         * @type {number} number of bytes recorded so far, so we can auto-stop
+         * before hitting Moodle's file-size limit.
+         */
         var bytesRecordedSoFar = 0;
 
-        /* @type {number} time left in seconds, so we can auto-stop at the time limit. */
+        /**
+         * @type {number} time left in seconds, so we can auto-stop at the time limit.
+         */
         var secondsRemaining = 0;
 
-        /* @type {number} intervalID returned by setInterval() while the timer is running. */
+        /**
+         * @type {number} intervalID returned by setInterval() while the timer is running.
+         */
         var countdownTicker = 0;
 
         button.addEventListener('click', handleButtonClick);
@@ -561,10 +575,11 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          *
          * @param {string} questionId id of the outer question div.
          * @param {Object} settings like audio bit rate.
+         * @param {string} type 'audio' or 'video'.
          */
-        init: function(questionId, settings) {
+        init: function(questionId, settings, type) {
             M.util.js_pending('init-' + questionId);
-            new RecordRtcQuestion(questionId, settings, 'audio');
+            new RecordRtcQuestion(questionId, settings, type);
             M.util.js_complete('init-' + questionId);
         }
     };

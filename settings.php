@@ -36,7 +36,7 @@ if ($ADMIN->fulltree) {
     // Recording time limit.
     $name = get_string('timelimit', 'qtype_recordrtc');
     $desc = get_string('timelimit_desc', 'qtype_recordrtc');
-    $default = '120';
+    $default = '30';
     $setting = new admin_setting_configtext('qtype_recordrtc/timelimit', $name, $desc, $default, PARAM_INT, 8);
     $settings->add($setting);
 }

@@ -15,7 +15,7 @@
     <penalty>0</penalty>
     <hidden>0</hidden>
     <idnumber></idnumber>
-    <mediatype>1</mediatype>
-    <timelimitinseconds>30</timelimitinseconds>
+    <mediatype>audio</mediatype>
+    <timelimitinseconds>42</timelimitinseconds>
   </question>
 </quiz>

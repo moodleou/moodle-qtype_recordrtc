@@ -46,30 +46,24 @@ class qtype_recordrtc extends question_type {
     public function response_file_areas() {
         return ['recording'];
     }
+
     public function extra_question_fields() {
         return array('qtype_recordrtc_options', 'mediatype', 'timelimitinseconds');
     }
 
-    public function save_question_options($formdata) {
-        global $DB;
-        $context = $formdata->context; // TODO: Do is actually need the context?
-
-        $options = $DB->get_record('qtype_recordrtc_options', array('questionid' => $formdata->id));
-        if (!$options) {
-            $options = new stdClass();
-            $options->questionid = $formdata->id;
-            $options->id = $DB->insert_record('qtype_recordrtc_options', $options);
-        }
-        $options->mediatype = isset($formdata->mediatype) ? $formdata->mediatype : qtype_recordrtc_question::MEDIATYPE_AUDIO;
-        $options->timelimitinseconds = isset($options->timelimitinseconds) ?
-                $options->timelimitinseconds : qtype_recordrtc_question::TIMELIMIT_DEFAULT;
-        $DB->update_record('qtype_recordrtc_options', $options);
+    protected function initialise_question_instance(question_definition $question, $questiondata) {
+        parent::initialise_question_instance($question, $questiondata);
+        $question->timelimitinseconds = $questiondata->options->timelimitinseconds;
+        $question->mediatype = $questiondata->options->mediatype;
     }
 
     public function export_to_xml($question, qformat_xml $format, $extra = null) {
-        // We don't need to export any settings (yet) but we need to return a non-empty string
-        // to tell the system that we support export.
-        return ' ';
+        $output = '';
+        $output .= '    <mediatype>' . $question->options->mediatype .
+                "</mediatype>\n";
+        $output .= '    <timelimitinseconds>' . $question->options->timelimitinseconds .
+                "</timelimitinseconds>\n";
+        return $output;
     }
 
     public function import_from_xml($data, $question, qformat_xml $format, $extra=null) {
@@ -80,6 +74,10 @@ class qtype_recordrtc extends question_type {
 
         $qo = $format->import_headers($data);
         $qo->qtype = $questiontype;
+
+        $qo->mediatype = $format->getpath($data, array('#', 'mediatype', 0, '#'), 'audio');
+        $qo->timelimitinseconds = $format->getpath($data, array('#', 'timelimitinseconds', 0, '#'),
+                get_config('timelimit', 'qtype_recordrtc'));
 
         return $qo;
     }

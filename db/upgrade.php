@@ -58,6 +58,42 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020012100, 'qtype', 'recordrtc');
     }
 
+    if ($oldversion < 2020012200) {
+
+        // Changing type of field mediatype on table qtype_recordrtc_options to char.
+        $table = new xmldb_table('qtype_recordrtc_options');
+        $field = new xmldb_field('mediatype', XMLDB_TYPE_CHAR, '8', null, XMLDB_NOTNULL, null, 'audio', 'questionid');
+
+        // Launch change of type for field mediatype.
+        $dbman->change_field_type($table, $field);
+
+        // Recordrtc savepoint reached.
+        upgrade_plugin_savepoint(true, 2020012200, 'qtype', 'recordrtc');
+    }
+
+    if ($oldversion < 2020012201) {
+
+        // Changing the default of field mediatype on table qtype_recordrtc_options to audio.
+        $table = new xmldb_table('qtype_recordrtc_options');
+        $field = new xmldb_field('mediatype', XMLDB_TYPE_CHAR, '8', null, XMLDB_NOTNULL, null, 'audio', 'questionid');
+
+        // Launch change of default for field mediatype.
+        $dbman->change_field_default($table, $field);
+
+        // Recordrtc savepoint reached.
+        upgrade_plugin_savepoint(true, 2020012201, 'qtype', 'recordrtc');
+    }
+
+    if ($oldversion < 2020012202) {
+
+        // Update existing values in the mediatype column.
+        $DB->set_field('qtype_recordrtc_options', 'mediatype', 'audio', ['mediatype' => '1']);
+        $DB->set_field('qtype_recordrtc_options', 'mediatype', 'video', ['mediatype' => '2']);
+
+        // Recordrtc savepoint reached.
+        upgrade_plugin_savepoint(true, 2020012202, 'qtype', 'recordrtc');
+    }
+
     return true;
 }
 

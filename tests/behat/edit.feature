@@ -28,6 +28,7 @@ Feature: Test editing record audio questions
   Scenario: Edit record audio question
     When I choose "Edit question" action for "Record audio question" in the question bank
     And I set the following fields to these values:
-      | Question name | Edited question name |
+      | Question name              | Edited question name |
+      | Maximum recording duration | 42                   |
     And I press "id_submitbutton"
     Then I should see "Edited question name"

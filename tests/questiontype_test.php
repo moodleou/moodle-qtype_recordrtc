@@ -123,6 +123,8 @@ class qtype_recordrtc_test extends question_testcase {
     <penalty>0</penalty>
     <hidden>0</hidden>
     <idnumber></idnumber>
+    <mediatype>audio</mediatype>
+    <timelimitinseconds>30</timelimitinseconds>
   </question>';
         $xmldata = xmlize($xml);
 
@@ -139,6 +141,8 @@ class qtype_recordrtc_test extends question_testcase {
         $expectedq->defaultmark = 1;
         $expectedq->length = 1;
         $expectedq->penalty = 0;
+        $expectedq->mediatype = 'audio';
+        $expectedq->timelimitinseconds = 30;
 
         $this->assert(new question_check_specified_fields_expectation($expectedq), $q);
     }
@@ -158,6 +162,9 @@ class qtype_recordrtc_test extends question_testcase {
         $qdata->length = 1;
         $qdata->penalty = 0;
         $qdata->hidden = 0;
+        $qdata->options = new stdClass();
+        $qdata->options->mediatype = 'audio';
+        $qdata->options->timelimitinseconds = 30;
 
         $exporter = new qformat_xml();
         $xml = $exporter->writequestion($qdata);
@@ -177,7 +184,9 @@ class qtype_recordrtc_test extends question_testcase {
     <penalty>0</penalty>
     <hidden>0</hidden>
     <idnumber></idnumber>
-   </question>
+    <mediatype>audio</mediatype>
+    <timelimitinseconds>30</timelimitinseconds>
+  </question>
 ';
 
         // Hack so the test passes in both 3.5 and 3.6.

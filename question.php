@@ -33,12 +33,21 @@ defined('MOODLE_INTERNAL') || die();
  */
 class qtype_recordrtc_question extends question_with_responses {
 
-    /** Mediatype audio */
-    const MEDIATYPE_AUDIO = 1;
-    /** Mediatype VIDEO */
-    const MEDIATYPE_VIDEO = 2;
-    /** Time limit default in seconds*/
-    const TIMELIMIT_DEFAULT = 30;
+    /**
+     * @var int the maximum length recording, in seconds, the student is allowed to make.
+     */
+    public $timelimitinseconds;
+
+    /**
+     * @var string media type, 'audio' or 'video'.
+     */
+    public $mediatype;
+
+    /**
+     * @param question_attempt $qa
+     * @param string $preferredbehaviour
+     * @return question_behaviour
+     */
 
     public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
         global $CFG;

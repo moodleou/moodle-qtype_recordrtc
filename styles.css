@@ -1,0 +1,3 @@
+body#page-question-type-recordrtc.path-question-type .form-group[data-groupname=timelimitinseconds] .sr-only {
+    display: none;
+}

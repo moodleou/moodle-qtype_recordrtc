@@ -119,7 +119,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             $setting = [
                 'audioBitRate' => get_config('qtype_recordrtc', 'audiobitrate'),
                 'videoBitRate' => get_config('qtype_recordrtc', 'videobitrate'),
-                'timeLimit' => get_config('qtype_recordrtc', 'timelimit'),
+                'timeLimit' => $question->timelimitinseconds,
                 'maxUploadSize' => $uploadfilesizelimit,
                 'uploadRepositoryId' => $uploadrepository->id,
                 'contextId' => $options->context->id,
@@ -128,7 +128,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
 
             $PAGE->requires->strings_for_js($this->strings_for_js(), 'qtype_recordrtc');
             $PAGE->requires->js_call_amd('qtype_recordrtc/avrecording', 'init',
-                    [$qa->get_outer_question_div_unique_id(), $setting]);
+                    [$qa->get_outer_question_div_unique_id(), $setting, $question->mediatype]);
         }
 
         if ($qa->get_state() == question_state::$invalid) {

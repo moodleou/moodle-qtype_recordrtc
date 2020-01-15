@@ -12,8 +12,8 @@ Feature: Test duplicating a quiz containing record audio questions
       | contextlevel | reference | name           |
       | Course       | C1        | Test questions |
     And the following "questions" exist:
-      | questioncategory | qtype     | name                  | template |
-      | Test questions   | recordrtc | Record audio question | audio    |
+      | questioncategory | qtype     | name                  | template | timelimitinseconds |
+      | Test questions   | recordrtc | Record audio question | audio    | 42                 |
     And the following "activities" exist:
       | activity   | name      | course | idnumber |
       | quiz       | Test quiz | C1     | quiz     |
@@ -30,8 +30,8 @@ Feature: Test duplicating a quiz containing record audio questions
       | Schema | Course name | Course 2 |
     And I navigate to "Question bank" in current page administration
     And I choose "Edit question" action for "Record audio question" in the question bank
-    And I pause
     Then the following fields match these values:
-      | Question name    | Record audio question                               |
-      | Question text    | <p>Please record yourself talking about Moodle.</p> |
-      | General feedback | <p>I hope you spoke clearly and coherently.</p>     |
+      | Question name              | Record audio question                               |
+      | Question text              | <p>Please record yourself talking about Moodle.</p> |
+      | General feedback           | <p>I hope you spoke clearly and coherently.</p>     |
+      | Maximum recording duration | 42                                                  |
