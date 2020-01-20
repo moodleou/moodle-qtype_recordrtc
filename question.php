@@ -85,7 +85,12 @@ class qtype_recordrtc_question extends question_with_responses {
     }
 
     public function is_complete_response(array $response) {
-        return isset($response['recording']) && $response['recording'] !== '';
+        if (!isset($response['recording']) || $response['recording'] === '') {
+            return false;
+        }
+
+        $files = $response['recording']->get_files();
+        return !empty($files);
     }
 
     public function get_validation_error(array $response) {

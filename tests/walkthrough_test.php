@@ -49,14 +49,24 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
      * @return array response data that would need to be passed to $this->process_submission().
      */
     protected function store_submission_file(string $fixturefile) {
+        $response = $this->setup_empty_submission_fileares();
+        qtype_recordrtc_test_helper::add_recording_to_draft_area(
+                $response['recording'], $fixturefile);
+        return $response;
+    }
+
+    /**
+     * Prepares the data (draft file) but with no files in it.
+     *
+     * @return array response data that would need to be passed to $this->process_submission().
+     */
+    protected function setup_empty_submission_fileares() {
         $this->render();
         if (!preg_match('/name="' . preg_quote($this->get_qa()->get_qt_field_name('recording')) .
                 '" value="(\d+)"/', $this->currentoutput, $matches)) {
             throw new coding_exception('Draft item id not found.');
         }
-        $draftid = $matches[1];
-        qtype_recordrtc_test_helper::add_recording_to_draft_area($draftid, $fixturefile);
-        return ['recording' => $draftid];
+        return ['recording' => $matches[1]];
     }
 
     /**
