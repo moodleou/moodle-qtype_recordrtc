@@ -89,11 +89,8 @@ class qtype_recordrtc_test_helper extends question_test_helper {
         $draftid = 0;
         $contextid = 0;
 
-        $component = 'question';
-        $filearea = 'response_recording';
-
         // Create an empty file area.
-        file_prepare_draft_area($draftid, $contextid, $component, $filearea, null);
+        file_prepare_draft_area($draftid, $contextid, 'question', 'response_recording', null);
         return $draftid;
     }
 

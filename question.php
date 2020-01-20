@@ -33,7 +33,13 @@ defined('MOODLE_INTERNAL') || die();
  */
 class qtype_recordrtc_question extends question_with_responses {
     public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
-        return question_engine::make_behaviour('manualgraded', $qa, $preferredbehaviour);
+        global $CFG;
+        if (is_readable($CFG->dirroot . '/question/behaviour/selfassess/behaviour.php') &&
+                question_engine::get_behaviour_type($preferredbehaviour)->can_questions_finish_during_the_attempt()) {
+            return question_engine::make_behaviour('selfassess', $qa, $preferredbehaviour);
+        } else {
+            return question_engine::make_behaviour('manualgraded', $qa, $preferredbehaviour);
+        }
     }
 
     public function get_expected_data() {
@@ -64,22 +70,22 @@ class qtype_recordrtc_question extends question_with_responses {
     }
 
     public function summarise_response(array $response) {
-        if (!isset($response['recording'])) {
-            return null;
+        if (!isset($response['recording']) || $response['recording'] === '') {
+            return get_string('norecording', 'qtype_recordrtc');
         }
 
         $files = $response['recording']->get_files();
         $file = reset($files);
 
         if (!$file) {
-            return null;
+            return get_string('norecording', 'qtype_recordrtc');
         }
 
         return get_string('filex', 'qtype_recordrtc', $file->get_filename());
     }
 
     public function is_complete_response(array $response) {
-        return isset($response['recording']);
+        return isset($response['recording']) && $response['recording'] !== '';
     }
 
     public function get_validation_error(array $response) {

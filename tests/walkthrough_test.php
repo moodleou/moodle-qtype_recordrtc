@@ -41,12 +41,14 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
     protected function get_qa() {
         return $this->quba->get_question_attempt($this->slot);
     }
+
     /**
-     * Simulate a user submitting the recording from the given fixture file.
+     * Prepares the data (draft file) to simulate a user submitting a given fixture file.
      *
      * @param string $fixturefile name of the file to submit.
+     * @return array response data that would need to be passed to $this->process_submission().
      */
-    protected function process_submission_of_file(string $fixturefile) {
+    protected function store_submission_file(string $fixturefile) {
         $this->render();
         if (!preg_match('/name="' . preg_quote($this->get_qa()->get_qt_field_name('recording')) .
                 '" value="(\d+)"/', $this->currentoutput, $matches)) {
@@ -54,14 +56,23 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
         }
         $draftid = $matches[1];
         qtype_recordrtc_test_helper::add_recording_to_draft_area($draftid, $fixturefile);
-        $this->process_submission(['recording' => $draftid]);
+        return ['recording' => $draftid];
     }
 
-    public function test_deferred_feedback_html_editor_with_files_attempt_on_last() {
+    /**
+     * Simulate a user submitting the recording from the given fixture file.
+     *
+     * @param string $fixturefile name of the file to submit.
+     */
+    protected function process_submission_of_file(string $fixturefile) {
+        $this->process_submission($this->store_submission_file($fixturefile));
+    }
+
+    public function test_deferred_feedback_audio_with_attempt_on_last() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
-        // Create an essay question in the DB.
+        // Create a recordrtc question in the DB.
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $cat = $generator->create_question_category();
         $question = $generator->create_question('recordrtc', 'audio', ['category' => $cat->id]);

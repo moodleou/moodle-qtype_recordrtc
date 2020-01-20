@@ -61,7 +61,8 @@ class qtype_recordrtc_question_test extends advanced_testcase {
 
     public function test_summarise_response_blank() {
         $q = $this->get_a_test_question();
-        $this->assertNull($q->summarise_response([]));
+        $this->assertEquals('No recording', $q->summarise_response([]));
+        $this->assertEquals('No recording', $q->summarise_response(['recording' => '']));
     }
 
     public function test_summarise_response_with_file() {
