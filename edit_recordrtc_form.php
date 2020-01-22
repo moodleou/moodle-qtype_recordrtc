@@ -44,7 +44,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         // Field for timelimitinseconds.
         $mform->addElement('duration', 'timelimitinseconds', get_string('timelimit', 'qtype_recordrtc'));
         $mform->addHelpButton('timelimitinseconds', 'timelimit', 'qtype_recordrtc');
-        $mform->setDefault('timelimitinseconds', get_config('timelimit', 'qtype_recordrtc'));
+        $mform->setDefault('timelimitinseconds', qtype_recordrtc::DEFAULT_TIMELIMIT);
     }
 
     public function validation($data, $files) {

@@ -39,6 +39,9 @@ class qtype_recordrtc extends question_type {
     /** @var string name of the audio recording within the file area. */
     const AUDIO_FILENAME = 'recording.ogg';
 
+    /** @var int default recording time limit in seconds. */
+    const DEFAULT_TIMELIMIT = 30;
+
     public function is_manual_graded() {
         return true;
     }

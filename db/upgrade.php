@@ -28,9 +28,10 @@ defined('MOODLE_INTERNAL') || die();
  * Upgrade code for the recordrtc question type.
  *
  * @param int $oldversion the version we are upgrading from.
+ * @return bool
  */
 function xmldb_qtype_recordrtc_upgrade($oldversion) {
-    global $CFG, $DB;
+    global $DB;
 
     $dbman = $DB->get_manager();
 
@@ -92,6 +93,44 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
 
         // Recordrtc savepoint reached.
         upgrade_plugin_savepoint(true, 2020012202, 'qtype', 'recordrtc');
+    }
+
+    if ($oldversion < 2020012203) {
+
+        // Add semicolons between statements in questionvariables.
+        $toupdatecount = $DB->count_records_sql("
+                SELECT COUNT(1)
+                  FROM {question} q
+             LEFT JOIN {qtype_recordrtc_options} o ON o.questionid = q.id
+                 WHERE q.qtype = ? AND o.id IS NULL", ['recordrtc']);
+        if ($toupdatecount > 0) {
+            $rs = $DB->get_recordset_sql("
+                SELECT q.id
+                  FROM {question} q
+             LEFT JOIN {qtype_recordrtc_options} o ON o.questionid = q.id
+                 WHERE q.qtype = ? AND o.id IS NULL", ['recordrtc']);
+            $pbar = new progress_bar('createrecordrtcquestionoptions', 500, true);
+
+            $done = 0;
+            foreach ($rs as $row) {
+                $pbar->update($done, $toupdatecount,
+                        "Creating options for record audio questions - {$done}/{$toupdatecount} (id = {$row->id}).");
+
+                $newoptions = new stdClass();
+                $newoptions->questionid = $row->id;
+                $newoptions->mediatype = 'audio';
+                $newoptions->timelimitinseconds = 30;
+                $DB->insert_record('qtype_recordrtc_options', $newoptions);
+
+                $done++;
+            }
+            $pbar->update($done, $toupdatecount,
+                    "Creating options for record audio questions - {$done}/{$toupdatecount}.");
+            $rs->close();
+        }
+
+        // Recordrtc savepoint reached.
+        upgrade_plugin_savepoint(true, 2020012203, 'qtype', 'recordrtc');
     }
 
     return true;
