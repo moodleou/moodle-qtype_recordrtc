@@ -33,7 +33,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      * @return {string} 'ok' if it looks OK, else 'nowebrtc' or 'nothttps' if there is a problem.
      */
     function checkCanWork() {
-        if (!(navigator.mediaDevices && MediaRecorder)) {
+        if (!(navigator.mediaDevices && window.MediaRecorder)) {
             return 'nowebrtc';
         }
 
