@@ -3,6 +3,8 @@
 ## Changes in 1.0
 
 * Maximum recording length can be set by the question author.
+* Better keyboard focus handling when you start and stop recording.
+* Fixed a bug with detecting whether the question type can work in the current browser.
 
 
 ## Changes in 0.9.1
