@@ -176,6 +176,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
 
             // Make button clickable again, to allow stopping recording.
             button.disabled = false;
+            button.focus();
         }
 
         /**
@@ -253,6 +254,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             mediaElement.muted = false;
             mediaElement.controls = true;
             mediaElement.parentElement.classList.remove('hide');
+            mediaElement.focus();
 
             button.innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
             button.disabled = false;
