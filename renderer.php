@@ -117,11 +117,11 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             // Initialise the JavaScript.
             $uploadfilesizelimit = $question->get_upload_size_limit($options->context);
             $setting = [
-                'audioBitRate' => get_config('qtype_recordrtc', 'audiobitrate'),
-                'videoBitRate' => get_config('qtype_recordrtc', 'videobitrate'),
-                'timeLimit' => $question->timelimitinseconds,
+                'audioBitRate' => (int) get_config('qtype_recordrtc', 'audiobitrate'),
+                'videoBitRate' => (int) get_config('qtype_recordrtc', 'videobitrate'),
+                'timeLimit' => (int) $question->timelimitinseconds,
                 'maxUploadSize' => $uploadfilesizelimit,
-                'uploadRepositoryId' => $uploadrepository->id,
+                'uploadRepositoryId' => (int) $uploadrepository->id,
                 'contextId' => $options->context->id,
                 'draftItemId' => $draftitemid,
             ];
