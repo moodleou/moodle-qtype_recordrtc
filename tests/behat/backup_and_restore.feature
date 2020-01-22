@@ -31,7 +31,7 @@ Feature: Test duplicating a quiz containing record audio questions
     And I navigate to "Question bank" in current page administration
     And I choose "Edit question" action for "Record audio question" in the question bank
     Then the following fields match these values:
-      | Question name              | Record audio question                               |
-      | Question text              | <p>Please record yourself talking about Moodle.</p> |
-      | General feedback           | <p>I hope you spoke clearly and coherently.</p>     |
-      | Maximum recording duration | 42                                                  |
+      | Question name                | Record audio question                               |
+      | Question text                | <p>Please record yourself talking about Moodle.</p> |
+      | General feedback             | <p>I hope you spoke clearly and coherently.</p>     |
+      | id_timelimitinseconds_number | 42                                                  |
