@@ -27,16 +27,12 @@ defined('MOODLE_INTERNAL') || die();
 if ($ADMIN->fulltree) {
 
     // Audio bitrate.
-    $name = get_string('audiobitrate', 'qtype_recordrtc');
-    $desc = get_string('audiobitrate_desc', 'qtype_recordrtc');
-    $default = '128000';
-    $setting = new admin_setting_configtext('qtype_recordrtc/audiobitrate', $name, $desc, $default, PARAM_INT, 8);
-    $settings->add($setting);
+    $settings->add(new admin_setting_configtext('qtype_recordrtc/audiobitrate',
+            get_string('audiobitrate', 'qtype_recordrtc'), get_string('audiobitrate_desc', 'qtype_recordrtc'),
+            128000, PARAM_INT, 8));
 
     // Recording time limit.
-    $name = get_string('timelimit', 'qtype_recordrtc');
-    $desc = get_string('timelimit_desc', 'qtype_recordrtc');
-    $default = '120';
-    $setting = new admin_setting_configtext('qtype_recordrtc/timelimit', $name, $desc, $default, PARAM_INT, 8);
-    $settings->add($setting);
+    $settings->add(new admin_setting_configduration('qtype_recordrtc/timelimit',
+            get_string('timelimit', 'qtype_recordrtc'), get_string('timelimit_desc', 'qtype_recordrtc'),
+            600, 60));
 }
