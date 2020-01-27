@@ -516,11 +516,11 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
 
         // Check if the RTC API can work here.
         var result = checkCanWork();
-        if (result === 'nowebrtc') {
-            questionDiv.querySelector('.no-webrtc-warning').classList.remove('hide');
-            return;
-        } else if (result === 'nothttps') {
+        if (result === 'nothttps') {
             questionDiv.querySelector('.https-warning').classList.remove('hide');
+            return;
+        } else if (result === 'nowebrtc') {
+            questionDiv.querySelector('.no-webrtc-warning').classList.remove('hide');
             return;
         }
 
