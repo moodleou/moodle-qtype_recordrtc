@@ -28,11 +28,18 @@ Feature: Test editing record audio questions
   Scenario: Edit record audio question
     When I choose "Edit question" action for "Record audio question" in the question bank
     And I set the following fields to these values:
-      | Question name                | Edited question name |
-      | id_timelimitinseconds_number | 150                  |
+      | Question name                  | Edited question name |
+      | id_timelimitinseconds_number   | 11                   |
+      | id_timelimitinseconds_timeunit | minutes              |
     And I press "id_submitbutton"
-    Then I should see "The time limit cannot be greater than 2 mins."
+    Then I should see "The time limit cannot be greater than 10 mins."
     And I set the following fields to these values:
-      | id_timelimitinseconds_number | 15                   |
+      | id_timelimitinseconds_number   | 0       |
+      | id_timelimitinseconds_timeunit | seconds |
+    And I press "id_submitbutton"
+    Then I should see "The time limit cannot be zero."
+    And I set the following fields to these values:
+      | id_timelimitinseconds_number   | 15      |
+      | id_timelimitinseconds_timeunit | seconds |
     And I press "id_submitbutton"
     Then I should see "Edited question name"
