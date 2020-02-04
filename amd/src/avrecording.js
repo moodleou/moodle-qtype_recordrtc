@@ -206,7 +206,9 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             chunks.push(event.data);
 
             // Notify form-change-checker that there is now unsaved data.
-            if (typeof M.core_formchangechecker !== 'undefined') {
+            // But, don't do this in question preview where it is just annoying.
+            if (typeof M.core_formchangechecker !== 'undefined' &&
+                    !window.location.pathname.endsWith('/question/preview.php')) {
                 M.core_formchangechecker.set_form_changed();
             }
         }
