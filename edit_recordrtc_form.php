@@ -51,8 +51,10 @@ class qtype_recordrtc_edit_form extends question_edit_form {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
         $maxtimelimit = get_config('qtype_recordrtc', 'timelimit');
-        if ($data['timelimitinseconds'] == 0) {
-            $errors['timelimitinseconds'] = get_string('err_timliemitzero', 'qtype_recordrtc');
+        if ($data['timelimitinseconds'] < 0) {
+            $errors['timelimitinseconds'] = get_string('err_timliemitnegative', 'qtype_recordrtc');
+        }else if ($data['timelimitinseconds'] == 0) {
+              $errors['timelimitinseconds'] = get_string('err_timliemitzero', 'qtype_recordrtc');
         } else if ($data['timelimitinseconds'] > $maxtimelimit) {
             $errors['timelimitinseconds'] = get_string('err_timliemit', 'qtype_recordrtc',
                     format_time($maxtimelimit));

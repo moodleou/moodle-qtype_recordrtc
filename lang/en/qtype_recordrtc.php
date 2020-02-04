@@ -25,8 +25,9 @@
 $string['audio'] = 'Audio';
 $string['audiobitrate'] = 'Audio bitrate';
 $string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality)';
-$string['err_timliemit'] = 'The time limit cannot be greater than {$a}.';
-$string['err_timliemitzero'] = 'The time limit cannot be zero.';
+$string['err_timliemit'] = 'Maximum recording duration cannot be greater than {$a}.';
+$string['err_timliemitnegative'] = 'Maximum recording duration cannot be negative.';
+$string['err_timliemitzero'] = 'Maximum recording duration cannot be zero.';
 $string['filex'] = 'File {$a}';
 $string['gumabort'] = 'Something strange happened which prevented the webcam/microphone from being used';
 $string['gumabort_title'] = 'Something happened';
