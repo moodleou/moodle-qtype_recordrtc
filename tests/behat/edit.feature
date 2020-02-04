@@ -32,12 +32,17 @@ Feature: Test editing record audio questions
       | id_timelimitinseconds_number   | 11                   |
       | id_timelimitinseconds_timeunit | minutes              |
     And I press "id_submitbutton"
-    Then I should see "The time limit cannot be greater than 10 mins."
+    Then I should see "Maximum recording duration cannot be greater than 10 mins."
     And I set the following fields to these values:
       | id_timelimitinseconds_number   | 0       |
       | id_timelimitinseconds_timeunit | seconds |
     And I press "id_submitbutton"
-    Then I should see "The time limit cannot be zero."
+    Then I should see "Maximum recording duration must be greater than 0."
+    And I set the following fields to these values:
+      | id_timelimitinseconds_number   | -10     |
+      | id_timelimitinseconds_timeunit | seconds |
+    And I press "id_submitbutton"
+    Then I should see "Maximum recording duration must be greater than 0."
     And I set the following fields to these values:
       | id_timelimitinseconds_number   | 15      |
       | id_timelimitinseconds_timeunit | seconds |
