@@ -1,3 +1,35 @@
+.que.recordrtc .playback-widget,
+.que.recordrtc .record-widget {
+    position: relative;
+    display: flex;
+    width: 100%;
+    max-width: 40em;
+    height: calc(2.25rem + 1px);
+    margin-bottom: 1rem;
+}
+.que.recordrtc .record-widget:not(:last-child) {
+    margin-bottom: 1.5rem;
+}
+.que.recordrtc .playback-widget .media-player,
+.que.recordrtc .record-widget .media-player {
+    flex-grow: 1;
+}
+.que.recordrtc .record-widget .media-player {
+    margin-right: 4px;
+}
+.que.recordrtc .playback-widget audio,
+.que.recordrtc .record-widget audio {
+    width: 100%;
+    height: calc(2.25rem + 1px);
+}
+.que.recordrtc .record-widget .saving-message {
+    position: absolute;
+    top: 2rem;
+}
+.que.recordrtc .record-widget button {
+    white-space: nowrap;
+}
+
 body#page-question-type-recordrtc.path-question-type .form-group[data-groupname=timelimitinseconds] .sr-only {
     display: none;
 }

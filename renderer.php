@@ -51,18 +51,10 @@ class qtype_recordrtc_renderer extends qtype_renderer {
 
         if ($options->readonly) {
             if ($existingresponsefile) {
-                // Playback UI.
-                $recordingurl = $qa->get_response_file_url($existingresponsefile);
-                $result .= '
-                    <div class="media-player">
-                        <audio controls>
-                            <source src="' . $recordingurl . '">
-                        </audio>
-                    </div>';
+                $result .= $this->playback_ui(
+                        $qa->get_response_file_url($existingresponsefile));
             } else {
-                // Message to say there is no recording.
-                $result .= html_writer::div(get_string('norecording', 'qtype_recordrtc'),
-                        'alert alert-secondary');
+                $result .= $this->no_recording_message();
             }
 
         } else {
@@ -77,7 +69,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             $draftitemid = $qa->prepare_response_files_draft_itemid(
                     'recording', $options->context->id);
 
-            $recordingurl = '';
+            $recordingurl = null;
             $state = 'new';
             $label = get_string('startrecording', 'qtype_recordrtc');
             $mediaplayerinitiallyhidden = 'hide ';
@@ -89,30 +81,9 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             }
 
             // Recording UI.
-            $result .= '
-                <div class="hide alert alert-danger https-warning">
-                    <h5>' . get_string('insecurewarningtitle', 'qtype_recordrtc') . '</h5>
-                    <p>' . get_string('insecurewarning', 'qtype_recordrtc') . '</p>
-                </div>
-                <div class="hide alert alert-danger no-webrtc-warning">
-                    <h5>' . get_string('nowebrtctitle', 'qtype_recordrtc') . '</h5>
-                    <p>' . get_string('nowebrtc', 'qtype_recordrtc') . '</p>
-                </div>
-                <div class="' . $mediaplayerinitiallyhidden . 'media-player">
-                    <audio controls>
-                        <source src="' . $recordingurl . '">
-                    </audio>
-                </div>
-                <div class="hide saving-message">
-                    <small></small>
-                </div>
-                <div class="record-button">
-                    <button type="button" class="btn btn-outline-danger" data-state="' . $state . '">' . $label . '</button>
-                </div>';
-
-            // Add a hidden form field with the draft item id.
-            $result .= html_writer::empty_tag('input', ['type' => 'hidden',
-                    'name' => $qa->get_qt_field_name('recording'), 'value' => $draftitemid]);
+            $result .= $this->cannot_work_warnings();
+            $result .= $this->recording_ui($qa->get_qt_field_name('recording'), $draftitemid,
+                    $recordingurl, $mediaplayerinitiallyhidden, $state, $label);
 
             // Initialise the JavaScript.
             $uploadfilesizelimit = $question->get_upload_size_limit($options->context);
@@ -139,6 +110,92 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         return $result;
     }
 
+    /**
+     * These messages are hidden unless revealed by the JavaScript.
+     *
+     * @return string HTML for the 'this can't work here' messages.
+     */
+    protected function cannot_work_warnings() {
+        return '
+                <div class="hide alert alert-danger https-warning">
+                    <h5>' . get_string('insecurewarningtitle', 'qtype_recordrtc') . '</h5>
+                    <p>' . get_string('insecurewarning', 'qtype_recordrtc') . '</p>
+                </div>
+                <div class="hide alert alert-danger no-webrtc-warning">
+                    <h5>' . get_string('nowebrtctitle', 'qtype_recordrtc') . '</h5>
+                    <p>' . get_string('nowebrtc', 'qtype_recordrtc') . '</p>
+                </div>';
+    }
+
+    /**
+     * Generate the HTML for the recording UI.
+     *
+     * Note: the JavaScript relies on a lot of the CSS class names here.
+     *
+     * @param string $fieldname form field name for the $draftitemid hidden input.
+     * @param int $draftitemid the draft item id for the recording.
+     * @param moodle_url|null $recordingurl URL for the recording, if there is one, else null.
+     * @param string $mediaplayerinitiallyhidden class to add to the .media-player element for the initial visible state.
+     * @param string $state value for the data-state attribute of the record button.
+     * @param string $label label for the record button.
+     * @return string HTML to output.
+     */
+    protected function recording_ui(string $fieldname, int $draftitemid, $recordingurl,
+            string $mediaplayerinitiallyhidden, string $state, string $label) {
+        // Add a hidden form field with the draft item id.
+        $result = html_writer::empty_tag('input', ['type' => 'hidden',
+                'name' => $fieldname, 'value' => $draftitemid]);
+
+        $result .= '
+                <div class="record-widget">
+                    <div class="' . $mediaplayerinitiallyhidden . 'media-player">
+                        <audio controls>
+                            <source src="' . $recordingurl . '">
+                        </audio>
+                    </div>
+                    <div class="hide saving-message">
+                        <small></small>
+                    </div>
+                    <div class="record-button">
+                        <button type="button" class="btn btn-outline-danger" data-state="' . $state . '">' . $label . '</button>
+                    </div>
+                </div>';
+
+        return $result;
+    }
+
+    /**
+     * Render the playback UI - e.g. when the question is reviewed.
+     *
+     * @param string $recordingurl URL for the recording.
+     * @return string HTML to output.
+     */
+    protected function playback_ui(string $recordingurl) {
+        return '
+                <div class="playback-widget">
+                    <div class="media-player">
+                        <audio controls>
+                            <source src="' . $recordingurl . '">
+                        </audio>
+                    </div>
+                </div>';
+    }
+
+    /**
+     * Render a message to say there is no recording.
+     *
+     * @return string HTML to output.
+     */
+    protected function no_recording_message() {
+        return html_writer::div(get_string('norecording', 'qtype_recordrtc'),
+                'alert alert-secondary');
+    }
+
+    /**
+     * Strings our JS will need.
+     *
+     * @return string[] lang string names from the qtype_recordrtc lang file.
+     */
     public function strings_for_js() {
         return [
             'gumabort',
