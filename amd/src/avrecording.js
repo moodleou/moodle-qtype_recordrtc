@@ -55,15 +55,17 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      *  - recorded:  button shows 'Record again'.
      *
      * @param {(AudioSettings|VideoSettings)} type
-     * @param {HTMLMediaElement } mediaElement
+     * @param {HTMLMediaElement} mediaElement
      * @param {HTMLButtonElement} button
      * @param {HTMLElement} uploadProgressElement
+     * @param {NodeList} otherControls other controls to disable while recording is in progress.
      * @param {Object} owner
      * @param {Object} settings
      * @constructor
      */
     function Recorder(type, mediaElement,
-                      button, uploadProgressElement, owner, settings) {
+                      button, uploadProgressElement,
+                      otherControls, owner, settings) {
         /**
          * @type {Recorder} reference to this recorder, for use in event handlers.
          */
@@ -174,6 +176,8 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             button.dataset.state = 'recording';
             startCountdownTimer();
 
+            setOtherControlsEnabled(false);
+
             // Make button clickable again, to allow stopping recording.
             button.disabled = false;
             button.focus();
@@ -230,6 +234,8 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             button.innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
             button.classList.remove('btn-danger');
             button.classList.add('btn-outline-danger');
+
+            setOtherControlsEnabled(true);
 
             // Ask the recording to stop.
             Log.debug('Audio question: stopping recording.');
@@ -349,6 +355,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         function uploadMediaToServer() {
             setUploadMessage('uploadpreparing');
             uploadProgressElement.classList.remove('hide');
+            setOtherControlsEnabled(false);
 
             var fetchRequest = new XMLHttpRequest();
 
@@ -405,6 +412,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             } else if (uploadRequest.status === 404) {
                 setUploadMessage('uploadfailed404');
             }
+            setOtherControlsEnabled(true);
         }
 
         /**
@@ -438,6 +446,17 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         function setUploadMessage(langString, a) {
             uploadProgressElement.querySelector('small').innerText =
                     M.util.get_string(langString, 'qtype_recordrtc', a);
+        }
+
+        /**
+         * Set the state of the otherControls to enabled or disabled.
+         *
+         * @param {boolean} enabled true to enable. False to disable.
+         */
+        function setOtherControlsEnabled(enabled) {
+            otherControls.forEach(function(node) {
+                node.disabled = !enabled;
+            });
         }
 
         /**
@@ -538,13 +557,14 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         var button = questionDiv.querySelector('.record-button button');
         var mediaElement = questionDiv.querySelector('.media-player ' + type);
         var uploadProgressElement = questionDiv.querySelector('.saving-message');
+        var otherControls = questionDiv.querySelectorAll('input.submit[type=submit]');
 
         // Make the callback functions available.
         this.showAlert = showAlert;
         this.notifyRecordingComplete = notifyRecordingComplete;
 
         // Create the recorder.
-        new Recorder(typeInfo, mediaElement, button, uploadProgressElement, this, settings);
+        new Recorder(typeInfo, mediaElement, button, uploadProgressElement, otherControls, this, settings);
 
         /**
          * Show a modal alert.

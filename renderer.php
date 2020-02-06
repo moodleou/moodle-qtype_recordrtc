@@ -49,6 +49,11 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         // Question text.
         $result = html_writer::tag('div', $question->format_questiontext($qa), ['class' => 'qtext']);
 
+        if ($qa->get_state() == question_state::$invalid) {
+            $result .= html_writer::nonempty_tag('div',
+                    $question->get_validation_error([]), ['class' => 'validationerror']);
+        }
+
         if ($options->readonly) {
             if ($existingresponsefile) {
                 $result .= $this->playback_ui(
@@ -100,11 +105,6 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             $PAGE->requires->strings_for_js($this->strings_for_js(), 'qtype_recordrtc');
             $PAGE->requires->js_call_amd('qtype_recordrtc/avrecording', 'init',
                     [$qa->get_outer_question_div_unique_id(), $setting, $question->mediatype]);
-        }
-
-        if ($qa->get_state() == question_state::$invalid) {
-            $result .= html_writer::nonempty_tag('div',
-                    $question->get_validation_error([]), ['class' => 'validationerror']);
         }
 
         return $result;
