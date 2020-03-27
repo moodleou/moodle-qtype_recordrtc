@@ -37,32 +37,60 @@ class qtype_recordrtc_renderer extends qtype_renderer {
     public function formulation_and_controls(question_attempt $qa, question_display_options $options) {
         global $PAGE;
         $question = $qa->get_question();
-        $existingresponsefiles = $qa->get_last_qt_files('recording', $options->context->id);
-        $existingresponsefile = null;
-        foreach ($existingresponsefiles as $file) {
-            if ($file->get_filename() === qtype_recordrtc::AUDIO_FILENAME) {
-                $existingresponsefile = $file;
-                break;
-            }
+        $output = '';
+
+        $existingfiles = $qa->get_last_qt_files('recording', $options->context->id);
+        if (!$options->readonly) {
+            // Prepare a draft file area to store the recordings.
+            $draftitemid = $qa->prepare_response_files_draft_itemid('recording', $options->context->id);
+
+            // Add a hidden form field with the draft item id.
+            $output .= html_writer::empty_tag('input', ['type' => 'hidden',
+                    'name' => $qa->get_qt_field_name('recording'), 'value' => $draftitemid]);
+
+            // Warning for browsers that won't work.
+            $output .= $this->cannot_work_warnings();
         }
 
-        // Question text.
-        $result = html_writer::tag('div', $question->format_questiontext($qa), ['class' => 'qtext']);
-
         if ($qa->get_state() == question_state::$invalid) {
-            $result .= html_writer::nonempty_tag('div',
+            $output .= html_writer::nonempty_tag('div',
                     $question->get_validation_error([]), ['class' => 'validationerror']);
         }
 
-        if ($options->readonly) {
-            if ($existingresponsefile) {
-                $result .= $this->playback_ui(
-                        $qa->get_response_file_url($existingresponsefile));
+        // Replace all the placeholders with the corresponding recording or player widget.
+        $questiontext = $question->format_questiontext($qa);
+        foreach ($question->widgetplaceholders as $placeholder => $filename) {
+            $existingfile = $question->get_file_from_response($filename, $existingfiles);
+
+            if ($options->readonly) {
+                if ($existingfile) {
+                    $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile));
+                } else {
+                    $thisitem = $this->no_recording_message();
+                }
             } else {
-                $result .= $this->no_recording_message();
+
+                if ($existingfile) {
+                    $recordingurl = moodle_url::make_draftfile_url($draftitemid, '/', $filename);
+                    $state = 'recorded';
+                    $label = get_string('recordagain', 'qtype_recordrtc');
+                } else {
+                    $recordingurl = null;
+                    $state = 'new';
+                    $label = get_string('startrecording', 'qtype_recordrtc');
+                }
+
+                // Recording UI.
+                $thisitem = $this->recording_ui($filename, $recordingurl, $state, $label);
             }
 
-        } else {
+            $questiontext = str_replace($placeholder, $thisitem, $questiontext);
+        }
+
+        $output .= html_writer::tag('div', $questiontext, ['class' => 'qtext']);
+
+        if (!$options->readonly) {
+            // Initialise the JavaScript.
             $repositories = repository::get_instances(
                     ['type' => 'upload', 'currentcontext' => $options->context->id]);
             if (empty($repositories)) {
@@ -70,44 +98,21 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             }
             $uploadrepository = reset($repositories); // Get the first (and only) upload repo.
 
-            // Prepare a draft file area to store the recording.
-            $draftitemid = $qa->prepare_response_files_draft_itemid(
-                    'recording', $options->context->id);
-
-            $recordingurl = null;
-            $state = 'new';
-            $label = get_string('startrecording', 'qtype_recordrtc');
-            $mediaplayerinitiallyhidden = 'hide ';
-            if ($existingresponsefile) {
-                $recordingurl = moodle_url::make_draftfile_url($draftitemid, '/', qtype_recordrtc::AUDIO_FILENAME);
-                $state = 'recorded';
-                $label = get_string('recordagain', 'qtype_recordrtc');
-                $mediaplayerinitiallyhidden = '';
-            }
-
-            // Recording UI.
-            $result .= $this->cannot_work_warnings();
-            $result .= $this->recording_ui($qa->get_qt_field_name('recording'), $draftitemid,
-                    $recordingurl, $mediaplayerinitiallyhidden, $state, $label);
-
-            // Initialise the JavaScript.
-            $uploadfilesizelimit = $question->get_upload_size_limit($options->context);
             $setting = [
-                'audioBitRate' => (int) get_config('qtype_recordrtc', 'audiobitrate'),
-                'videoBitRate' => (int) get_config('qtype_recordrtc', 'videobitrate'),
-                'timeLimit' => (int) $question->timelimitinseconds,
-                'maxUploadSize' => $uploadfilesizelimit,
-                'uploadRepositoryId' => (int) $uploadrepository->id,
-                'contextId' => $options->context->id,
-                'draftItemId' => $draftitemid,
+                    'audioBitRate' => (int) get_config('qtype_recordrtc', 'audiobitrate'),
+                    'videoBitRate' => (int) get_config('qtype_recordrtc', 'videobitrate'),
+                    'timeLimit' => (int) $question->timelimitinseconds,
+                    'maxUploadSize' => $question->get_upload_size_limit($options->context),
+                    'uploadRepositoryId' => (int) $uploadrepository->id,
+                    'contextId' => $options->context->id,
+                    'draftItemId' => $draftitemid,
             ];
-
             $PAGE->requires->strings_for_js($this->strings_for_js(), 'qtype_recordrtc');
             $PAGE->requires->js_call_amd('qtype_recordrtc/avrecording', 'init',
                     [$qa->get_outer_question_div_unique_id(), $setting, $question->mediatype]);
         }
 
-        return $result;
+        return $output;
     }
 
     /**
@@ -132,36 +137,40 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      *
      * Note: the JavaScript relies on a lot of the CSS class names here.
      *
-     * @param string $fieldname form field name for the $draftitemid hidden input.
-     * @param int $draftitemid the draft item id for the recording.
+     * @param string $filename the filename to use for this recording.
      * @param moodle_url|null $recordingurl URL for the recording, if there is one, else null.
-     * @param string $mediaplayerinitiallyhidden class to add to the .media-player element for the initial visible state.
      * @param string $state value for the data-state attribute of the record button.
      * @param string $label label for the record button.
      * @return string HTML to output.
      */
-    protected function recording_ui(string $fieldname, int $draftitemid, $recordingurl,
-            string $mediaplayerinitiallyhidden, string $state, string $label) {
-        // Add a hidden form field with the draft item id.
-        $result = html_writer::empty_tag('input', ['type' => 'hidden',
-                'name' => $fieldname, 'value' => $draftitemid]);
+    protected function recording_ui(string $filename, ?moodle_url $recordingurl,
+            string $state, string $label) {
+        if ($recordingurl) {
+            $mediaplayerhideclass = '';
+            $norecordinghideclass = 'hide ';
+        } else {
+            $mediaplayerhideclass = 'hide ';
+            $norecordinghideclass = '';
 
-        $result .= '
-                <div class="record-widget">
-                    <div class="' . $mediaplayerinitiallyhidden . 'media-player">
+        }
+
+        return '
+                <span class="record-widget" data-recording-filename="' . $filename .'">
+                    <span class="' . $norecordinghideclass . 'no-recording-placeholder">' .
+                        get_string('norecording', 'qtype_recordrtc') .
+                    '</span>
+                    <span class="' . $mediaplayerhideclass . 'media-player">
                         <audio controls>
                             <source src="' . $recordingurl . '">
                         </audio>
-                    </div>
-                    <div class="hide saving-message">
+                    </span>
+                    <span class="hide saving-message">
                         <small></small>
-                    </div>
-                    <div class="record-button">
-                        <button type="button" class="btn btn-outline-danger" data-state="' . $state . '">' . $label . '</button>
-                    </div>
-                </div>';
-
-        return $result;
+                    </span>
+                    <span class="record-button">
+                        <button type="button" class="btn btn-outline-danger osep-smallbutton" data-state="' . $state . '">' . $label . '</button>
+                    </span>
+                </span>';
     }
 
     /**
@@ -172,13 +181,13 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      */
     protected function playback_ui(string $recordingurl) {
         return '
-                <div class="playback-widget">
-                    <div class="media-player">
+                <span class="playback-widget">
+                    <span class="media-player">
                         <audio controls>
                             <source src="' . $recordingurl . '">
                         </audio>
-                    </div>
-                </div>';
+                    </span>
+                </span>';
     }
 
     /**
@@ -187,8 +196,12 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      * @return string HTML to output.
      */
     protected function no_recording_message() {
-        return html_writer::div(get_string('norecording', 'qtype_recordrtc'),
-                'alert alert-secondary');
+        return '
+                <span class="playback-widget">
+                    <span class="no-recording-placeholder">' .
+                        get_string('norecording', 'qtype_recordrtc') .
+                    '</span>
+                </span>';
     }
 
     /**

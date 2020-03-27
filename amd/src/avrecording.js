@@ -56,16 +56,18 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      *
      * @param {(AudioSettings|VideoSettings)} type
      * @param {HTMLMediaElement} mediaElement
+     * @param {HTMLMediaElement} noMediaPlaceholder
      * @param {HTMLButtonElement} button
      * @param {HTMLElement} uploadProgressElement
      * @param {NodeList} otherControls other controls to disable while recording is in progress.
+     * @param {string} filename the name of the audio (.ogg) or video file (.webm)
      * @param {Object} owner
      * @param {Object} settings
      * @constructor
      */
-    function Recorder(type, mediaElement,
+    function Recorder(type, mediaElement, noMediaPlaceholder,
                       button, uploadProgressElement,
-                      otherControls, owner, settings) {
+                      otherControls, filename, owner, settings) {
         /**
          * @type {Recorder} reference to this recorder, for use in event handlers.
          */
@@ -132,8 +134,11 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
 
             if (type.hidePlayerDuringRecording) {
                 mediaElement.parentElement.classList.add('hide');
+                noMediaPlaceholder.classList.remove('hide');
+                noMediaPlaceholder.textContent = '';
             } else {
                 mediaElement.parentElement.classList.remove('hide');
+                noMediaPlaceholder.classList.add('hide');
             }
             uploadProgressElement.classList.add('hide');
 
@@ -262,6 +267,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             mediaElement.muted = false;
             mediaElement.controls = true;
             mediaElement.parentElement.classList.remove('hide');
+            noMediaPlaceholder.classList.add('hide');
             mediaElement.focus();
 
             button.innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
@@ -355,6 +361,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         function uploadMediaToServer() {
             setUploadMessage('uploadpreparing');
             uploadProgressElement.classList.remove('hide');
+            noMediaPlaceholder.classList.add('hide');
             setOtherControlsEnabled(false);
 
             var fetchRequest = new XMLHttpRequest();
@@ -383,7 +390,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
 
             // Create FormData to send to PHP filepicker-upload script.
             var formData = new FormData();
-            formData.append('repo_upload_file', blob, type.recordingFilename);
+            formData.append('repo_upload_file', blob, filename);
             formData.append('sesskey', M.cfg.sesskey);
             formData.append('repo_id', settings.uploadRepositoryId);
             formData.append('itemid', settings.draftItemId);
@@ -491,7 +498,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      */
     var AudioSettings = {
         name: 'audio',
-        recordingFilename: 'recording.ogg',
         hidePlayerDuringRecording: true,
         mediaConstraints: {
             audio: true
@@ -508,7 +514,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      */
     var VideoSettings = {
         name: 'video',
-        recordingFilename: 'recording.webm',
         hidePlayerDuringRecording: false,
         mediaConstraints: {
             audio: true,
@@ -553,18 +558,25 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             typeInfo = VideoSettings;
         }
 
-        // Get the key UI elements.
-        var button = questionDiv.querySelector('.record-button button');
-        var mediaElement = questionDiv.querySelector('.media-player ' + type);
-        var uploadProgressElement = questionDiv.querySelector('.saving-message');
-        var otherControls = questionDiv.querySelectorAll('input.submit[type=submit]');
+        // We may have more than one widget in a question.
+        var recorderElements = questionDiv.querySelectorAll('.record-widget');
+        recorderElements.forEach (function(rElement) {
+            // Get the key UI elements.
+            var button = rElement.querySelector('.record-button button');
+            var mediaElement = rElement.querySelector('.media-player ' + type);
+            var noMediaPlaceholder = rElement.querySelector('.no-recording-placeholder');
+            var uploadProgressElement = rElement.querySelector('.saving-message');
+            var otherControls = rElement.querySelectorAll('input.submit[type=submit]');
+            var filename = rElement.dataset.recordingFilename;
 
-        // Make the callback functions available.
-        this.showAlert = showAlert;
-        this.notifyRecordingComplete = notifyRecordingComplete;
+            // Make the callback functions available.
+            this.showAlert = showAlert;
+            this.notifyRecordingComplete = notifyRecordingComplete;
 
-        // Create the recorder.
-        new Recorder(typeInfo, mediaElement, button, uploadProgressElement, otherControls, this, settings);
+            // Create the recorder.
+            new Recorder(typeInfo, mediaElement, noMediaPlaceholder, button,
+                    uploadProgressElement, otherControls, filename, this, settings);
+        });
 
         /**
          * Show a modal alert.

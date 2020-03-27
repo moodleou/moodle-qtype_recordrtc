@@ -41,11 +41,12 @@ class qtype_recordrtc_test_helper extends question_test_helper {
         $q = new qtype_recordrtc_question();
         test_question_maker::initialise_a_question($q);
         $q->name = 'Record audio question';
-        $q->questiontext = '<p>Please record yourself talking about Moodle.</p>';
+        $q->questiontext = '<p>Please record yourself talking about Moodle.</p><div>[[audio]]</div>';
         $q->mediatype = 'audio';
         $q->timelimitinseconds = 30;
         $q->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
         $q->qtype = question_bank::get_qtype('recordrtc');
+        $q->widgetplaceholders = ['[[audio]]' => 'recording.ogg'];
         return $q;
     }
 
@@ -125,7 +126,7 @@ class qtype_recordrtc_test_helper extends question_test_helper {
             'filearea'  => 'draft',
             'itemid'    => $draftid,
             'filepath'  => '/',
-            'filename'  => qtype_recordrtc::AUDIO_FILENAME,
+            'filename'  => 'recording.ogg',
         ];
         $fs->create_file_from_pathname($fileinfo, __DIR__ . '/fixtures/' . $fixturefile);
     }

@@ -50,6 +50,14 @@ class qtype_recordrtc_edit_form extends question_edit_form {
 
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
+
+        // Validate placeholders in the question text.
+        $placeholdererrors = (new qtype_recordrtc)->validate_widget_placeholders($data['questiontext']['text']);
+        if ($placeholdererrors) {
+            $errors['questiontext'] = $placeholdererrors;
+        }
+
+        // Validate the time.
         $maxtimelimit = get_config('qtype_recordrtc', 'timelimit');
         if ($data['timelimitinseconds'] <= 0) {
             $errors['timelimitinseconds'] = get_string('err_timelimitpositive', 'qtype_recordrtc');
@@ -57,6 +65,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
             $errors['timelimitinseconds'] = get_string('err_timelimit', 'qtype_recordrtc',
                     format_time($maxtimelimit));
         }
+
         return $errors;
     }
 

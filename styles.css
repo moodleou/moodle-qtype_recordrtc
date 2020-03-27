@@ -1,15 +1,21 @@
 .que.recordrtc .playback-widget,
 .que.recordrtc .record-widget {
     position: relative;
-    display: flex;
+    display: inline-flex;
     width: 100%;
-    max-width: 40em;
+    max-width: 20em;
     height: calc(2.25rem + 1px);
-    margin: 0.5rem 0 1rem;
 }
-.que.recordrtc .record-widget:not(:last-child) {
-    margin-bottom: 1.5rem;
+.que.recordrtc .playback-widget .no-recording-placeholder,
+.que.recordrtc .record-widget .no-recording-placeholder {
+    width: 100%;
+    margin-right: 4px;
+    padding-top: 3px;
+    color: #676463;
+    background-color: #f0f0f1;
+    text-align: center;
 }
+
 .que.recordrtc .playback-widget .media-player,
 .que.recordrtc .record-widget .media-player {
     flex-grow: 1;
@@ -24,10 +30,11 @@
 }
 .que.recordrtc .record-widget .saving-message {
     position: absolute;
-    top: 2rem;
+    top: 1.75rem;
 }
 .que.recordrtc .record-widget button {
     white-space: nowrap;
+    margin-right: 0;
 }
 
 body#page-question-type-recordrtc.path-question-type .form-group[data-groupname=timelimitinseconds] .sr-only {

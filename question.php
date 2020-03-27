@@ -44,10 +44,9 @@ class qtype_recordrtc_question extends question_with_responses {
     public $mediatype;
 
     /**
-     * @param question_attempt $qa
-     * @param string $preferredbehaviour
-     * @return question_behaviour
+     * @var string[] placeholder => filename
      */
+    public $widgetplaceholders;
 
     public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
         global $CFG;
@@ -102,6 +101,22 @@ class qtype_recordrtc_question extends question_with_responses {
     }
 
     public function is_complete_response(array $response) {
+        // Have all parts of the question been answered?
+        if (!isset($response['recording']) || $response['recording'] === '') {
+            return false;
+        }
+
+        $files = $response['recording']->get_files();
+        foreach ($this->widgetplaceholders as $filename) {
+            if (!$this->get_file_from_response($filename, $files)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function is_gradable_response(array $response) {
+        // Has any parts of the question been answered? If so we might give partial credit.
         if (!isset($response['recording']) || $response['recording'] === '') {
             return false;
         }
@@ -110,11 +125,28 @@ class qtype_recordrtc_question extends question_with_responses {
         return !empty($files);
     }
 
+    /**
+     * Get a specific file from the array of files in a resonse (or null).
+     *
+     * @param string $filename the file we want.
+     * @param stored_file[] $files all the files from a response (e.g. $response['recording']->get_files();)
+     * @return stored_file|null the file, if it exists, or null if not.
+     */
+    public function get_file_from_response(string $filename, array $files): ?stored_file {
+        foreach ($files as $file) {
+            if ($file->get_filename() === $filename) {
+                return $file;
+            }
+        }
+
+        return null;
+    }
+
     public function get_validation_error(array $response) {
         if ($this->is_complete_response($response)) {
             return '';
         }
-        return get_string('pleaserecordsomething', 'qtype_recordrtc');
+        return get_string('pleaserecordsomethingineachpart', 'qtype_recordrtc');
     }
 
     public function is_same_response(array $prevresponse, array $newresponse) {

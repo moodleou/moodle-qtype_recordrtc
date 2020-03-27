@@ -82,7 +82,8 @@ class qtype_recordrtc_question_test extends advanced_testcase {
 
     public function test_get_validation_error_blank() {
         $q = $this->get_a_test_question();
-        $this->assertEquals('Please record something.', $q->get_validation_error([]));
+        $this->assertEquals('Please record an answer to each part of the question.',
+                $q->get_validation_error([]));
     }
 
     public function test_get_validation_error_with_file() {
