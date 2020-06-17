@@ -3,7 +3,7 @@
     position: relative;
     display: inline-flex;
     width: 100%;
-    max-width: 20em;
+    max-width: 21em;
     height: calc(2.25rem + 1px);
 }
 .que.recordrtc .playback-widget .no-recording-placeholder,
