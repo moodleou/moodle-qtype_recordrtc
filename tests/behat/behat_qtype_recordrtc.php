@@ -58,7 +58,7 @@ class behat_qtype_recordrtc extends behat_base {
                 'filearea'  => 'draft',
                 'itemid'    => $draftitemid,
                 'filepath'  => '/',
-                'filename'  => (new qtype_recordrtc())->get_media_filename(),
+                'filename'  => (new qtype_recordrtc())->get_media_filename('recording', 'audio'),
         ];
         $fs = get_file_storage();
         $fs->create_file_from_pathname($fileinfo, __DIR__ . '/../fixtures/' . $fixturefile);

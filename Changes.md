@@ -1,5 +1,17 @@
 # Change log for the Record audio (and video) question type
 
+
+## Changes in 1.1
+
+* You can now have multiple separate audio recorders in one
+  question. Good for creative language questions, for example
+  a simulated dialogue.
+* Various improvements to the usability, and styling, including
+  disabling the Check button while recording is in progress.
+* Fix the bug where you could input a negative 'Maximum duration'.
+* Fix warnings when you tried to close the question preview pop-up.
+
+
 ## Changes in 1.0
 
 * Maximum recording length can be set by the question author.
