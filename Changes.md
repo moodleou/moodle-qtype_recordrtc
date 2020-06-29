@@ -1,6 +1,11 @@
 # Change log for the Record audio (and video) question type
 
 
+## Changes in 1.2
+
+* Fix spelling mistake.
+
+
 ## Changes in 1.1
 
 * You can now have multiple separate audio recorders in one
