@@ -25,8 +25,8 @@
 $string['audio'] = 'Audio';
 $string['audiobitrate'] = 'Audio bitrate';
 $string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality)';
-$string['err_closesquarebrackets'] = 'Missing close quare bracket(s). {$a->format}';
-$string['err_opensquarebrackets'] = 'Missing open quare bracket(s). {$a->format}';
+$string['err_closesquarebrackets'] = 'Missing close square bracket(s). {$a->format}';
+$string['err_opensquarebrackets'] = 'Missing open square bracket(s). {$a->format}';
 $string['err_placeholderformat'] = 'The placeholder format is [[title:audio]], where title is a string (which can contain letters, hyphens and underscores).';
 $string['err_placeholderincorrectformat'] = 'A media placeholder is not in correct format. {$a->format}';
 $string['err_placeholdermediatype'] = '"{$a->text}" is not a valid mediatype. For media type use the string "audio". {$a->format}';
