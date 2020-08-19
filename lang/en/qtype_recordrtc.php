@@ -25,6 +25,8 @@
 $string['audio'] = 'Audio';
 $string['audiobitrate'] = 'Audio bitrate';
 $string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality)';
+$string['downloadasmp3'] = 'MP3';
+$string['downloadasmp4'] = 'MP4';
 $string['err_closesquarebrackets'] = 'Missing close square bracket(s). {$a->format}';
 $string['err_opensquarebrackets'] = 'Missing open square bracket(s). {$a->format}';
 $string['err_placeholderformat'] = 'The placeholder format is [[title:audio]], where title is a string (which can contain letters, hyphens and underscores).';

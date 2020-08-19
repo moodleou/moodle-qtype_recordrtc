@@ -63,4 +63,41 @@ class behat_qtype_recordrtc extends behat_base {
         $fs = get_file_storage();
         $fs->create_file_from_pathname($fileinfo, __DIR__ . '/../fixtures/' . $fixturefile);
     }
+
+    /**
+     * Make it as if the specified user has recorded the given fixture file.
+     *
+     * At the moment, this only works if there is only one recording question on the screen.
+     *
+     * It should not be necesssary to pass the username, but we could not find a good way to work it out.
+     *
+     * @param string $username the username to be used for getting the conterxt.
+     * @param string $fixturefile the full name (filename.extension) of the fixturefile/
+     * @param string $mediatype the media type (audio/video)
+     * @param string $inputname the filename
+     * @throws \Behat\Mink\Exception\ElementNotFoundException
+     * @throws dml_exception
+     * @throws file_exception
+     * @throws stored_file_creation_exception
+     * @When :username has recorded :fixturefile as :type into input :inputname of the record RTC question
+     */
+    public function i_have_recorded_fixture_into_inputname($username, $fixturefile, $mediatype, $inputname) {
+        global $DB;
+
+        $draftitemidnode = $this->get_selected_node('xpath_element', "//input[@type='hidden' and contains(@name, '_recording')]");
+        $draftitemid = $draftitemidnode->getValue();
+
+        $user = $DB->get_record('user', ['username' => $username]);
+        // Create the file in the provided draft area.
+        $fileinfo = [
+            'contextid' => context_user::instance($user->id)->id,
+            'component' => 'user',
+            'filearea'  => 'draft',
+            'itemid'    => $draftitemid,
+            'filepath'  => '/',
+            'filename'  => (new qtype_recordrtc())->get_media_filename($inputname, $mediatype),
+        ];
+        $fs = get_file_storage();
+        $fs->create_file_from_pathname($fileinfo, __DIR__ . '/../fixtures/' . $fixturefile);
+    }
 }

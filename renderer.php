@@ -35,7 +35,6 @@ require_once($CFG->dirroot . '/repository/lib.php');
 class qtype_recordrtc_renderer extends qtype_renderer {
 
     public function formulation_and_controls(question_attempt $qa, question_display_options $options) {
-        global $PAGE;
         $question = $qa->get_question();
         $output = '';
 
@@ -64,7 +63,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
 
             if ($options->readonly) {
                 if ($existingfile) {
-                    $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile));
+                    $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile), $existingfile->get_mimetype());
                 } else {
                     $thisitem = $this->no_recording_message();
                 }
@@ -107,8 +106,8 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                     'contextId' => $options->context->id,
                     'draftItemId' => $draftitemid,
             ];
-            $PAGE->requires->strings_for_js($this->strings_for_js(), 'qtype_recordrtc');
-            $PAGE->requires->js_call_amd('qtype_recordrtc/avrecording', 'init',
+            $this->page->requires->strings_for_js($this->strings_for_js(), 'qtype_recordrtc');
+            $this->page->requires->js_call_amd('qtype_recordrtc/avrecording', 'init',
                     [$qa->get_outer_question_div_unique_id(), $setting, $question->mediatype]);
         }
 
@@ -176,17 +175,30 @@ class qtype_recordrtc_renderer extends qtype_renderer {
     /**
      * Render the playback UI - e.g. when the question is reviewed.
      *
-     * @param string $recordingurl URL for the recording.
+     * @param string $recordingurl URL for the recording
+     * @param string $mimetype, file type (audio, video, zip)
      * @return string HTML to output.
      */
-    protected function playback_ui(string $recordingurl) {
+    protected function playback_ui($recordingurl, $mimetype) {
+        // Prepare download link of icon and the title based on mimetype.
+        switch ($mimetype) {
+            case 'audio/ogg':
+                $downloadlink = html_writer::link($recordingurl,
+                    $this->pix_icon('f/audio', null, null, ['class' => 'download-icon-audio']) .
+                    get_string('downloadasmp3', 'qtype_recordrtc'));
+                break;
+            default:
+                $downloadlink = '';
+                break;
+        }
+
         return '
                 <span class="playback-widget">
                     <span class="media-player">
                         <audio controls>
                             <source src="' . $recordingurl . '">
                         </audio>
-                    </span>
+                    </span> ' . $downloadlink . '
                 </span>';
     }
 

@@ -18,8 +18,9 @@ Feature: Preview record audio questions
       | contextlevel | reference | name           |
       | Course       | C1        | Test questions |
     And the following "questions" exist:
-      | questioncategory | qtype     | name                  | template |
-      | Test questions   | recordrtc | Record audio question | audio    |
+      | questioncategory | qtype     | name                       | template   |
+      | Test questions   | recordrtc | Record audio question      | audio      |
+      | Test questions   | recordrtc | Record multiaudio question | multiaudio |
     And I log in as "teacher"
     And I am on "Course 1" course homepage
     And I navigate to "Question bank" in current page administration
@@ -35,8 +36,32 @@ Feature: Preview record audio questions
     And I should see "I hope you spoke clearly and coherently."
     And I switch to the main window
 
-  Scenario: Preview a question and submit a recording.
-    When I choose "Preview" action for "Record audio question" in the question bank
+  Scenario: Preview an audio question and try to submit a response.
+    Given the following config values are set as admin:
+      | behaviour | immediatefeedback | question_preview |
+      | history   | shown             | question_preview |
+    And I choose "Preview" action for "Record audio question" in the question bank
     And I switch to "questionpreview" window
-    # TODO find a way to simulate responding.
+    And I should see "Please record yourself talking about Moodle."
+    When "teacher" has recorded "moodle-tim.ogg" into the record RTC question
+    And I press "Save and reveal feedback"
+    And I should see "MP3"
+    And I click on "MP3" "link"
+    And I switch to the main window
+
+  Scenario: Preview a multiaudio question with three audio inputs and try to submit three responses.
+    Given the following config values are set as admin:
+      | behaviour | immediatefeedback | question_preview |
+      | history   | shown             | question_preview |
+    And I choose "Preview" action for "Record multiaudio question" in the question bank
+    And I switch to "questionpreview" window
+    And I should see "Please record yourself talking about following aspects of Moodle."
+    And I should see "Development"
+    And I should see "Installation"
+    And I should see "User experience"
+    When "teacher" has recorded "development.ogg" as "audio" into input "development" of the record RTC question
+    And "teacher" has recorded "installation.ogg" as "audio" into input "installation" of the record RTC question
+    And "teacher" has recorded "user_experience.ogg" as "audio" into input "user_experience" of the record RTC question
+    Then I press "Save and reveal feedback"
+    And I click on "MP3" "link"
     And I switch to the main window

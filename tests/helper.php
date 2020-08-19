@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
  */
 class qtype_recordrtc_test_helper extends question_test_helper {
     public function get_test_questions() {
-        return ['audio'];
+        return ['audio', 'multiaudio'];
     }
 
     /**
@@ -80,6 +80,75 @@ class qtype_recordrtc_test_helper extends question_test_helper {
         $questiondata->qtype = 'recordrtc';
         $questiondata->name = 'Record audio question';
         $questiondata->questiontext = '<p>Please record yourself talking about Moodle.</p>';
+        $questiondata->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
+        $questiondata->defaultmark = 1.0;
+
+        $questiondata->options = new stdClass();
+        $questiondata->options->mediatype = 'audio';
+        $questiondata->options->timelimitinseconds = 30;
+
+        return $questiondata;
+    }
+
+    /**
+     * Makes an audio question instance with multiple audio widgets.
+     *
+     * @return qtype_recordrtc_question
+     */
+    public function make_recordrtc_question_multiaudio() {
+        question_bank::load_question_definition_classes('recordrtc');
+        $q = new qtype_recordrtc_question();
+        test_question_maker::initialise_a_question($q);
+        $q->name = 'Record multiaudio question';
+        $q->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
+                            <div>Development: [[development:audio]]</div>
+                            <div>Installation: [[installation:audio]]</div>
+                            <div>User experience: [[user_experience:audio]]</div>';
+        $q->mediatype = 'audio';
+        $q->timelimitinseconds = 30;
+        $q->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
+        $q->qtype = question_bank::get_qtype('recordrtc');
+        $q->widgetplaceholders = ['[[audio]]' => 'development.ogg'];
+        $q->widgetplaceholders = ['[[audio]]' => 'installation.ogg'];
+        $q->widgetplaceholders = ['[[audio]]' => 'user_experience.ogg'];
+        return $q;
+    }
+
+    /**
+     * Make the data what would be received from the editing form for an audio question.
+     *
+     * @return stdClass the data that would be returned by $form->get_gata();
+     */
+    public function get_recordrtc_question_form_data_multiaudio() {
+        $fromform = new stdClass();
+
+        $fromform->name = 'Record multiaudio question';
+        $fromform->questiontext = ['text' => '<p>Please record yourself talking about following aspects of Moodle.</p>
+                            <div>Development: [[development:audio]]</div>
+                            <div>Installation: [[installation:audio]]</div>
+                            <div>User experience: [[user_experience:audio]]</div>', 'format' => FORMAT_HTML];
+        $fromform->mediatype = 'audio';
+        $fromform->timelimitinseconds = 30;
+        $fromform->defaultmark = 1.0;
+        $fromform->generalfeedback = ['text' => '<p>I hope you spoke clearly and coherently.</p>', 'format' => FORMAT_HTML];
+        return $fromform;
+    }
+
+    /**
+     * Make the data what would be received from the editing form for an audio question.
+     *
+     * @return stdClass the data that would be returned by $form->get_gata();
+     */
+    public function get_recordrtc_question_data_multiaudio() {
+        $questiondata = new stdClass();
+        test_question_maker::initialise_question_data($questiondata);
+
+        $questiondata->qtype = 'recordrtc';
+        $questiondata->name = 'Record multiaudio question';
+        $questiondata->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
+                            <div>Development: [[development:audio]]</div>
+                            <div>Installation: [[installation:audio]]</div>
+                            <div>User experience: [[user_experience:audio]]</div>';
         $questiondata->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
         $questiondata->defaultmark = 1.0;
 

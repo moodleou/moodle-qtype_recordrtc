@@ -37,6 +37,13 @@
     margin-right: 0;
 }
 
+.que.recordrtc .download-icon-audio {
+    height: 28px;
+    width: 28px;
+    vertical-align: center;
+    margin-right: 2px;
+}
+
 body#page-question-type-recordrtc.path-question-type .form-group[data-groupname=timelimitinseconds] .sr-only {
     display: none;
 }
