@@ -1,7 +1,7 @@
-@ou @ou_vle @qtype @qtype_recordrtc @_switch_window @javascript
-Feature: Preview record audio questions
+@ou @ou_vle @qtype @qtype_recordrtc @_switch_window @javascript @mktest
+Feature: Preview record audio and video questions
   As a teacher
-  In order to check record audio questions will work for students
+  In order to check record audio and video questions will work for students
   I need to preview them
 
   Background:
@@ -18,9 +18,9 @@ Feature: Preview record audio questions
       | contextlevel | reference | name           |
       | Course       | C1        | Test questions |
     And the following "questions" exist:
-      | questioncategory | qtype     | name                       | template   |
-      | Test questions   | recordrtc | Record audio question      | audio      |
-      | Test questions   | recordrtc | Record multiaudio question | multiaudio |
+      | questioncategory | qtype     | name                     | template |
+      | Test questions   | recordrtc | Record audio question    | audio    |
+      | Test questions   | recordrtc | Record customav question | customav |
     And I log in as "teacher"
     And I am on "Course 1" course homepage
     And I navigate to "Question bank" in current page administration
@@ -49,11 +49,11 @@ Feature: Preview record audio questions
     And I click on "MP3" "link"
     And I switch to the main window
 
-  Scenario: Preview a multiaudio question with three audio inputs and try to submit three responses.
+  Scenario: Preview a Customised (customav) question with three audio inputs and try to submit three responses.
     Given the following config values are set as admin:
       | behaviour | immediatefeedback | question_preview |
       | history   | shown             | question_preview |
-    And I choose "Preview" action for "Record multiaudio question" in the question bank
+    And I choose "Preview" action for "Record customav question" in the question bank
     And I switch to "questionpreview" window
     And I should see "Please record yourself talking about following aspects of Moodle."
     And I should see "Development"

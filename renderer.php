@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The record audio (and video) question type question renderer class.
+ * The record audio and video question type question renderer class.
  *
  * @package   qtype_recordrtc
  * @copyright 2019 The Open University
@@ -27,7 +27,7 @@ require_once($CFG->dirroot . '/repository/lib.php');
 
 
 /**
- * Generates output for record audio (and video) questions.
+ * Generates output for record audio and video questions.
  *
  * @copyright 2019 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -58,17 +58,16 @@ class qtype_recordrtc_renderer extends qtype_renderer {
 
         // Replace all the placeholders with the corresponding recording or player widget.
         $questiontext = $question->format_questiontext($qa);
-        foreach ($question->widgetplaceholders as $placeholder => $filename) {
+        foreach ($question->widgetplaceholders as $placeholder => [$title, $mediatype]) {
+            $filename = \qtype_recordrtc::get_media_filename($title, $mediatype);
             $existingfile = $question->get_file_from_response($filename, $existingfiles);
-
             if ($options->readonly) {
                 if ($existingfile) {
-                    $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile), $existingfile->get_mimetype());
+                    $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile), $mediatype);
                 } else {
                     $thisitem = $this->no_recording_message();
                 }
             } else {
-
                 if ($existingfile) {
                     $recordingurl = moodle_url::make_draftfile_url($draftitemid, '/', $filename);
                     $state = 'recorded';
@@ -80,7 +79,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 }
 
                 // Recording UI.
-                $thisitem = $this->recording_ui($filename, $recordingurl, $state, $label);
+                $thisitem = $this->recording_ui($filename, $recordingurl, $state, $label, $mediatype);
             }
 
             $questiontext = str_replace($placeholder, $thisitem, $questiontext);
@@ -96,11 +95,12 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 throw new moodle_exception('errornouploadrepo', 'moodle');
             }
             $uploadrepository = reset($repositories); // Get the first (and only) upload repo.
-
             $setting = [
+                    'timeLimit' => (int) $question->timelimitinseconds,
                     'audioBitRate' => (int) get_config('qtype_recordrtc', 'audiobitrate'),
                     'videoBitRate' => (int) get_config('qtype_recordrtc', 'videobitrate'),
-                    'timeLimit' => (int) $question->timelimitinseconds,
+                    'videoWidth' => (int) explode(',', get_config('qtype_recordrtc', 'videosize'))[0],
+                    'videoHeight' => (int) explode(',', get_config('qtype_recordrtc', 'videosize'))[1],
                     'maxUploadSize' => $question->get_upload_size_limit($options->context),
                     'uploadRepositoryId' => (int) $uploadrepository->id,
                     'contextId' => $options->context->id,
@@ -108,9 +108,8 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             ];
             $this->page->requires->strings_for_js($this->strings_for_js(), 'qtype_recordrtc');
             $this->page->requires->js_call_amd('qtype_recordrtc/avrecording', 'init',
-                    [$qa->get_outer_question_div_unique_id(), $setting, $question->mediatype]);
+                    [$qa->get_outer_question_div_unique_id(), $setting]);
         }
-
         return $output;
     }
 
@@ -139,11 +138,12 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      * @param string $filename the filename to use for this recording.
      * @param moodle_url|null $recordingurl URL for the recording, if there is one, else null.
      * @param string $state value for the data-state attribute of the record button.
+     * @param string $mediatype audio or video.
      * @param string $label label for the record button.
      * @return string HTML to output.
      */
     protected function recording_ui(string $filename, ?moodle_url $recordingurl,
-            string $state, string $label) {
+            string $state, string $label, $mediatype) {
         if ($recordingurl) {
             $mediaplayerhideclass = '';
             $norecordinghideclass = 'hide ';
@@ -152,54 +152,49 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             $norecordinghideclass = '';
 
         }
+        // Set the 'No recording' lanuage string.
+        $norecordinglangstring = get_string('norecording', 'qtype_recordrtc');
 
         return '
-                <span class="record-widget" data-recording-filename="' . $filename .'">
-                    <span class="' . $norecordinghideclass . 'no-recording-placeholder">' .
-                        get_string('norecording', 'qtype_recordrtc') .
-                    '</span>
-                    <span class="' . $mediaplayerhideclass . 'media-player">
-                        <audio controls>
-                            <source src="' . $recordingurl . '">
-                        </audio>
-                    </span>
-                    <span class="hide saving-message">
-                        <small></small>
-                    </span>
-                    <span class="record-button">
-                        <button type="button" class="btn btn-outline-danger osep-smallbutton" data-state="' . $state . '">' . $label . '</button>
-                    </span>
-                </span>';
+            <span class="record-widget" data-media-type="' . $mediatype . '" data-recording-filename="' . $filename . '">
+                <span class="' . $norecordinghideclass . 'no-recording-placeholder" >' .
+                    $norecordinglangstring .
+                '</span>
+                <span class="' . $mediaplayerhideclass . 'media-player ' . $mediatype . '">
+                    <' . $mediatype . ' controls>
+                        <source src="' . $recordingurl . '">
+                    </' . $mediatype .'>
+                </span>
+                <span class="hide saving-message">
+                    <small></small>
+                </span>
+                <span class="record-button">
+                    <button type="button" class="btn btn-outline-danger osep-smallbutton"
+                        data-state="' . $state . '">' . $label . '</button>
+                </span>
+            </span>';
     }
 
     /**
      * Render the playback UI - e.g. when the question is reviewed.
      *
-     * @param string $recordingurl URL for the recording
-     * @param string $mimetype, file type (audio, video, zip)
+     * @param string $recordingurl URL for the recording.
+     * @param string $mediatype audio or video.
      * @return string HTML to output.
      */
-    protected function playback_ui($recordingurl, $mimetype) {
+    protected function playback_ui($recordingurl, $mediatype) {
         // Prepare download link of icon and the title based on mimetype.
-        switch ($mimetype) {
-            case 'audio/ogg':
-                $downloadlink = html_writer::link($recordingurl,
-                    $this->pix_icon('f/audio', null, null, ['class' => 'download-icon-audio']) .
-                    get_string('downloadasmp3', 'qtype_recordrtc'));
-                break;
-            default:
-                $downloadlink = '';
-                break;
-        }
-
+        $downloadlink = html_writer::link($recordingurl,
+                $this->pix_icon('f/' . $mediatype, null, null, ['class' => 'download-icon-' . $mediatype]) .
+                    get_string('download' . $mediatype, 'qtype_recordrtc'));
         return '
-                <span class="playback-widget">
-                    <span class="media-player">
-                        <audio controls>
-                            <source src="' . $recordingurl . '">
-                        </audio>
-                    </span> ' . $downloadlink . '
-                </span>';
+            <span class="playback-widget">
+                <span class="media-player ' . $mediatype . '">
+                    <' . $mediatype . ' controls>
+                        <source src="' . $recordingurl .'">
+                    </' . $mediatype . '>
+                </span> ' . $downloadlink . '
+            </span>';
     }
 
     /**
@@ -209,11 +204,11 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      */
     protected function no_recording_message() {
         return '
-                <span class="playback-widget">
-                    <span class="no-recording-placeholder">' .
-                        get_string('norecording', 'qtype_recordrtc') .
-                    '</span>
-                </span>';
+            <span class="playback-widget">
+                <span class="no-recording-placeholder">' .
+                    get_string('norecording', 'qtype_recordrtc') .
+                '</span>
+            </span>';
     }
 
     /**

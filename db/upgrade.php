@@ -97,7 +97,7 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
 
     if ($oldversion < 2020012203) {
 
-        // Add semicolons between statements in questionvariables.
+        // Get rows with relevant question ids to update mediatype column in qtype_recordrtc_options table.
         $toupdatecount = $DB->count_records_sql("
                 SELECT COUNT(1)
                   FROM {question} q
@@ -114,7 +114,7 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
             $done = 0;
             foreach ($rs as $row) {
                 $pbar->update($done, $toupdatecount,
-                        "Creating options for record audio questions - {$done}/{$toupdatecount} (id = {$row->id}).");
+                        "Creating options for record audio/video questions - {$done}/{$toupdatecount} (id = {$row->id}).");
 
                 $newoptions = new stdClass();
                 $newoptions->questionid = $row->id;
@@ -131,6 +131,43 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
 
         // Recordrtc savepoint reached.
         upgrade_plugin_savepoint(true, 2020012203, 'qtype', 'recordrtc');
+    }
+
+    // Change the mediatype of questions with multiple audio inputs for 'audio' to 'customav'.
+    if ($oldversion < 2020101900) {
+
+        // Add semicolons between statements in questionvariables.
+        $toupdatecount = $DB->count_records_sql("
+                SELECT COUNT(1)
+                  FROM {question} q
+             LEFT JOIN {qtype_recordrtc_options} o ON o.questionid = q.id
+                 WHERE q.questiontext LIKE ? AND o.mediatype=?", ['%:audio%', 'audio' ]);
+        if ($toupdatecount > 0) {
+            $rs = $DB->get_recordset_sql("
+                SELECT q.id
+                  FROM {question} q
+             LEFT JOIN {qtype_recordrtc_options} o ON o.questionid = q.id
+                 WHERE q.questiontext LIKE ? AND o.mediatype=?", ['%:audio%', 'audio' ]);
+            $pbar = new progress_bar('createrecordrtcquestionoptions', 500, true);
+
+            $done = 0;
+            foreach ($rs as $row) {
+                $pbar->update($done, $toupdatecount,
+                    "Changing the mediatype of questions with multiple audio inputs from 'audio' to 'customav' - " .
+                    "{$done}/{$toupdatecount} (id = {$row->id}).");
+
+                $DB->set_field('qtype_recordrtc_options', 'mediatype', 'customav', ['questionid' => $row->id]);
+
+                $done++;
+            }
+            $pbar->update($done, $toupdatecount,
+                "Changed the mediatype of questions with multiple audio inputs from 'audio' to 'customav' - " .
+                "{$done}/{$toupdatecount}.");
+            $rs->close();
+        }
+
+        // Recordrtc savepoint reached.
+        upgrade_plugin_savepoint(true, 2020101900, 'qtype', 'recordrtc');
     }
 
     return true;

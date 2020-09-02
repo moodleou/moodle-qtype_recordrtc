@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Question class for the record audio (and video) question type.
+ * Question class for the record audio and video question type.
  *
  * @package   qtype_recordrtc
  * @copyright 2019 The Open University
@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 
 /**
- * A record audio (and video) question that is being attempted.
+ * A record audio and video question that is being attempted.
  *
  * @copyright 2019 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -39,7 +39,7 @@ class qtype_recordrtc_question extends question_with_responses {
     public $timelimitinseconds;
 
     /**
-     * @var string media type, 'audio' or 'video'.
+     * @var string media type, 'audio', 'video' or 'customav'
      */
     public $mediatype;
 
@@ -107,7 +107,8 @@ class qtype_recordrtc_question extends question_with_responses {
         }
 
         $files = $response['recording']->get_files();
-        foreach ($this->widgetplaceholders as $filename) {
+        foreach ($this->widgetplaceholders as $unused => [$title, $mediatype]) {
+            $filename = \qtype_recordrtc::get_media_filename($title, $mediatype);
             if (!$this->get_file_from_response($filename, $files)) {
                 return false;
             }

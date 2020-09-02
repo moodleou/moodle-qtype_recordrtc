@@ -1,7 +1,7 @@
 @ou @ou_vle @qtype @qtype_recordrtc
-Feature: Test importing record audio questions
+Feature: Test importing record audio and video questions
   As a teacher
-  In order to reuse record audio questions
+  In order to reuse record audio and video questions
   I need to import them
 
   Background:
@@ -18,7 +18,7 @@ Feature: Test importing record audio questions
     And I am on "Course 1" course homepage
 
   @javascript @_file_upload
-  Scenario: import a record audio question.
+  Scenario: import a record audio and video question.
     When I navigate to "Question bank > Import" in current page administration
     And I set the field "id_format_xml" to "1"
     And I upload "question/type/recordrtc/tests/fixtures/audio-question.xml" file to "Import" filemanager

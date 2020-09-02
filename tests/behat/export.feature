@@ -1,7 +1,7 @@
 @ou @ou_vle @qtype @qtype_recordrtc
-Feature: Test exporting record audio questions
+Feature: Test exporting record audio and video questions
   As a teacher
-  In order to be able to reuse my record audio questions
+  In order to be able to reuse my record audio and video questions
   I need to export them
 
   Background:
@@ -24,7 +24,7 @@ Feature: Test exporting record audio questions
     And I am on "Course 1" course homepage
 
   @javascript
-  Scenario: Export a record audio questions
+  Scenario: Export a record audio and video questions
     When I navigate to "Question bank > Export" in current page administration
     And I set the field "id_format_xml" to "1"
     And I press "Export questions to file"

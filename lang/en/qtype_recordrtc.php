@@ -22,16 +22,20 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['audio'] = 'Audio';
+$string['audio'] = 'Audio only';
 $string['audiobitrate'] = 'Audio bitrate';
 $string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality)';
-$string['downloadasmp3'] = 'MP3';
-$string['downloadasmp4'] = 'MP4';
+$string['customav'] = 'Custom A / V';
+$string['downloadaudio'] = 'MP3';
+$string['downloadvideo'] = 'MP4';
 $string['err_closesquarebrackets'] = 'Missing close square bracket(s). {$a->format}';
+$string['err_multiplerecorders'] = 'Only one {$a} recorder allowed here, for  multiple recorder set the Media type to Custom A/V';
 $string['err_opensquarebrackets'] = 'Missing open square bracket(s). {$a->format}';
-$string['err_placeholderformat'] = 'The placeholder format is [[title:audio]], where title is a string (which can contain letters, hyphens and underscores).';
+$string['err_placeholderformat'] = 'The placeholder format is [[title:audio]] or [[title:video]], where title is a string and can contain letters, numbers, hyphens and underscores.';
 $string['err_placeholderincorrectformat'] = 'A media placeholder is not in correct format. {$a->format}';
-$string['err_placeholdermediatype'] = '"{$a->text}" is not a valid mediatype. For media type use the string "audio". {$a->format}';
+$string['err_placeholdermediatype'] = '"{$a->text}" is not a valid mediatype. For media type use the string "audio" or "video". {$a->format}';
+$string['err_placeholderneeded'] = 'Media type "{$a}" requires customised media placeholders within the question text.';
+$string['err_placeholdernotallowed'] = 'Media type "{$a}" does not allow customised media placeholders within the question text.';
 $string['err_placeholdertitle'] = '"{$a->text}" is not a valid title. For title use a suitable string. {$a->format}';
 $string['err_placeholdertitlecase'] = '"{$a->text}" is not a valid title. Titles may only contain lower-case letters. {$a->format}';
 $string['err_placeholdertitleduplicate'] = '"{$a->text}" has been used more than once. Each title must be different.';
@@ -57,7 +61,13 @@ $string['gumtype'] = 'Tried to get stream from the webcam/microphone, but no con
 $string['gumtype_title'] = 'No constraints specified';
 $string['mediatype'] = 'Media type';
 $string['mediatype_dec'] = 'Currently this works only with audio, but video will be added soon.';
-$string['mediatype_help'] = 'Is the student being asked to record audio or video.';
+$string['mediatype_help'] = 'Is the student being asked to record only one audio, only one video, or number of audios and/or videos.
+
+<b>Audio only:</b> An audio recorder/player will be displayed at the bottom of the question text.
+
+<b>Video only:</b> A video recorder/player will be displayed at the bottom of the question text.
+
+<b>Custom A / V:</b> Question authors/editors provide required audio/video-placeholders within the question text, for instance, [[title_a1:audio]], [[title_v1:video]], where \'title_a1\' and \'title_v1\' are the titles and ultimately the recorded audio/video file names respectively.';
 $string['insecurewarning'] = 'Your browser will not allow this plugin to work unless it is used over HTTPS.';
 $string['insecurewarningtitle'] = 'Insecure connection';
 $string['nearingmaxsize'] = 'You have attained the maximum size limit for file uploads';
@@ -65,14 +75,17 @@ $string['nearingmaxsize_title'] = 'Recording stopped';
 $string['norecording'] = 'No recording';
 $string['nowebrtc'] = 'Your browser offers limited or no support for WebRTC technologies yet, and cannot be used with this type of question. Please switch or upgrade your browser.';
 $string['nowebrtctitle'] = 'WebRTC not supported';
+$string['optionsforaudio'] = 'Audio options';
+$string['optionsforaudioandvideo'] = 'Audio and video options';
+$string['optionsforvideo'] = 'Video options';
 $string['pleaserecordsomethingineachpart'] = 'Please complete your answer.';
-$string['pluginname'] = 'Record audio';
+$string['pluginname'] = 'Record audio and video';
 $string['pluginname_help'] = 'Students respond by recording some audio directly in their web browser, which can then be graded manually.';
 $string['pluginname_link'] = 'question/type/recordrtc';
-$string['pluginnameadding'] = 'Adding a record audio question';
-$string['pluginnameediting'] = 'Editing a record audio question';
+$string['pluginnameadding'] = 'Adding a record audio and video question';
+$string['pluginnameediting'] = 'Editing a record audio and video question';
 $string['pluginnamesummary'] = 'Students respond by recording some audio directly in their web browser, which can then be graded manually.';
-$string['privacy:metadata'] = 'The Record audio question type plugin does not store any personal data.';
+$string['privacy:metadata'] = 'The Record audio and video question type plugin does not store any personal data.';
 $string['recordagain'] = 'Re-record';
 $string['recordingfailed'] = 'Recording failed, try again';
 $string['startrecording'] = 'Start recording';
@@ -86,6 +99,8 @@ $string['uploadfailed'] = 'Uploading the recording failed';
 $string['uploadfailed404'] = 'Uploading the recording failed: the file is probably too large';
 $string['uploadpreparing'] = 'Preparing to uploading ...';
 $string['uploadprogress'] = 'Uploading recording ({$a}) ...';
-$string['video'] = 'Video';
+$string['video'] = 'Video only';
 $string['videobitrate'] = 'Video bitrate';
 $string['videobitrate_desc'] = 'Quality of video recording (larger number means higher quality)';
+$string['videosize'] = 'Video size';
+$string['videosize_desc'] = 'The size of the video.';

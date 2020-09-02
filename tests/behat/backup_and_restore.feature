@@ -1,7 +1,7 @@
 @ou @ou_vle @qtype @qtype_recordrtc
-Feature: Test duplicating a quiz containing record audio questions
+Feature: Test duplicating a quiz containing record audio and video questions
   As a teacher
-  In order re-use my courses containing Record audio questions
+  In order re-use my courses containing Record audio and video questions
   I need to be able to backup and restore them
 
   Background:
@@ -23,7 +23,7 @@ Feature: Test duplicating a quiz containing record audio questions
     And I am on "Course 1" course homepage
 
   @javascript
-  Scenario: Backup and restore a course containing a record audio question
+  Scenario: Backup and restore a course containing a record audio and video question
     When I backup "Course 1" course using this options:
       | Confirmation | Filename | test_backup.mbz |
     And I restore "test_backup.mbz" backup into a new course using this options:

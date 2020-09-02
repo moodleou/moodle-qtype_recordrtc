@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for what happens when a record audio (and video) question is attempted.
+ * Unit tests for what happens when a record audio and video question is attempted.
  *
  * @package    qtype_recordrtc
  * @copyright  2019 The Open University
@@ -29,7 +29,7 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 
 
 /**
- * Unit tests for what happens when a record audio (and video) question is attempted.
+ * Unit tests for what happens when a record audio and video question is attempted.
  */
 class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_base {
 

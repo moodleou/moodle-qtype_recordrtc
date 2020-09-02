@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Record audio (and one day video) question type version information.
+ * Record audio and video question type version information.
  *
  * @package   qtype_recordrtc
  * @copyright 2019 The Open University
@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2020062900;
+$plugin->version   = 2020101900;
 $plugin->requires  = 2018120300;
 $plugin->component = 'qtype_recordrtc';
 $plugin->maturity  = MATURITY_STABLE;

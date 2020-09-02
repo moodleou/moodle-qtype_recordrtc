@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Admin settings for the record audio (and video) question type.
+ * Admin settings for the record audio and video question type.
  *
  * @package   qtype_recordrtc
  * @copyright 2019 The Open University
@@ -26,13 +26,53 @@ defined('MOODLE_INTERNAL') || die();
 
 if ($ADMIN->fulltree) {
 
-    // Audio bitrate.
-    $settings->add(new admin_setting_configtext('qtype_recordrtc/audiobitrate',
-            get_string('audiobitrate', 'qtype_recordrtc'), get_string('audiobitrate_desc', 'qtype_recordrtc'),
-            128000, PARAM_INT, 8));
+    // Default settings for audio.
+    $settings->add(new admin_setting_heading('audiovideoheading',
+        get_string('optionsforaudioandvideo', 'qtype_recordrtc'), ''));
 
     // Recording time limit.
     $settings->add(new admin_setting_configduration('qtype_recordrtc/timelimit',
-            get_string('timelimit', 'qtype_recordrtc'), get_string('timelimit_desc', 'qtype_recordrtc'),
-            600, 60));
+        get_string('timelimit', 'qtype_recordrtc'), get_string('timelimit_desc', 'qtype_recordrtc'),
+        600, 60));
+
+    // Default settings for audio.
+    $settings->add(new admin_setting_heading('audiooptionsheading',
+        get_string('optionsforaudio', 'qtype_recordrtc'), ''));
+
+    // Audio bitrate.
+    $settings->add(new admin_setting_configtext('qtype_recordrtc/audiobitrate',
+        get_string('audiobitrate', 'qtype_recordrtc'), get_string('audiobitrate_desc', 'qtype_recordrtc'),
+        128000, PARAM_INT, 8));
+
+
+    // Default settings for video.
+    $settings->add(new admin_setting_heading('videooptionsheading',
+        get_string('optionsforvideo', 'qtype_recordrtc'), ''));
+
+    // Video bitrate.
+    $settings->add(new admin_setting_configtext('qtype_recordrtc/videobitrate',
+        get_string('videobitrate', 'qtype_recordrtc'), get_string('videobitrate_desc', 'qtype_recordrtc'),
+        2500000, PARAM_INT, 8));
+
+    // Video size settings.
+    // Number of items to display in a box.
+    $options = [
+        '240,180' => '240 x 180 (4:3)',
+        '320,180' => '320 x 180 (16:9)',
+        '320,240' => '320 x 240 (4:3)',
+        '426,240' => '426 x 240 (16:9)',
+        '384,288' => '384 x 288 (4:3)',
+        '512,288' => '512 x 288 (16:9)',
+        '480,360' => '480 x 360 (4:3)',
+        '640,360' => '640 x 360 (16:9))',
+        '576,432' => '576 x 432 (4:3)',
+        '640,480' => '640 x 480 (4:3)',
+        '768,432' => '768 x 432 (16:9)',
+        '768,576' => '768 x 576 (4:3)',
+        '1280,720' => '1280 x 720 (16:9)',
+        '1024,768' => '1024 x 768 (4:3)'
+    ];
+    $settings->add(new admin_setting_configselect('qtype_recordrtc/videosize',
+        get_string('videosize', 'qtype_recordrtc'),
+        get_string('videosize_desc', 'qtype_recordrtc'), '320,180', $options));
 }

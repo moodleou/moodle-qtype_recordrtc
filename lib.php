@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Standard Moodle hooks for the record audio (and video) question type.
+ * Standard Moodle hooks for the record audio and video question type.
  *
  * @package   qtype_recordrtc
  * @copyright 2019 The Open University
@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Checks file access for the record audio (and video) question type.
+ * Checks file access for the record audio and video question type.
  *
  * @category files
  *

@@ -29,7 +29,7 @@ require_once($CFG->dirroot . '/question/type/recordrtc/question.php');
 
 
 /**
- * Unit tests for the record audio (and video) question definition class.
+ * Unit tests for the record audio and video question definition class.
  *
  * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

@@ -1,7 +1,7 @@
 @ou @ou_vle @qtype @qtype_recordrtc
-Feature: Test editing record audio questions
+Feature: Test editing record audio and video questions
   As a teacher
-  In order to be able to update my record audio questions
+  In order to be able to update my record audio and video questions
   I need to edit them
 
   Background:
@@ -25,7 +25,7 @@ Feature: Test editing record audio questions
     And I navigate to "Question bank" in current page administration
 
   @javascript
-  Scenario: Edit record audio question
+  Scenario: Edit record audio and video question
     When I choose "Edit question" action for "Record audio question" in the question bank
     And I set the following fields to these values:
       | Question name                  | Edited question name |

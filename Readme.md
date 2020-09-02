@@ -1,4 +1,4 @@
-# Record audio (and video) question type [![Build Status](https://travis-ci.com/moodleou/moodle-qtype_recordrtc.svg?branch=master)](https://travis-ci.com/moodleou/moodle-qtype_recordrtc)
+# Record audio and video question type [![Build Status](https://travis-ci.com/moodleou/moodle-qtype_recordrtc.svg?branch=master)](https://travis-ci.com/moodleou/moodle-qtype_recordrtc)
 
 This question type is like the standard essay qusetion type, but instead
 of writing some text, students have a recording widget where they can

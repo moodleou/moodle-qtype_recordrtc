@@ -1,4 +1,4 @@
-# Change log for the Record audio (and video) question type
+# Change log for the Record audio and video question type
 
 
 ## Changes in 1.2

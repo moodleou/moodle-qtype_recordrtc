@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the editing form for record audio (and video) questions.
+ * Defines the editing form for record audio and video questions.
  *
  * @package   qtype_recordrtc
  * @copyright 2019 The Open University
@@ -28,7 +28,7 @@ require_once($CFG->dirroot . '/question/type/edit_question_form.php');
 
 
 /**
- * The editing form for record audio (and video) questions.
+ * The editing form for record audio and video questions.
  *
  * @copyright 2019 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -38,8 +38,18 @@ class qtype_recordrtc_edit_form extends question_edit_form {
     protected function definition_inner($mform) {
 
         // Field for mediatype.
-        $mform->addElement('hidden', 'mediatype', 'audio');
+        $mediaoptions = [
+            qtype_recordrtc::MEDIA_TYPE_AUDIO => get_string(
+                qtype_recordrtc::MEDIA_TYPE_AUDIO, 'qtype_recordrtc'),
+            qtype_recordrtc::MEDIA_TYPE_VIDEO => get_string(
+                qtype_recordrtc::MEDIA_TYPE_VIDEO, 'qtype_recordrtc'),
+            qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV => get_string(
+                qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV, 'qtype_recordrtc')
+        ];
+        $mform->addElement('select', 'mediatype', get_string('mediatype', 'qtype_recordrtc'), $mediaoptions);
         $mform->setType('mediatype', PARAM_ALPHA);
+        $mform->addHelpButton('mediatype', 'mediatype', 'qtype_recordrtc');
+        $mform->setDefault('mediatype', qtype_recordrtc::MEDIA_TYPE_AUDIO);
 
         // Field for timelimitinseconds.
         $mform->addElement('duration', 'timelimitinseconds', get_string('timelimit', 'qtype_recordrtc'),
@@ -52,7 +62,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $errors = parent::validation($data, $files);
 
         // Validate placeholders in the question text.
-        $placeholdererrors = (new qtype_recordrtc)->validate_widget_placeholders($data['questiontext']['text']);
+        $placeholdererrors = (new qtype_recordrtc)->validate_widget_placeholders($data['questiontext']['text'], $data['mediatype']);
         if ($placeholdererrors) {
             $errors['questiontext'] = $placeholdererrors;
         }

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * Contains the helper class for the record audio (and video) question type.
+ * Contains the helper class for the record audio and video question type.
  *
  * @package   qtype_recordrtc
  * @copyright 2019 The Open University
@@ -24,11 +24,11 @@ defined('MOODLE_INTERNAL') || die();
 
 
 /**
- * Test helper class for the record audio (and video) question type.
+ * Test helper class for the record audio and video question type.
  */
 class qtype_recordrtc_test_helper extends question_test_helper {
     public function get_test_questions() {
-        return ['audio', 'multiaudio'];
+        return ['recordrtc', 'audio', 'customav'];
     }
 
     /**
@@ -41,12 +41,12 @@ class qtype_recordrtc_test_helper extends question_test_helper {
         $q = new qtype_recordrtc_question();
         test_question_maker::initialise_a_question($q);
         $q->name = 'Record audio question';
-        $q->questiontext = '<p>Please record yourself talking about Moodle.</p><div>[[audio]]</div>';
+        $q->questiontext = '<p>Please record yourself talking about Moodle.</p>';
         $q->mediatype = 'audio';
         $q->timelimitinseconds = 30;
         $q->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
         $q->qtype = question_bank::get_qtype('recordrtc');
-        $q->widgetplaceholders = ['[[audio]]' => 'recording.ogg'];
+        $q->widgetplaceholders = ['[[recording:audio]]' => ['recording', 'audio']];
         return $q;
     }
 
@@ -95,22 +95,22 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      *
      * @return qtype_recordrtc_question
      */
-    public function make_recordrtc_question_multiaudio() {
+    public function make_recordrtc_question_customav() {
         question_bank::load_question_definition_classes('recordrtc');
         $q = new qtype_recordrtc_question();
         test_question_maker::initialise_a_question($q);
-        $q->name = 'Record multiaudio question';
+        $q->name = 'Record customav question';
         $q->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
                             <div>Development: [[development:audio]]</div>
                             <div>Installation: [[installation:audio]]</div>
                             <div>User experience: [[user_experience:audio]]</div>';
-        $q->mediatype = 'audio';
+        $q->mediatype = 'customav';
         $q->timelimitinseconds = 30;
         $q->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
         $q->qtype = question_bank::get_qtype('recordrtc');
-        $q->widgetplaceholders = ['[[audio]]' => 'development.ogg'];
-        $q->widgetplaceholders = ['[[audio]]' => 'installation.ogg'];
-        $q->widgetplaceholders = ['[[audio]]' => 'user_experience.ogg'];
+        $q->widgetplaceholders = ['[[development:audio]]' => ['development', 'audio']];
+        $q->widgetplaceholders = ['[[installation:audio]]' => ['installation', 'audio']];
+        $q->widgetplaceholders = ['[[user_experience:audio]]' => ['user_experience', 'audio']];
         return $q;
     }
 
@@ -119,15 +119,15 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      *
      * @return stdClass the data that would be returned by $form->get_gata();
      */
-    public function get_recordrtc_question_form_data_multiaudio() {
+    public function get_recordrtc_question_form_data_customav() {
         $fromform = new stdClass();
 
-        $fromform->name = 'Record multiaudio question';
+        $fromform->name = 'Record customav question';
         $fromform->questiontext = ['text' => '<p>Please record yourself talking about following aspects of Moodle.</p>
                             <div>Development: [[development:audio]]</div>
                             <div>Installation: [[installation:audio]]</div>
                             <div>User experience: [[user_experience:audio]]</div>', 'format' => FORMAT_HTML];
-        $fromform->mediatype = 'audio';
+        $fromform->mediatype = 'customav';
         $fromform->timelimitinseconds = 30;
         $fromform->defaultmark = 1.0;
         $fromform->generalfeedback = ['text' => '<p>I hope you spoke clearly and coherently.</p>', 'format' => FORMAT_HTML];
@@ -139,12 +139,12 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      *
      * @return stdClass the data that would be returned by $form->get_gata();
      */
-    public function get_recordrtc_question_data_multiaudio() {
+    public function get_recordrtc_question_data_customav() {
         $questiondata = new stdClass();
         test_question_maker::initialise_question_data($questiondata);
 
         $questiondata->qtype = 'recordrtc';
-        $questiondata->name = 'Record multiaudio question';
+        $questiondata->name = 'Record customav question';
         $questiondata->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
                             <div>Development: [[development:audio]]</div>
                             <div>Installation: [[installation:audio]]</div>
@@ -153,7 +153,7 @@ class qtype_recordrtc_test_helper extends question_test_helper {
         $questiondata->defaultmark = 1.0;
 
         $questiondata->options = new stdClass();
-        $questiondata->options->mediatype = 'audio';
+        $questiondata->options->mediatype = 'customav';
         $questiondata->options->timelimitinseconds = 30;
 
         return $questiondata;

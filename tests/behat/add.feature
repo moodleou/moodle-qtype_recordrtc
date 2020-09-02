@@ -1,8 +1,8 @@
 @ou @ou_vle @qtype @qtype_recordrtc
-Feature: Test creating record audio questions
+Feature: Test creating record audio and video questions
   As a teacher
   In order to test my students speaking skills
-  I need to create a record audio question
+  I need to create a record audio and video question
 
   Background:
     Given the following "users" exist:
@@ -19,8 +19,8 @@ Feature: Test creating record audio questions
     And I navigate to "Question bank" in current page administration
 
   @javascript
-  Scenario: Create a record audio question
-    When I add a "Record audio" question filling the form with:
+  Scenario: Create a record audio and video question
+    When I add a "Record audio and video" question filling the form with:
       | Question name    | Record audio question                               |
       | Question text    | <p>Please record yourself talking about Moodle.</p> |
       | General feedback | <p>I hope you spoke clearly and coherently.</p>     |

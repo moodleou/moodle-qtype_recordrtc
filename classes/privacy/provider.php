@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy provider for the record audio (and video) question type.
+ * Privacy provider for the record audio and video question type.
  *
  * @package   qtype_recordrtc
  * @copyright 2019 The Open University
@@ -31,7 +31,7 @@ use core_privacy\local\request\writer;
 
 
 /**
- * Privacy provider for the record audio (and video) question type.
+ * Privacy provider for the record audio and video question type.
  */
 class provider implements \core_privacy\local\metadata\null_provider {
 

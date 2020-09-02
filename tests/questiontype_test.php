@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * Contains the the record audio (and video) question type class.
+ * Contains the the record audio and video question type class.
  *
  * @package   qtype_recordrtc
  * @copyright 2019 The Open University
@@ -31,7 +31,7 @@ require_once($CFG->dirroot . '/question/format/xml/format.php');
 
 
 /**
- * Unit tests for the the record audio (and video) question type question type class.
+ * Unit tests for the the record audio and video question type question type class.
  */
 class qtype_recordrtc_test extends question_testcase {
 
@@ -60,7 +60,7 @@ class qtype_recordrtc_test extends question_testcase {
      * @return stdClass
      */
     protected function get_test_question_data() {
-        return test_question_maker::get_question_data('recordrtc');
+        return test_question_maker::get_question_data('recordrtc', 'customav');
     }
 
     public function test_name() {
@@ -96,8 +96,8 @@ class qtype_recordrtc_test extends question_testcase {
         $questiontext = 'Record the answers:
         What is your name? [[name:audio]] Where do you live [[place:audio]]';
         $expected = [
-            '[[name:audio]]' => 'name.ogg',
-            '[[place:audio]]' => 'place.ogg'
+            '[[name:audio]]' => ['name', 'audio'],
+            '[[place:audio]]' => ['place', 'audio']
         ];
         $this->assertEquals($expected, $this->qtype->get_widget_placeholders($questiontext));
     }
@@ -110,7 +110,7 @@ class qtype_recordrtc_test extends question_testcase {
         $questiontext = 'Record the answers:
         What is your name? [[name:audio]] Where do you live [[place:audio]]';
         $expected = null;
-        $actual = $this->qtype->validate_widget_placeholders($questiontext);
+        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
         $this->assertEquals($expected, $actual);
     }
 
@@ -122,7 +122,7 @@ class qtype_recordrtc_test extends question_testcase {
         $questiontext = 'Record the answers:
         What is your name? [[name:audio]] Where do you live [place:audio]]';
         $expected = get_string('err_opensquarebrackets', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext);
+        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'audio');
         $this->assertEquals($expected, $actual);
     }
 
@@ -134,7 +134,7 @@ class qtype_recordrtc_test extends question_testcase {
         $questiontext = 'Record the answers:
         What is your name? [[name:audio] Where do you live [[place:audio]]';
         $expected = get_string('err_closesquarebrackets', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext);
+        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'audio');
         $this->assertEquals($expected, $actual);
     }
 
@@ -146,7 +146,7 @@ class qtype_recordrtc_test extends question_testcase {
         $questiontext = 'Record the answers:
         What is your name? [[name;audio]] Where do you live [[place:audio]]';
         $expected = get_string('err_placeholderincorrectformat', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext);
+        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
         $this->assertEquals($expected, $actual);
     }
 
@@ -161,7 +161,7 @@ class qtype_recordrtc_test extends question_testcase {
         $a->text = 'this-is-a-long-placeholder-title-more-than-32-chars';
         $a->maxlength = qtype_recordrtc::MAX_LENGTH_MEDIA_TITLE;
         $expected = get_string('err_placeholdertitlelength', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext);
+        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
         $this->assertEquals($expected, $actual);
     }
 
@@ -174,7 +174,7 @@ class qtype_recordrtc_test extends question_testcase {
         What is your name? [[name:audiox]] Where do you live [[place:audio]]';
         $a->text = 'audiox';
         $expected = get_string ('err_placeholdermediatype', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext);
+        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
         $this->assertEquals($expected, $actual);
     }
 
@@ -187,7 +187,7 @@ class qtype_recordrtc_test extends question_testcase {
         Where do you live? [[Place:audio]]';
         $a->text = 'Place';
         $expected = get_string ('err_placeholdertitlecase', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext);
+        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
         $this->assertEquals($expected, $actual);
     }
 
@@ -199,7 +199,27 @@ class qtype_recordrtc_test extends question_testcase {
         $questiontext = 'Record the answers:
         Where do you live? [[place:audio]], Where were you born? [[place:audio]]';
         $expected = get_string ('err_placeholdertitleduplicate', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext);
+        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function test_validate_widget_placeholders_not_allowed() {
+
+        // Placeholder(s) provided within the question text with mediatype set to 'audio'.
+        $questiontext = 'Record the answers by saying your name [[name:audio]]';
+        $expected = get_string('err_placeholdernotallowed', 'qtype_recordrtc',
+            get_string('audio', 'qtype_recordrtc'));
+        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'audio');
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function test_validate_widget_placeholders_needed() {
+        // No placeholder(s) provided within the question text with mediatype set to 'custonav'.
+        $questiontext = 'Record the answers:
+        What is your name? Where do you live?';
+        $expected = get_string('err_placeholderneeded', 'qtype_recordrtc',
+            get_string('customav', 'qtype_recordrtc'));
+        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
         $this->assertEquals($expected, $actual);
     }
 
@@ -210,11 +230,11 @@ class qtype_recordrtc_test extends question_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $cat = $generator->create_question_category();
 
-        $formdata = test_question_maker::get_question_form_data('recordrtc');
+        $formdata = test_question_maker::get_question_form_data('recordrtc', 'customav');
         $formdata->category = "{$cat->id},{$cat->contextid}";
         qtype_recordrtc_edit_form::mock_submit((array) $formdata);
 
-        $questiondata = test_question_maker::get_question_data('recordrtc');
+        $questiondata = test_question_maker::get_question_data('recordrtc', 'customav');
         $form = question_test_helper::get_question_editing_form($cat, $questiondata);
 
         $this->assertTrue($form->is_validated());
