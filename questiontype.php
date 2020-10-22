@@ -153,12 +153,6 @@ class qtype_recordrtc extends question_type {
                 get_string($mediatype, 'qtype_recordrtc'));
         }
 
-        // If medatype is customav, there is need for custom placeholer(s).
-        if ($mediatype === self::MEDIA_TYPE_CUSTOM_AV && !$matches[2]) {
-            return get_string('err_placeholderneeded', 'qtype_recordrtc',
-                get_string($mediatype, 'qtype_recordrtc'));
-        }
-
         if ($matches) {
             // Validate titles.
             $titles = $matches[2];
@@ -195,6 +189,11 @@ class qtype_recordrtc extends question_type {
             // A media placeholder is not in a correct format.
             if (count($matches[0]) < $openingbrackets) {
                 return get_string('err_placeholderincorrectformat', 'qtype_recordrtc', $a);
+            }
+            // If medatype is customav, there is need for custom placeholer(s).
+            if ($mediatype === self::MEDIA_TYPE_CUSTOM_AV && !$matches[2]) {
+                return get_string('err_placeholderneeded', 'qtype_recordrtc',
+                    get_string($mediatype, 'qtype_recordrtc'));
             }
         }
         return null;
