@@ -562,7 +562,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             var button = rElement.querySelector('.record-button button');
             var mediaElement = rElement.querySelector('.media-player ' + type);
             var noMediaPlaceholder = rElement.querySelector('.no-recording-placeholder');
-            var uploadProgressElement = rElement.querySelector('.saving-message');
+            var uploadProgressElement = rElement.querySelector('.saving-message-' + type);
             var otherControls = rElement.querySelectorAll('input.submit[type=submit]');
             var filename = rElement.dataset.recordingFilename;
 

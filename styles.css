@@ -21,10 +21,18 @@
     display: flex;
     margin-bottom: 0.25em;
 }
-.que.recordrtc .record-widget .saving-message {
-    position: absolute;
+.que.recordrtc .record-widget .saving-message-audio {
     white-space: nowrap;
-    top: 1.75rem;
+    color: #676463;
+    position: absolute;
+    left: 5em;
+    top: 0.8em;
+}
+.que.recordrtc .record-widget .saving-message-video {
+    white-space: nowrap;
+    color: #676463;
+    position: absolute;
+    left: 0em;
 }
 .que.recordrtc .record-widget button {
     white-space: nowrap;
