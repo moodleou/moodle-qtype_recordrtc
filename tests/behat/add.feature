@@ -20,7 +20,7 @@ Feature: Test creating record audio and video questions
 
   @javascript
   Scenario: Create a record audio and video question
-    When I add a "Record audio and video" question filling the form with:
+    When I add a "Record audio/video" question filling the form with:
       | Question name    | Record audio question                               |
       | Question text    | <p>Please record yourself talking about Moodle.</p> |
       | General feedback | <p>I hope you spoke clearly and coherently.</p>     |
