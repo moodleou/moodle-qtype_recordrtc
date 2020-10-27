@@ -25,6 +25,12 @@
 $string['audio'] = 'Audio only';
 $string['audiobitrate'] = 'Audio bitrate';
 $string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality)';
+$string['avplaceholder'] = 'Audio/video placeholders';
+$string['avplaceholder_help'] = 'Place one or more of either recording widgets anywhere throughout your question text -
+exemplars are listed, and are essentially a unique name followed by the widget type, separated by a colon.
+It is important that each name is distinct, such as [[name:audio]], [[welcome:video]], [[age:audio]] etc.
+
+You may be able to apply formatting to the widget, such as changing its alignment.';
 $string['customav'] = 'Customised A/V';
 $string['downloadaudio'] = 'MP3';
 $string['downloadvideo'] = 'MP4';
