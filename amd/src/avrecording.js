@@ -305,7 +305,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * Start the countdown timer from settings.timeLimit.
          */
         function startCountdownTimer() {
-            secondsRemaining = settings.timeLimit + 1;
+            secondsRemaining = settings.timeLimit;
 
             button.innerHTML = M.util.get_string('stoprecording', 'qtype_recordrtc') + ' (<span></span>)';
             updateTimerDisplay();
@@ -326,15 +326,14 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * Update the countdown timer, and stop recording if we have reached 0.
          */
         function updateTimerDisplay() {
-            secondsRemaining -= 1;
-
             var secs = secondsRemaining % 60;
             var mins = Math.round((secondsRemaining - secs) / 60);
             button.querySelector('span').innerText = pad(mins) + ':' + pad(secs);
 
-            if (secondsRemaining === 0) {
+            if (secondsRemaining === -1) {
                 stopRecording();
             }
+            secondsRemaining -= 1;
         }
 
         /**
