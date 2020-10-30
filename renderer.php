@@ -165,12 +165,12 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                         <source src="' . $recordingurl . '">
                     </' . $mediatype .'>
                 </span>
-                <span class="hide saving-message-' . $mediatype . '">
-                    <small></small>
-                </span>
                 <span class="record-button">
                     <button type="button" class="btn btn-outline-danger osep-smallbutton"
                         data-state="' . $state . '">' . $label . '</button>
+                </span>
+                 <span class="hide saving-message-' . $mediatype . '">
+                    <small></small>
                 </span>
             </span>';
     }

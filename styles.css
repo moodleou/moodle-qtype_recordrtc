@@ -15,6 +15,7 @@
 .que.recordrtc .playback-widget .media-player audio,
 .que.recordrtc .record-widget .media-player audio {
     flex-grow: 1;
+    margin: 9px 0 12px;
 }
 .que.recordrtc .playback-widget .media-player video,
 .que.recordrtc .record-widget .media-player video {
@@ -25,14 +26,12 @@
     white-space: nowrap;
     color: #676463;
     position: absolute;
-    left: 5em;
-    top: 0.8em;
+    left: 0;
+    top: 1.75em;
 }
 .que.recordrtc .record-widget .saving-message-video {
     white-space: nowrap;
     color: #676463;
-    position: absolute;
-    left: 0em;
 }
 .que.recordrtc .record-widget button {
     white-space: nowrap;
@@ -50,7 +49,6 @@
     vertical-align:middle;
     margin-right: 2px;
 }
-
 
 body#page-question-type-recordrtc.path-question-type .form-group[data-groupname=timelimitinseconds] .sr-only {
     display: none;
