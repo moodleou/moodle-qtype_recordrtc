@@ -63,11 +63,12 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      * @param {string} filename the name of the audio (.ogg) or video file (.webm)
      * @param {Object} owner
      * @param {Object} settings
+     * @param {Object} questionDiv
      * @constructor
      */
     function Recorder(type, mediaElement, noMediaPlaceholder,
                       button, uploadProgressElement,
-                      otherControls, filename, owner, settings) {
+                      otherControls, filename, owner, settings, questionDiv) {
         /**
          * @type {Recorder} reference to this recorder, for use in event handlers.
          */
@@ -131,6 +132,10 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          */
         function startRecording() {
             button.disabled = true;
+
+            // Disable other question buttons when current widget stared recording.
+            disableOtherButtons(button);
+
             if (type.hidePlayerDuringRecording) {
                 mediaElement.parentElement.classList.add('hide');
                 noMediaPlaceholder.classList.remove('hide');
@@ -299,6 +304,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             var stringName = 'gum' + error.name.replace('Error', '').toLowerCase();
 
             owner.showAlert(stringName);
+            enableAllButtons();
         }
 
         /**
@@ -414,8 +420,10 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             if (uploadRequest.readyState === 4 && uploadRequest.status === 200) {
                 // When request finished and successful.
                 setUploadMessage('uploadcomplete');
+                enableAllButtons();
             } else if (uploadRequest.status === 404) {
                 setUploadMessage('uploadfailed404');
+                enableAllButtons();
             }
             setOtherControlsEnabled(true);
         }
@@ -433,6 +441,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          */
         function handleUploadError() {
             setUploadMessage('uploadfailed');
+            enableAllButtons();
         }
 
         /**
@@ -440,6 +449,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          */
         function handleUploadAbort() {
             setUploadMessage('uploadaborted');
+            enableAllButtons();
         }
 
         /**
@@ -490,6 +500,55 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             }
 
             return options;
+        }
+
+        /**
+         * Disables/enabales other question buttons when current widget started recording/finshed recording.
+         *
+         * @param {Object} questionDiv, question outer div html
+         * @param {object} currentButton, the button of current widget being pressed.
+         * @param {boolean} disabled,
+         * @returns {null}
+         */
+        function disableOrEnableButtons(questionDiv, currentButton, disabled = false) {
+            let state = 'new';
+            let buttons = questionDiv.getElementsByTagName('button');
+            for (let i = 0; i < buttons.length; i++) {
+                state = buttons[i].dataset.state;
+                if (currentButton.id === buttons[i].id) {
+                    continue;
+                }
+                buttons[i].disabled = disabled;
+            }
+            let inputs = questionDiv.getElementsByTagName('input');
+            for (let i = 0; i < inputs.length; i++) {
+                let button = inputs[i];
+                let type = button.getAttribute('type') || 'submit'; // Submit is the default.
+                if (type) {
+                    button.disabled = disabled;
+
+                    // Do not enable the submit button until all widgets in the question have some recording.
+                    if (state === 'new') {
+                        button.disabled = true;
+                    }
+                }
+            }
+        }
+
+        /**
+         * Enable all buttons.
+         */
+        function enableAllButtons() {
+            disableOrEnableButtons(questionDiv, button);
+        }
+
+        /**
+         * Disable other buttons.
+         *
+         * @param {object} button, current button
+         */
+        function disableOtherButtons(button) {
+            disableOrEnableButtons(questionDiv, button, true);
         }
     }
 
@@ -573,14 +632,13 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
                 typeInfo = VideoSettings(settings.videoWidth, settings.videoHeight);
             }
 
-
             // Make the callback functions available.
             this.showAlert = showAlert;
             this.notifyRecordingComplete = notifyRecordingComplete;
 
             // Create the recorder.
             new Recorder(typeInfo, mediaElement, noMediaPlaceholder, button,
-                uploadProgressElement, otherControls, filename, this, settings);
+                uploadProgressElement, otherControls, filename, this, settings, questionDiv);
         });
 
         /**
