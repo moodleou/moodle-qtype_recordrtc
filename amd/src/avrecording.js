@@ -181,7 +181,11 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
 
             // Setup the UI for during recording.
             mediaElement.srcObject = stream;
-            mediaElement.setAttribute('muted', '');
+            mediaElement.muted = true;
+            if (!type.hidePlayerDuringRecording) {
+                mediaElement.play();
+                mediaElement.controls = false;
+            }
             button.dataset.state = 'recording';
             startCountdownTimer();
 
