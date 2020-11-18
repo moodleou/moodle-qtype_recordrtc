@@ -230,11 +230,8 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * Start recording (because the button was clicked or because we have reached a limit).
          */
         function stopRecording() {
-            // Disable the button while things change. Gets re-enabled once recording is underway.
-            button.disabled = true;
-            setTimeout(function() {
-                button.disabled = false;
-            }, 1000);
+            // Disable the button while things change.
+            button.disabled = false;
 
             // Stop the count-down timer.
             stopCountdownTimer();
