@@ -157,20 +157,19 @@ class qtype_recordrtc_renderer extends qtype_renderer {
 
         return '
             <span class="record-widget" data-media-type="' . $mediatype . '" data-recording-filename="' . $filename . '">
-                <span class="' . $norecordinghideclass . 'no-recording-placeholder" >' .
-                    $norecordinglangstring .
-                '</span>
-                <span class="' . $mediaplayerhideclass . 'media-player ' . $mediatype . '">
-                    <' . $mediatype . ' controls>
-                        <source src="' . $recordingurl . '">
-                    </' . $mediatype .'>
-                </span>
-                <span class="record-button">
-                    <button type="button" id="' . $filename . '" class="btn btn-outline-danger osep-smallbutton"
-                        data-state="' . $state . '">' . $label . '</button>
-                </span>
-                 <span class="hide saving-message-' . $mediatype . '">
-                    <small></small>
+                <span class="recorder-including-button">
+                    <span class="' . $norecordinghideclass . 'no-recording-placeholder" >' .
+                        $norecordinglangstring .
+                    '</span>
+                    <span class="' . $mediaplayerhideclass . 'media-player ' . $mediatype . '">
+                        <' . $mediatype . ' controls>
+                            <source src="' . $recordingurl . '">
+                        </' . $mediatype .'>
+                    </span>
+                    <span class="record-button">
+                        <button type="button" id="' . $filename . '" class="btn btn-outline-danger osep-smallbutton"
+                            data-state="' . $state . '">' . $label . '</button>
+                    </span>
                 </span>
             </span>';
     }

@@ -58,7 +58,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      * @param {HTMLMediaElement} mediaElement
      * @param {HTMLMediaElement} noMediaPlaceholder
      * @param {HTMLButtonElement} button
-     * @param {HTMLElement} uploadProgressElement
      * @param {NodeList} otherControls other controls to disable while recording is in progress.
      * @param {string} filename the name of the audio (.ogg) or video file (.webm)
      * @param {Object} owner
@@ -67,8 +66,8 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      * @constructor
      */
     function Recorder(type, mediaElement, noMediaPlaceholder,
-                      button, uploadProgressElement,
-                      otherControls, filename, owner, settings, questionDiv) {
+                      button, otherControls, filename,
+                      owner, settings, questionDiv) {
         /**
          * @type {Recorder} reference to this recorder, for use in event handlers.
          */
@@ -144,7 +143,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
                 mediaElement.parentElement.classList.remove('hide');
                 noMediaPlaceholder.classList.add('hide');
             }
-            uploadProgressElement.classList.add('hide');
 
             // Change look of recording button.
             button.classList.remove('btn-outline-danger');
@@ -365,7 +363,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          */
         function uploadMediaToServer() {
             setUploadMessage('uploadpreparing');
-            uploadProgressElement.classList.remove('hide');
             noMediaPlaceholder.classList.add('hide');
             setOtherControlsEnabled(false);
 
@@ -460,8 +457,14 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * @param {Object|String} a optional variable to populate placeholder with
          */
         function setUploadMessage(langString, a) {
-            uploadProgressElement.querySelector('small').innerText =
-                M.util.get_string(langString, 'qtype_recordrtc', a);
+            button.innerText = M.util.get_string(langString, 'qtype_recordrtc', a);
+            button.classList.add('saving-message');
+            if (langString === 'uploadcomplete') {
+                setTimeout(function() {
+                    button.classList.remove('saving-message');
+                    button.innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
+                }, 1000);
+            }
         }
 
         /**
@@ -621,7 +624,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             var button = rElement.querySelector('.record-button button');
             var mediaElement = rElement.querySelector('.media-player ' + type);
             var noMediaPlaceholder = rElement.querySelector('.no-recording-placeholder');
-            var uploadProgressElement = rElement.querySelector('.saving-message-' + type);
             var otherControls = rElement.querySelectorAll('input.submit[type=submit]');
             var filename = rElement.dataset.recordingFilename;
 
@@ -639,7 +641,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
 
             // Create the recorder.
             new Recorder(typeInfo, mediaElement, noMediaPlaceholder, button,
-                uploadProgressElement, otherControls, filename, this, settings, questionDiv);
+                otherControls, filename, this, settings, questionDiv);
         });
 
         /**

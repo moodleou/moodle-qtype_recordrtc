@@ -4,7 +4,12 @@
     max-width: 20em;
     height: calc(2.25rem + 1px);
 }
+.que.recordrtc .record-widget .no-recording-placeholder .recorder-including-button,
+.que.recordrtc .record-widget .recorder-including-button {
+    display: inline-block;
+}
 .que.recordrtc .record-widget .no-recording-placeholder {
+    white-space: nowrap;
     margin-right: 4px;
     padding-top: 3px;
     color: #676463;
@@ -16,22 +21,16 @@
 .que.recordrtc .record-widget .media-player audio {
     flex-grow: 1;
     margin: 9px 0 12px;
+    display: inline-block;
 }
 .que.recordrtc .playback-widget .media-player video,
 .que.recordrtc .record-widget .media-player video {
     display: flex;
     margin-bottom: 0.25em;
 }
-.que.recordrtc .record-widget .saving-message-audio {
-    white-space: nowrap;
-    color: #676463;
-    position: absolute;
-    left: 0;
-    top: 1.75em;
-}
-.que.recordrtc .record-widget .saving-message-video {
-    white-space: nowrap;
-    color: #676463;
+.que.recordrtc .record-widget .saving-message {
+    font-size: 0.85714em;
+    color: #50D4FD;
 }
 .que.recordrtc .record-widget button {
     white-space: nowrap;
