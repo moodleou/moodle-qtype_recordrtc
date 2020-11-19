@@ -132,7 +132,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             if (type.hidePlayerDuringRecording) {
                 mediaElement.parentElement.classList.add('hide');
                 noMediaPlaceholder.classList.remove('hide');
-                noMediaPlaceholder.textContent = '\u0010';
+                noMediaPlaceholder.textContent = '\u00a0';
             } else {
                 mediaElement.parentElement.classList.remove('hide');
                 noMediaPlaceholder.classList.add('hide');
