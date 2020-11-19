@@ -32,8 +32,7 @@ It is important that each name is distinct, such as [[name:audio]], [[welcome:vi
 
 You may be able to apply formatting to the widget, such as changing its alignment.';
 $string['customav'] = 'Customised A/V';
-$string['downloadaudio'] = 'MP3';
-$string['downloadvideo'] = 'MP4';
+$string['downloadrecording'] = 'Download {$a}';
 $string['err_closesquarebrackets'] = 'Missing close square bracket(s). {$a->format}';
 $string['err_multiplerecorders'] = 'Only one {$a} recorder allowed here, for  multiple recorders set the Recording widget to Customised A/V';
 $string['err_opensquarebrackets'] = 'Missing open square bracket(s). {$a->format}';

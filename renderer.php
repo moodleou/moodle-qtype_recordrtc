@@ -65,7 +65,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             $existingfile = $question->get_file_from_response($filename, $existingfiles);
             if ($options->readonly) {
                 if ($existingfile) {
-                    $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile), $mediatype, $videowidth, $videoheight);
+                    $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile), $mediatype, $filename, $videowidth, $videoheight);
                 } else {
                     $thisitem = $this->no_recording_message();
                 }
@@ -182,15 +182,16 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      *
      * @param string $recordingurl URL for the recording.
      * @param string $mediatype audio or video.
+     * @param string $filename the name of the audio or video file.
      * @param int $videowidth
      * @param int $videoheight
      * @return string HTML to output.
      */
-    protected function playback_ui($recordingurl, string $mediatype, $videowidth, $videoheight) {
+    protected function playback_ui($recordingurl, string $mediatype, string $filename, $videowidth, $videoheight) {
         // Prepare download link of icon and the title based on mimetype.
-        $downloadlink = html_writer::link($recordingurl,
-                $this->pix_icon('f/' . $mediatype, null, null, ['class' => 'download-icon-' . $mediatype]) .
-                    get_string('download' . $mediatype, 'qtype_recordrtc'));
+        $downloadlink = html_writer::link($recordingurl, $this->pix_icon('f/' . $mediatype,
+                    get_string('downloadrecording', 'qtype_recordrtc', $filename),
+                    null, ['class' => 'download-icon-' . $mediatype]));
 
         [$aspectclass, $widthattribute] = $this->video_attributes($mediatype, $videowidth, $videoheight);
 
