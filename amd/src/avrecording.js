@@ -58,7 +58,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      * @param {HTMLMediaElement} mediaElement
      * @param {HTMLMediaElement} noMediaPlaceholder
      * @param {HTMLButtonElement} button
-     * @param {NodeList} otherControls other controls to disable while recording is in progress.
      * @param {string} filename the name of the audio (.ogg) or video file (.webm)
      * @param {Object} owner
      * @param {Object} settings
@@ -66,8 +65,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      * @constructor
      */
     function Recorder(type, mediaElement, noMediaPlaceholder,
-                      button, otherControls, filename,
-                      owner, settings, questionDiv) {
+                      button, filename, owner, settings, questionDiv) {
         /**
          * @type {Recorder} reference to this recorder, for use in event handlers.
          */
@@ -130,15 +128,11 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * Start recording (because the button was clicked).
          */
         function startRecording() {
-            button.disabled = true;
-
-            // Disable other question buttons when current widget stared recording.
-            disableOtherButtons(button);
 
             if (type.hidePlayerDuringRecording) {
                 mediaElement.parentElement.classList.add('hide');
                 noMediaPlaceholder.classList.remove('hide');
-                noMediaPlaceholder.textContent = '';
+                noMediaPlaceholder.textContent = '\u0010';
             } else {
                 mediaElement.parentElement.classList.remove('hide');
                 noMediaPlaceholder.classList.add('hide');
@@ -147,6 +141,9 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             // Change look of recording button.
             button.classList.remove('btn-outline-danger');
             button.classList.add('btn-danger');
+
+            // Disable other question buttons when current widget stared recording.
+            disableAllButtons();
 
             // Empty the array containing the previously recorded chunks.
             chunks = [];
@@ -186,8 +183,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             }
             button.dataset.state = 'recording';
             startCountdownTimer();
-
-            setOtherControlsEnabled(false);
 
             // Make button clickable again, to allow stopping recording.
             button.disabled = false;
@@ -233,17 +228,14 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          */
         function stopRecording() {
             // Disable the button while things change.
-            button.disabled = false;
+            button.disabled = true;
 
             // Stop the count-down timer.
             stopCountdownTimer();
 
             // Update the button.
-            button.innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
             button.classList.remove('btn-danger');
             button.classList.add('btn-outline-danger');
-
-            setOtherControlsEnabled(true);
 
             // Ask the recording to stop.
             Log.debug('Audio/video question: stopping recording.');
@@ -260,6 +252,11 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * Callback that is called by the media system once recording has finished.
          */
         function handleRecordingHasStopped() {
+            if (button.dataset.state === 'new') {
+                // This can happens if an error occurs when recording is starting. Do nothing.
+                return;
+            }
+
             // Set source of audio player.
             Log.debug('Audio/video question: recording stopped.');
             var blob = new Blob(chunks, {type: mediaRecorder.mimeType});
@@ -273,8 +270,8 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             noMediaPlaceholder.classList.add('hide');
             mediaElement.focus();
 
-            button.innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
-            button.disabled = false;
+            // Encure the button while things change.
+            button.disabled = true;
             button.classList.remove('btn-danger');
             button.classList.add('btn-outline-danger');
             button.dataset.state = 'recorded';
@@ -293,11 +290,15 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             Log.debug('Audio/video question: error received');
             Log.debug(error);
 
-            button.innerText = M.util.get_string('recordingfailed', 'qtype_recordrtc');
-            button.disabled = false;
+            setPlaceholderMessage('recordingfailed');
+            setButtonLabel('recordagain');
             button.classList.remove('btn-danger');
             button.classList.add('btn-outline-danger');
             button.dataset.state = 'new';
+
+            if (mediaRecorder) {
+                mediaRecorder.stop();
+            }
 
             // Changes 'CertainError' -> 'gumcertain' to match language string names.
             var stringName = 'gum' + error.name.replace('Error', '').toLowerCase();
@@ -312,7 +313,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         function startCountdownTimer() {
             secondsRemaining = settings.timeLimit;
 
-            button.innerHTML = M.util.get_string('stoprecording', 'qtype_recordrtc') + ' (<span></span>)';
             updateTimerDisplay();
             countdownTicker = setInterval(updateTimerDisplay, 1000);
         }
@@ -333,7 +333,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         function updateTimerDisplay() {
             var secs = secondsRemaining % 60;
             var mins = Math.round((secondsRemaining - secs) / 60);
-            button.querySelector('span').innerText = pad(mins) + ':' + pad(secs);
+            setButtonLabel('recordinginprogress', pad(mins) + ':' + pad(secs));
 
             if (secondsRemaining === -1) {
                 stopRecording();
@@ -362,9 +362,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * Upload the recorded media back to Moodle.
          */
         function uploadMediaToServer() {
-            setUploadMessage('uploadpreparing');
-            noMediaPlaceholder.classList.add('hide');
-            setOtherControlsEnabled(false);
+            setButtonLabel('uploadpreparing');
 
             var fetchRequest = new XMLHttpRequest();
 
@@ -417,13 +415,12 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             var uploadRequest = e.target;
             if (uploadRequest.readyState === 4 && uploadRequest.status === 200) {
                 // When request finished and successful.
-                setUploadMessage('uploadcomplete');
+                setButtonLabel('recordagain');
                 enableAllButtons();
             } else if (uploadRequest.status === 404) {
-                setUploadMessage('uploadfailed404');
+                setPlaceholderMessage('uploadfailed404');
                 enableAllButtons();
             }
-            setOtherControlsEnabled(true);
         }
 
         /**
@@ -431,14 +428,14 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * @param {ProgressEvent} e
          */
         function handleUploadProgress(e) {
-            setUploadMessage('uploadprogress', Math.round(e.loaded / e.total * 100) + '%');
+            setButtonLabel('uploadprogress', Math.round(e.loaded / e.total * 100) + '%');
         }
 
         /**
          * Callback for when the upload fails with an error.
          */
         function handleUploadError() {
-            setUploadMessage('uploadfailed');
+            setPlaceholderMessage('uploadfailed');
             enableAllButtons();
         }
 
@@ -446,7 +443,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * Callback for when the upload fails with an error.
          */
         function handleUploadAbort() {
-            setUploadMessage('uploadaborted');
+            setPlaceholderMessage('uploadaborted');
             enableAllButtons();
         }
 
@@ -456,26 +453,20 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * @param {string} langString
          * @param {Object|String} a optional variable to populate placeholder with
          */
-        function setUploadMessage(langString, a) {
+        function setButtonLabel(langString, a) {
             button.innerText = M.util.get_string(langString, 'qtype_recordrtc', a);
-            button.classList.add('saving-message');
-            if (langString === 'uploadcomplete') {
-                setTimeout(function() {
-                    button.classList.remove('saving-message');
-                    button.innerText = M.util.get_string('recordagain', 'qtype_recordrtc');
-                }, 1000);
-            }
         }
 
         /**
-         * Set the state of the otherControls to enabled or disabled.
+         * Display a message in the upload progress area.
          *
-         * @param {boolean} enabled true to enable. False to disable.
+         * @param {string} langString
+         * @param {Object|String} a optional variable to populate placeholder with
          */
-        function setOtherControlsEnabled(enabled) {
-            otherControls.forEach(function(node) {
-                node.disabled = !enabled;
-            });
+        function setPlaceholderMessage(langString, a) {
+            noMediaPlaceholder.textContent = M.util.get_string(langString, 'qtype_recordrtc', a);
+            mediaElement.parentElement.classList.add('hide');
+            noMediaPlaceholder.classList.remove('hide');
         }
 
         /**
@@ -507,92 +498,73 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         }
 
         /**
-         * Disables/enabales other question buttons when current widget started recording/finshed recording.
-         *
-         * @param {Object} questionDiv, question outer div html
-         * @param {object} currentButton, the button of current widget being pressed.
-         * @param {boolean} disabled,
-         * @returns {null}
-         */
-        function disableOrEnableButtons(questionDiv, currentButton, disabled = false) {
-            let state = 'new';
-            let buttons = questionDiv.getElementsByTagName('button');
-            for (let i = 0; i < buttons.length; i++) {
-                state = buttons[i].dataset.state;
-                if (currentButton.id === buttons[i].id) {
-                    continue;
-                }
-                buttons[i].disabled = disabled;
-            }
-            let inputs = questionDiv.getElementsByTagName('input');
-            for (let i = 0; i < inputs.length; i++) {
-                let button = inputs[i];
-                let type = button.getAttribute('type') || 'submit'; // Submit is the default.
-                if (type) {
-                    button.disabled = disabled;
-
-                    // Do not enable the submit button until all widgets in the question have some recording.
-                    if (state === 'new') {
-                        button.disabled = true;
-                    }
-                }
-            }
-        }
-
-        /**
-         * Enable all buttons.
+         * Enable all buttons in the question.
          */
         function enableAllButtons() {
-            disableOrEnableButtons(questionDiv, button);
+            disableOrEnableButtons(true);
+            owner.notifyButtonStatesChanged();
         }
 
         /**
-         * Disable other buttons.
-         *
-         * @param {object} button, current button
+         * Disable all buttons in the question.
          */
-        function disableOtherButtons(button) {
-            disableOrEnableButtons(questionDiv, button, true);
+        function disableAllButtons() {
+            disableOrEnableButtons(false);
+        }
+
+        /**
+         * Disables/enables other question buttons when current widget started recording/finished recording.
+         *
+         * @param {boolean} enabled true if the button should be enabled.
+         */
+        function disableOrEnableButtons(enabled = false) {
+            questionDiv.querySelectorAll('button, input[type=submit], input[type=button]').forEach(
+                function(button) {
+                    button.disabled = !enabled;
+                }
+            );
         }
     }
 
     /**
-     * Fixed object which has the info specific to recording audio.
-     * @type {Object}
+     * Object that controls the settings for recording audio.
+     *
+     * @constructor
      */
-    var AudioSettings = {
-        name: 'audio',
-        hidePlayerDuringRecording: true,
-        mediaConstraints: {
+    function AudioSettings() {
+        this.name = 'audio';
+        this.hidePlayerDuringRecording = true;
+        this.mediaConstraints = {
             audio: true
-        },
-        mimeTypes: [
+        };
+        this.mimeTypes = [
             'audio/webm;codecs=opus',
             'audio/ogg;codecs=opus'
-        ]
-    };
+        ];
+    }
 
     /**
-     * Fixed object which has the info specific to recording video.
-     * @type {Object}
+     * Object that controls the settings for recording video.
+     *
+     * @param {number} width desired width.
+     * @param {number} height desired height.
+     * @constructor
      */
-    function VideoSettings (width, height) {
-        return {
-            name: 'video',
-            hidePlayerDuringRecording: false,
-            mediaConstraints: {
-                audio: true,
-                video: {
-                    width: {ideal: width},
-                    height: {ideal: height}
-                }
-            },
-            mimeTypes: [
-                'video/webm;codecs=vp9,opus',
-                'video/webm;codecs=h264,opus',
-                'video/webm;codecs=vp8,opus'
-            ]
+    function VideoSettings(width, height) {
+        this.name = 'video';
+        this.hidePlayerDuringRecording = false;
+        this.mediaConstraints = {
+            audio: true,
+            video: {
+                width: {ideal: width},
+                height: {ideal: height}
+            }
         };
+        this.mimeTypes = [
+            'video/webm;codecs=vp9,opus',
+            'video/webm;codecs=h264,opus',
+            'video/webm;codecs=vp8,opus'
+        ];
     }
 
     /**
@@ -600,7 +572,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      *
      * @param {string} questionId id of the outer question div.
      * @param {Object} settings like audio bit rate.
-     * @param {string} type 'audio' or 'video'.
      * @constructor
      */
     function RecordRtcQuestion(questionId, settings) {
@@ -617,32 +588,52 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         }
 
         // We may have more than one widget in a question.
-        var recorderElements = questionDiv.querySelectorAll('.record-widget');
-        recorderElements.forEach (function(rElement) {
+        var recorderElements = questionDiv.querySelectorAll('.audio-widget, .video-widget');
+        recorderElements.forEach(function(widget) {
             // Get the key UI elements.
-            var type = rElement.dataset.mediaType;
-            var button = rElement.querySelector('.record-button button');
-            var mediaElement = rElement.querySelector('.media-player ' + type);
-            var noMediaPlaceholder = rElement.querySelector('.no-recording-placeholder');
-            var otherControls = rElement.querySelectorAll('input.submit[type=submit]');
-            var filename = rElement.dataset.recordingFilename;
+            var type = widget.dataset.mediaType;
+            var button = widget.querySelector('.record-button button');
+            var mediaElement = widget.querySelector('.media-player ' + type);
+            var noMediaPlaceholder = widget.querySelector('.no-recording-placeholder');
+            var filename = widget.dataset.recordingFilename;
 
             // Get the appropriate options.
             var typeInfo;
             if (type === 'audio') {
-                typeInfo = AudioSettings;
+                typeInfo = new AudioSettings();
             } else {
-                typeInfo = VideoSettings(settings.videoWidth, settings.videoHeight);
+                typeInfo = new VideoSettings(settings.videoWidth, settings.videoHeight);
             }
 
             // Make the callback functions available.
             this.showAlert = showAlert;
             this.notifyRecordingComplete = notifyRecordingComplete;
+            this.notifyButtonStatesChanged = setSubmitButtonState;
 
             // Create the recorder.
             new Recorder(typeInfo, mediaElement, noMediaPlaceholder, button,
-                otherControls, filename, this, settings, questionDiv);
+                    filename, this, settings, questionDiv);
         });
+        setSubmitButtonState();
+
+        /**
+         * Set the state of the question's submit button.
+         *
+         * If any recorder does not yet have a recording, then disable the button.
+         * Otherwise, enable it.
+         */
+        function setSubmitButtonState() {
+            var anyRecorded = false;
+            questionDiv.querySelectorAll('.audio-widget, .video-widget').forEach(function(widget) {
+                if (widget.querySelector('.record-button button').dataset.state === 'recorded') {
+                    anyRecorded = true;
+                }
+            });
+            var submitButton = questionDiv.querySelector('input.submit[type=submit]');
+            if (submitButton) {
+                submitButton.disabled = !anyRecorded;
+           }
+        }
 
         /**
          * Show a modal alert.
@@ -662,7 +653,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         }
 
         /**
-         * Callback called when the recofding is
+         * Callback called when the recording is completed.
          *
          * @param {Recorder} recorder the recorder.
          */

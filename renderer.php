@@ -38,6 +38,8 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         $question = $qa->get_question();
         $output = '';
 
+        [$videowidth, $videoheight] = explode(',', get_config('qtype_recordrtc', 'videosize'));
+
         $existingfiles = $qa->get_last_qt_files('recording', $options->context->id);
         if (!$options->readonly) {
             // Prepare a draft file area to store the recordings.
@@ -63,7 +65,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             $existingfile = $question->get_file_from_response($filename, $existingfiles);
             if ($options->readonly) {
                 if ($existingfile) {
-                    $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile), $mediatype);
+                    $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile), $mediatype, $videowidth, $videoheight);
                 } else {
                     $thisitem = $this->no_recording_message();
                 }
@@ -79,7 +81,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 }
 
                 // Recording UI.
-                $thisitem = $this->recording_ui($filename, $recordingurl, $state, $label, $mediatype);
+                $thisitem = $this->recording_ui($filename, $recordingurl, $state, $label, $mediatype, $videowidth, $videoheight);
             }
 
             $questiontext = str_replace($placeholder, $thisitem, $questiontext);
@@ -99,8 +101,8 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                     'timeLimit' => (int) $question->timelimitinseconds,
                     'audioBitRate' => (int) get_config('qtype_recordrtc', 'audiobitrate'),
                     'videoBitRate' => (int) get_config('qtype_recordrtc', 'videobitrate'),
-                    'videoWidth' => (int) explode(',', get_config('qtype_recordrtc', 'videosize'))[0],
-                    'videoHeight' => (int) explode(',', get_config('qtype_recordrtc', 'videosize'))[1],
+                    'videoWidth' =>(int)  $videowidth,
+                    'videoHeight' => (int) $videoheight,
                     'maxUploadSize' => $question->get_upload_size_limit($options->context),
                     'uploadRepositoryId' => (int) $uploadrepository->id,
                     'contextId' => $options->context->id,
@@ -136,14 +138,16 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      * Note: the JavaScript relies on a lot of the CSS class names here.
      *
      * @param string $filename the filename to use for this recording.
-     * @param moodle_url|null $recordingurl URL for the recording, if there is one, else null.
+     * @param string|null $recordingurl URL for the recording, if there is one, else null.
      * @param string $state value for the data-state attribute of the record button.
-     * @param string $mediatype audio or video.
      * @param string $label label for the record button.
+     * @param string $mediatype audio or video.
+     * @param int $videowidth
+     * @param int $videoheight
      * @return string HTML to output.
      */
-    protected function recording_ui(string $filename, ?moodle_url $recordingurl,
-            string $state, string $label, $mediatype) {
+    protected function recording_ui(string $filename, ?string $recordingurl,
+            string $state, string $label, string $mediatype, $videowidth, $videoheight) {
         if ($recordingurl) {
             $mediaplayerhideclass = '';
             $norecordinghideclass = 'hide ';
@@ -152,24 +156,23 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             $norecordinghideclass = '';
 
         }
-        // Set the 'No recording' lanuage string.
+        // Set the 'No recording' language string.
         $norecordinglangstring = get_string('norecording', 'qtype_recordrtc');
 
+        [$aspectclass, $widthattribute] = $this->video_attributes($mediatype, $videowidth, $videoheight);
+
         return '
-            <span class="record-widget" data-media-type="' . $mediatype . '" data-recording-filename="' . $filename . '">
-                <span class="recorder-including-button">
-                    <span class="' . $norecordinghideclass . 'no-recording-placeholder" >' .
-                        $norecordinglangstring .
-                    '</span>
-                    <span class="' . $mediaplayerhideclass . 'media-player ' . $mediatype . '">
-                        <' . $mediatype . ' controls>
-                            <source src="' . $recordingurl . '">
-                        </' . $mediatype .'>
-                    </span>
-                    <span class="record-button">
-                        <button type="button" id="' . $filename . '" class="btn btn-outline-danger osep-smallbutton"
+            <span class="' . $mediatype . '-widget' . $aspectclass . '"' . $widthattribute .
+                    '" data-media-type="' . $mediatype . '" data-recording-filename="' . $filename . '">
+                <span class="' . $norecordinghideclass . 'no-recording-placeholder">' . $norecordinglangstring . '</span>
+                <span class="' . $mediaplayerhideclass . 'media-player">
+                    <' . $mediatype . ' controls>
+                        <source src="' . $recordingurl . '">
+                    </' . $mediatype . '>
+                </span>
+                <span class="record-button">
+                    <button type="button" class="btn btn-outline-danger osep-smallbutton"
                             data-state="' . $state . '">' . $label . '</button>
-                    </span>
                 </span>
             </span>';
     }
@@ -179,21 +182,48 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      *
      * @param string $recordingurl URL for the recording.
      * @param string $mediatype audio or video.
+     * @param int $videowidth
+     * @param int $videoheight
      * @return string HTML to output.
      */
-    protected function playback_ui($recordingurl, $mediatype) {
+    protected function playback_ui($recordingurl, string $mediatype, $videowidth, $videoheight) {
         // Prepare download link of icon and the title based on mimetype.
         $downloadlink = html_writer::link($recordingurl,
                 $this->pix_icon('f/' . $mediatype, null, null, ['class' => 'download-icon-' . $mediatype]) .
                     get_string('download' . $mediatype, 'qtype_recordrtc'));
+
+        [$aspectclass, $widthattribute] = $this->video_attributes($mediatype, $videowidth, $videoheight);
+
         return '
-            <span class="playback-widget">
-                <span class="media-player ' . $mediatype . '">
+            <span class="' . $mediatype . '-widget' . $aspectclass . '"' . $widthattribute . '>
+                <span class="media-player">
                     <' . $mediatype . ' controls>
                         <source src="' . $recordingurl .'">
                     </' . $mediatype . '>
-                </span> ' . $downloadlink . '
+                </span>
+                ' . $downloadlink . '
             </span>';
+    }
+
+    /**
+     * Get the snippits needed for video elements.
+     *
+     * @param string $mediatype
+     * @param int $videowidth
+     * @param int $videoheight
+     * @return string[] a class name and a style attribute.
+     */
+    protected function video_attributes(string $mediatype, $videowidth, $videoheight): array {
+        if ($mediatype !== qtype_recordrtc::MEDIA_TYPE_VIDEO) {
+            return ['', ''];
+        }
+
+        if ($videowidth / $videoheight > 1.5) {
+            $aspectclass = ' recordrtc-ratio-16x9';
+        } else {
+            $aspectclass = ' recordrtc-ratio-4x3';
+        }
+        return [$aspectclass, ' style="width: ' . $videowidth . 'px;"'];
     }
 
     /**
@@ -237,8 +267,8 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             'nearingmaxsize_title',
             'recordagain',
             'recordingfailed',
+            'recordinginprogress',
             'startrecording',
-            'stoprecording',
             'uploadaborted',
             'uploadcomplete',
             'uploadfailed',
