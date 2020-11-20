@@ -198,7 +198,8 @@ class qtype_recordrtc_test extends question_testcase {
         // Valid question text.
         $questiontext = 'Record the answers:
         Where do you live? [[place:audio]], Where were you born? [[place:audio]]';
-        $expected = get_string ('err_placeholdertitleduplicate', 'qtype_recordrtc', $a);
+        $a->text = 'place';
+        $expected = get_string('err_placeholdertitleduplicate', 'qtype_recordrtc', $a);
         $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
         $this->assertEquals($expected, $actual);
     }

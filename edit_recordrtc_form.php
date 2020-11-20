@@ -39,25 +39,17 @@ class qtype_recordrtc_edit_form extends question_edit_form {
 
         // Field for mediatype.
         $mediaoptions = [
-            qtype_recordrtc::MEDIA_TYPE_AUDIO => get_string(
-                qtype_recordrtc::MEDIA_TYPE_AUDIO, 'qtype_recordrtc'),
-            qtype_recordrtc::MEDIA_TYPE_VIDEO => get_string(
-                qtype_recordrtc::MEDIA_TYPE_VIDEO, 'qtype_recordrtc'),
-            qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV => get_string(
-                qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV, 'qtype_recordrtc')
+            qtype_recordrtc::MEDIA_TYPE_AUDIO => get_string('audio', 'qtype_recordrtc'),
+            qtype_recordrtc::MEDIA_TYPE_VIDEO => get_string('video', 'qtype_recordrtc'),
+            qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV => get_string('customav', 'qtype_recordrtc')
         ];
-        $mform->addElement('select', 'mediatype', get_string('mediatype', 'qtype_recordrtc'), $mediaoptions);
-        $mform->setType('mediatype', PARAM_ALPHA);
+        $mediatype = $mform->createElement('select', 'mediatype', get_string('mediatype', 'qtype_recordrtc'), $mediaoptions);
+        $mform->insertElementBefore($mediatype, 'questiontext');
         $mform->addHelpButton('mediatype', 'mediatype', 'qtype_recordrtc');
         $mform->setDefault('mediatype', qtype_recordrtc::MEDIA_TYPE_AUDIO);
 
-        // Field for timelimitinseconds.
-        $mform->addElement('duration', 'timelimitinseconds', get_string('timelimit', 'qtype_recordrtc'),
-                ['units' => [60, 1], 'optional' => false]);
-        $mform->addHelpButton('timelimitinseconds', 'timelimit', 'qtype_recordrtc');
-        $mform->setDefault('timelimitinseconds', qtype_recordrtc::DEFAULT_TIMELIMIT);
-
-        // Add instructions and widegt placeholder templates for question authors to copy and paste into the question text.
+        // Add instructions and widget placeholder templates for question authors
+        // to copy and paste into the question text.
         $avplaceholder =  $mform->createElement('static', 'avplaceholder', '',
                 '[[recorder1:audio]] &nbsp; [[recorder2:video]]');
         $avplaceholdergroup = $mform->createElement('group', 'avplaceholdergroup',
@@ -65,6 +57,12 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $mform->hideIf('avplaceholdergroup', 'mediatype', 'noteq', qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV);
         $mform->insertElementBefore($avplaceholdergroup, 'defaultmark');
         $mform->addHelpButton('avplaceholdergroup', 'avplaceholder', 'qtype_recordrtc');
+
+        // Field for timelimitinseconds.
+        $mform->addElement('duration', 'timelimitinseconds', get_string('timelimit', 'qtype_recordrtc'),
+                ['units' => [60, 1], 'optional' => false]);
+        $mform->addHelpButton('timelimitinseconds', 'timelimit', 'qtype_recordrtc');
+        $mform->setDefault('timelimitinseconds', qtype_recordrtc::DEFAULT_TIMELIMIT);
     }
 
     public function validation($data, $files) {

@@ -5,7 +5,7 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="mediatype" TYPE="char" LENGTH="8" NOTNULL="true" DEFAULT="audio" SEQUENCE="false" COMMENT="Either 'audio' or 'video'."/>
+        <FIELD NAME="mediatype" TYPE="char" LENGTH="8" NOTNULL="true" DEFAULT="audio" SEQUENCE="false" COMMENT="'audio', 'video' or 'customav'."/>
         <FIELD NAME="timelimitinseconds" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="30" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>

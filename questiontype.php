@@ -174,7 +174,7 @@ class qtype_recordrtc extends question_type {
                 }
                 if (isset($titlesused[$title])) {
                     $a->text = $title;
-                    return get_string('err_placeholdertitleduplicate', 'qtype_recordrtc', $title);
+                    return get_string('err_placeholdertitleduplicate', 'qtype_recordrtc', $a);
                 }
                 $titlesused[$title] = 1;
             }

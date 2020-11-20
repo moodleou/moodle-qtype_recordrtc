@@ -22,29 +22,28 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['audio'] = 'Audio only';
+$string['audio'] = 'Single audio';
 $string['audiobitrate'] = 'Audio bitrate';
 $string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality)';
 $string['avplaceholder'] = 'Audio/video placeholders';
-$string['avplaceholder_help'] = 'Place one or more of either recording widgets anywhere throughout your question text -
-exemplars are listed, and are essentially a unique name followed by the widget type, separated by a colon.
-It is important that each name is distinct, such as [[name:audio]], [[welcome:video]], [[age:audio]] etc.
+$string['avplaceholder_help'] = 'Place one or more recording widgets anywhere in the question text. You can copy the examples here.
+
+Each placeholder is a name, then the widget type after a colon. Each name must be different.
 
 You may be able to apply formatting to the widget, such as changing its alignment.';
-$string['customav'] = 'Customised A/V';
+$string['customav'] = 'Customised audio/video';
 $string['downloadrecording'] = 'Download {$a}';
 $string['err_closesquarebrackets'] = 'Missing close square bracket(s). {$a->format}';
-$string['err_multiplerecorders'] = 'Only one {$a} recorder allowed here, for  multiple recorders set the Recording widget to Customised A/V';
 $string['err_opensquarebrackets'] = 'Missing open square bracket(s). {$a->format}';
-$string['err_placeholderformat'] = 'The placeholder format is [[title:audio]] or [[title:video]], where title is a string and can contain lower-case letters, numbers, hyphens and underscores.';
-$string['err_placeholderincorrectformat'] = 'A media placeholder is not in correct format. {$a->format}';
-$string['err_placeholdermediatype'] = '"{$a->text}" is not valid. For \'Recording widget\' use the string "audio" or "video". {$a->format}';
-$string['err_placeholderneeded'] = 'Recording widget "{$a}" requires customised media placeholders within the question text.';
-$string['err_placeholdernotallowed'] = 'Recording widget "{$a}" does not allow customised media placeholders within the question text.';
-$string['err_placeholdertitle'] = '"{$a->text}" is not a valid title. For title use a suitable string. {$a->format}';
-$string['err_placeholdertitlecase'] = '"{$a->text}" is not a valid title. Titles may only contain lower-case letters. {$a->format}';
-$string['err_placeholdertitleduplicate'] = '"{$a->text}" has been used more than once. Each title must be different.';
-$string['err_placeholdertitlelength'] = '"{$a->text}" exceeds the max length of {$a->maxlength} for a title. {$a->format}';
+$string['err_placeholderformat'] = 'The placeholder format is [[name:audio]] or [[name:video]], where name can only contain lower-case letters, numbers, hyphens and underscores, and must be no more than 32 characters long.';
+$string['err_placeholderincorrectformat'] = 'The placeholders in the question text are not in the correct format. {$a->format}';
+$string['err_placeholdermediatype'] = 'Widget type "{$a->text}" is not valid. {$a->format}';
+$string['err_placeholderneeded'] = 'You must add at least one placeholder to the question text.';
+$string['err_placeholdernotallowed'] = 'You cannot use placeholders with Recording type {$a}.';
+$string['err_placeholdertitle'] = '"{$a->text}" is not a valid name. {$a->format}';
+$string['err_placeholdertitlecase'] = '"{$a->text}" is not a valid name. Names may only contain lower-case letters. {$a->format}';
+$string['err_placeholdertitleduplicate'] = '"{$a->text}" has been used more than once. Each name must be different.';
+$string['err_placeholdertitlelength'] = '"{$a->text}" is longer than {$a->maxlength} characters. {$a->format}';
 $string['err_timelimit'] = 'Maximum recording duration cannot be greater than {$a}.';
 $string['err_timelimitpositive'] = 'Maximum recording duration must be greater than 0.';
 $string['filex'] = 'File {$a}';
@@ -64,14 +63,14 @@ $string['gumsecurity'] = 'Your browser does not support recording over an insecu
 $string['gumsecurity_title'] = 'No support for insecure connection';
 $string['gumtype'] = 'Tried to get stream from the webcam/microphone, but no constraints were specified';
 $string['gumtype_title'] = 'No constraints specified';
-$string['mediatype'] = 'Recording widget';
+$string['mediatype'] = 'Type of recording';
 $string['mediatype_help'] = 'Is the student being asked to record only one audio, only one video, or number of audios and/or videos.
 
-<b>Audio only:</b> An audio recorder/player will be displayed at the bottom of the question text.
+<b>Single audio:</b> An audio recorder/player will be displayed at the bottom of the question text.
 
-<b>Video only:</b> A video recorder/player will be displayed at the bottom of the question text.
+<b>Single video:</b> A video recorder/player will be displayed at the bottom of the question text.
 
-<b>Customised A/V:</b> Question authors/editors provide required audio/video-placeholders within the question text, for instance, [[title_a1:audio]], [[title_v1:video]], where \'title_a1\' and \'title_v1\' are the titles and ultimately the recorded audio/video file names respectively.';
+<b>Customised audio/vidio:</b> placeholders for any number of audio or video recorders/players can be added to the question text. For example [[name1:audio]] or [[name2:video]]. The names must all be different and become the file names of the recordings.';
 $string['insecurewarning'] = 'Your browser will not allow this plugin to work unless it is used over HTTPS.';
 $string['insecurewarningtitle'] = 'Insecure connection';
 $string['nearingmaxsize'] = 'You have attained the maximum size limit for file uploads';
@@ -103,7 +102,7 @@ $string['uploadfailed'] = 'Upload failed';
 $string['uploadfailed404'] = 'Upload failed (file too big?)';
 $string['uploadpreparing'] = 'Preparing upload ...';
 $string['uploadprogress'] = 'Uploading ({$a})';
-$string['video'] = 'Video only';
+$string['video'] = 'Single video';
 $string['videobitrate'] = 'Video bitrate';
 $string['videobitrate_desc'] = 'Quality of video recording (larger number means higher quality)';
 $string['videosize'] = 'Video size';
