@@ -50,7 +50,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
 
         // Add instructions and widget placeholder templates for question authors
         // to copy and paste into the question text.
-        $avplaceholder =  $mform->createElement('static', 'avplaceholder', '',
+        $avplaceholder = $mform->createElement('static', 'avplaceholder', '',
                 '[[recorder1:audio]] &nbsp; [[recorder2:video]]');
         $avplaceholdergroup = $mform->createElement('group', 'avplaceholdergroup',
                 get_string('avplaceholder', 'qtype_recordrtc'), [$avplaceholder]);

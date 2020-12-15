@@ -37,16 +37,12 @@ class qtype_recordrtc_test extends question_testcase {
 
     protected $qtype;
 
-    protected function setUp() {
+    protected function setUp(): void {
         $this->qtype = new qtype_recordrtc();
     }
 
-    protected function tearDown() {
-        $this->qtype = null;
-    }
-
     /**
-     * Assert that two XML strings are essentially the same, ignoring irrelvant differences.
+     * Assert that two XML strings are essentially the same, ignoring irrelevant differences.
      * @param string $expectedxml Expected.
      * @param string $xml Actual.
      */

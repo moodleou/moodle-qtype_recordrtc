@@ -65,7 +65,8 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             $existingfile = $question->get_file_from_response($filename, $existingfiles);
             if ($options->readonly) {
                 if ($existingfile) {
-                    $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile), $mediatype, $filename, $videowidth, $videoheight);
+                    $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile),
+                            $mediatype, $filename, $videowidth, $videoheight);
                 } else {
                     $thisitem = $this->no_recording_message();
                 }
@@ -101,7 +102,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                     'timeLimit' => (int) $question->timelimitinseconds,
                     'audioBitRate' => (int) get_config('qtype_recordrtc', 'audiobitrate'),
                     'videoBitRate' => (int) get_config('qtype_recordrtc', 'videobitrate'),
-                    'videoWidth' =>(int)  $videowidth,
+                    'videoWidth' => (int) $videowidth,
                     'videoHeight' => (int) $videoheight,
                     'maxUploadSize' => $question->get_upload_size_limit($options->context),
                     'uploadRepositoryId' => (int) $uploadrepository->id,

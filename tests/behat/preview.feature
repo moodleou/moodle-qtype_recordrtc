@@ -44,10 +44,8 @@ Feature: Preview record audio and video questions
     And I switch to "questionpreview" window
     And I should see "Please record yourself talking about Moodle."
     When "teacher" has recorded "moodle-tim.ogg" into the record RTC question
-    And I press "Save and reveal feedback"
-#    Following steps are commented out, because "Save and reveal feedback" is disabled and "Start recording" button is not used in behat step.
-#    And "//img[@alt='moodle-tim.ogg']" "xpath_element" should exist
-#    And I click on "//img[@alt='moodle-tim.ogg']" "xpath_element"
+    And I press "Submit and finish"
+    And "Download recording.ogg" "link" should exist
     And I switch to the main window
 
   Scenario: Preview a Customised (customav) question with three audio inputs and try to submit three responses.
@@ -63,9 +61,8 @@ Feature: Preview record audio and video questions
     When "teacher" has recorded "development.ogg" as "audio" into input "development" of the record RTC question
     And "teacher" has recorded "installation.ogg" as "audio" into input "installation" of the record RTC question
     And "teacher" has recorded "user_experience.ogg" as "audio" into input "user_experience" of the record RTC question
-    Then I press "Save and reveal feedback"
-#    Following steps are commented out, because "Save and reveal feedback" is disabled and "Start recording" button is not used in behat step.
-#    And "//img[@alt='Download development.ogg']" "xpath_element" should exist
-#    And "//img[@alt='Download installation.ogg']" "xpath_element" should exist
-#    And "//img[@alt='Download user_experience.ogg']" "xpath_element" should exist
+    And I press "Submit and finish"
+    And "Download development.ogg" "link" should exist
+    And "Download installation.ogg" "link" should exist
+    And "Download user_experience.ogg" "link" should exist
     And I switch to the main window
