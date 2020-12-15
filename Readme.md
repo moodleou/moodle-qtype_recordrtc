@@ -1,9 +1,9 @@
-# Record audio and video question type [![Build Status](https://travis-ci.com/moodleou/moodle-qtype_recordrtc.svg?branch=master)](https://travis-ci.com/moodleou/moodle-qtype_recordrtc)
+# Record audio and video question type
 
-This question type is like the standard essay qusetion type, but instead
-of writing some text, students have a recording widget where they can
-record some audio. (And, in future, we plan to add video recording.)
-Like the standard essay question type, it is not automatically graded.
+This question type is like the standard essay question type, but instead
+of writing some text, students have one or more recording widgets where
+they can record some audio or video. Like the standard essay question type,
+it is not automatically graded.
 
 ## Installation
 
@@ -25,4 +25,4 @@ Site administration > Notifications
 ### Setup
 
 On the admin screens, there are a few settings you may wish to change, for example
-audio quality and the maximum recording length.
+audio and video quality and the maximum recording length.

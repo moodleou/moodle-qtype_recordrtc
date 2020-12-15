@@ -1,6 +1,15 @@
 # Change log for the Record audio and video question type
 
 
+## Changes in 1.3
+
+* This question type now supports video recording as well as audio.
+* When reviewing their attempt, students now get a link to download their recording.
+* Improvements to the layout.
+* Fixes, to prevent students submitting until the recording is complete.
+* An improved icon.
+
+
 ## Changes in 1.2
 
 * Fix spelling mistake.

@@ -24,10 +24,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2020101900;
-$plugin->requires  = 2018120300;
+$plugin->version   = 2020121500;
+$plugin->requires  = 2020061500;
 $plugin->component = 'qtype_recordrtc';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.2 for Moodle 3.6+';
+$plugin->release   = '1.3 for Moodle 3.9+';
 
 $plugin->outestssufficient = true;
