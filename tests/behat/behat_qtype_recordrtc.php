@@ -45,23 +45,7 @@ class behat_qtype_recordrtc extends behat_base {
      * @When :username has recorded :fixturefile into the record RTC question
      */
     public function i_have_recorded_fixture($username, $fixturefile) {
-        global $DB;
-
-        $draftitemidnode = $this->get_selected_node('xpath_element', "//input[@type='hidden' and contains(@name, '_recording')]");
-        $draftitemid = $draftitemidnode->getValue();
-
-        $user = $DB->get_record('user', ['username' => $username]);
-        // Create the file in the provided draft area.
-        $fileinfo = [
-                'contextid' => context_user::instance($user->id)->id,
-                'component' => 'user',
-                'filearea'  => 'draft',
-                'itemid'    => $draftitemid,
-                'filepath'  => '/',
-                'filename'  => (new qtype_recordrtc())->get_media_filename('recording', 'audio'),
-        ];
-        $fs = get_file_storage();
-        $fs->create_file_from_pathname($fileinfo, __DIR__ . '/../fixtures/' . $fixturefile);
+        $this->i_have_recorded_fixture_into_inputname($username, $fixturefile, 'audio', 'recording');
     }
 
     /**
@@ -99,5 +83,14 @@ class behat_qtype_recordrtc extends behat_base {
         ];
         $fs = get_file_storage();
         $fs->create_file_from_pathname($fileinfo, __DIR__ . '/../fixtures/' . $fixturefile);
+
+        $this->execute_script("
+                (function() {
+                    var button = document.querySelector('.que.recordrtc input.submit, .que.recordrtc button.submit');
+                    if (button) {
+                        button.disabled = false;
+                    }
+                }())"
+        );
     }
 }
