@@ -25,6 +25,8 @@
 $string['audio'] = 'Single audio';
 $string['audiobitrate'] = 'Audio bitrate';
 $string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality)';
+$string['audiotimelimit'] = 'Max audio recording duration';
+$string['audiotimelimit_desc'] = 'Maximum time that a question author can set for the audio recording length.';
 $string['avplaceholder'] = 'Audio/video placeholders';
 $string['avplaceholder_help'] = 'Place one or more recording widgets anywhere in the question text. You can copy the examples here.
 
@@ -94,7 +96,6 @@ $string['recordingfailed'] = 'Recording failed';
 $string['recordinginprogress'] = 'Stop recording ({$a})';
 $string['startrecording'] = 'Start recording';
 $string['timelimit'] = 'Maximum recording duration';
-$string['timelimit_desc'] = 'Maximum time that a question author can set for the recording length.';
 $string['timelimit_help'] = 'This is the longest duration of a recording that the student is allowed to make. If they reach this time, the recording will automatically stop. There is an upper limit to the value that can be set here. If you need a longer time, ask an administrator.';
 $string['uploadaborted'] = 'Saving aborted';
 $string['uploadcomplete'] = 'Recording uploaded';
@@ -107,3 +108,5 @@ $string['videobitrate'] = 'Video bitrate';
 $string['videobitrate_desc'] = 'Quality of video recording (larger number means higher quality)';
 $string['videosize'] = 'Video size';
 $string['videosize_desc'] = 'The size of the video.';
+$string['videotimelimit'] = 'Max video recording duration';
+$string['videotimelimit_desc'] = 'Maximum time that a question author can set for the video recording length.';
