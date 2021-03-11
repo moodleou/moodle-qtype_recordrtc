@@ -170,6 +170,17 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020101900, 'qtype', 'recordrtc');
     }
 
+    // Change settings from timelimit to audiotimelimit and videotimelimit.
+    if ($oldversion < 2021032500) {
+        $timelimit = get_config('qtype_recordrtc', 'timelimit');
+        set_config('audiotimelimit', $timelimit ?? 600, 'qtype_recordrtc');
+        set_config('videotimelimit', $timelimit ?? 300, 'qtype_recordrtc');
+
+        // Recordrtc savepoint reached.
+        upgrade_plugin_savepoint(true, 2021032500, 'qtype', 'recordrtc');
+    }
+
+
     return true;
 }
 

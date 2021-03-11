@@ -106,7 +106,7 @@ class qtype_recordrtc extends question_type {
 
         $qo->mediatype = $format->getpath($data, array('#', 'mediatype', 0, '#'), self::MEDIA_TYPE_AUDIO);
         $qo->timelimitinseconds = $format->getpath($data, array('#', 'timelimitinseconds', 0, '#'),
-                get_config('timelimit', 'qtype_recordrtc'));
+                get_config('qtype_recordrtc', 'audiotimelimit'));
 
         return $qo;
     }

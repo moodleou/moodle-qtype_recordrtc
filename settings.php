@@ -30,14 +30,14 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_heading('audiovideoheading',
         get_string('optionsforaudioandvideo', 'qtype_recordrtc'), ''));
 
-    // Recording time limit.
-    $settings->add(new admin_setting_configduration('qtype_recordrtc/timelimit',
-        get_string('timelimit', 'qtype_recordrtc'), get_string('timelimit_desc', 'qtype_recordrtc'),
-        600, 60));
-
     // Default settings for audio.
     $settings->add(new admin_setting_heading('audiooptionsheading',
         get_string('optionsforaudio', 'qtype_recordrtc'), ''));
+
+    // Recording time limit.
+    $settings->add(new admin_setting_configduration('qtype_recordrtc/audiotimelimit',
+            get_string('audiotimelimit', 'qtype_recordrtc'), get_string('audiotimelimit_desc', 'qtype_recordrtc'),
+            600, 60));
 
     // Audio bitrate.
     $settings->add(new admin_setting_configtext('qtype_recordrtc/audiobitrate',
@@ -48,6 +48,11 @@ if ($ADMIN->fulltree) {
     // Default settings for video.
     $settings->add(new admin_setting_heading('videooptionsheading',
         get_string('optionsforvideo', 'qtype_recordrtc'), ''));
+
+    // Recording time limit for video.
+    $settings->add(new admin_setting_configduration('qtype_recordrtc/videotimelimit',
+            get_string('videotimelimit', 'qtype_recordrtc'), get_string('videotimelimit_desc', 'qtype_recordrtc'),
+            300, 60));
 
     // Video bitrate.
     $settings->add(new admin_setting_configtext('qtype_recordrtc/videobitrate',

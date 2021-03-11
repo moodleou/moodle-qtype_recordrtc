@@ -74,8 +74,28 @@ class qtype_recordrtc_edit_form extends question_edit_form {
             $errors['questiontext'] = $placeholdererrors;
         }
 
-        // Validate the time.
-        $maxtimelimit = get_config('qtype_recordrtc', 'timelimit');
+        // Validate the time limit.
+        switch ($data['mediatype']) {
+            case qtype_recordrtc::MEDIA_TYPE_AUDIO :
+                $maxtimelimit = get_config('qtype_recordrtc', 'audiotimelimit');
+                break;
+
+            case qtype_recordrtc::MEDIA_TYPE_VIDEO :
+            case qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV :
+                // We are using the 'Max video recording duration' for customav media type,
+                // because it is shorter than 'Max audio recording duration' and we need to
+                // use the value of $data['timelimitinseconds'] as default for widgets in
+                // question text when the bespoke duration is not specified by the widget itself.
+
+                // TODO: Delete or modify comment above when developing #428764. we may also want to add a
+                //  separate setting for cutomav in the setting page if needed and modify this switch-statement.
+                $maxtimelimit = get_config('qtype_recordrtc', 'videotimelimit');
+                break;
+
+            default: // Should not get here.
+                $maxtimelimit = qtype_recordrtc::DEFAULT_TIMELIMIT;
+                break;
+        }
         if ($data['timelimitinseconds'] <= 0) {
             $errors['timelimitinseconds'] = get_string('err_timelimitpositive', 'qtype_recordrtc');
         } else if ($data['timelimitinseconds'] > $maxtimelimit) {
