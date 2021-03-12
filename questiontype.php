@@ -52,6 +52,13 @@ class qtype_recordrtc extends question_type {
     /** @var string media type custom AV  */
     const MEDIA_TYPE_CUSTOM_AV = 'customav';
 
+    /** @var string validate_widget_placeholders pattern */
+    const VALIDATE_WIDGET_PLACEHOLDERS = "/(\[\[)([A-Za-z0-9_-]+):([a-z]+)(:?([0-9]+m)?([0-9]+s)?)?(\]\])/";
+
+    /** @var string get_widget_placeholders pattern */
+    const GET_WIDGET_PLACEHOLDERS = '/\[\[([a-z0-9_-]+):(audio|video):*([0-9]*m*[0-9]*s*)]]/i';
+
+
     public function is_manual_graded() {
         return true;
     }
@@ -65,24 +72,19 @@ class qtype_recordrtc extends question_type {
     }
 
     protected function initialise_question_instance(question_definition $question, $questiondata) {
-        $mediatype = $questiondata->options->mediatype;
         parent::initialise_question_instance($question, $questiondata);
         $question->timelimitinseconds = $questiondata->options->timelimitinseconds;
         $question->mediatype = $questiondata->options->mediatype;
-        $question->widgetplaceholders = $this->get_widget_placeholders($questiondata->questiontext);
+        $question->widgetplaceholders = $this->get_widget_placeholders($questiondata->questiontext, $question->timelimitinseconds);
         if (empty($question->widgetplaceholders)) {
             // There was no recorder in the question text. Add one placeholder to the question text with the title 'recording'.
-            $question->questiontext .= html_writer::div('[[recording:' . $mediatype . ']]');
+
+            $question->questiontext .= html_writer::div(
+                    $this->create_widget('recording', $question->mediatype, $question->timelimitinseconds, true));
 
             // The widgetplaceholders array's key used as placeholder to be replaced with  an audi/video widegt.
-            // The value is a array containing title (filename without extension) and the medaitype (audio or video).
-            if ($mediatype === self::MEDIA_TYPE_AUDIO) {
-                $question->widgetplaceholders =
-                    ['[[recording:' . self::MEDIA_TYPE_AUDIO . ']]' => ['recording', self::MEDIA_TYPE_AUDIO]];
-            } else {
-                $question->widgetplaceholders =
-                    ['[[recording:' . self::MEDIA_TYPE_VIDEO . ']]' => ['recording', self::MEDIA_TYPE_VIDEO]];
-            }
+            // The value is an array containing title (filename without extension), medaitype (audio/video) and timelimit.
+            $question->widgetplaceholders = $this->create_widget('recording', $question->mediatype, $question->timelimitinseconds);
         }
     }
 
@@ -144,8 +146,7 @@ class qtype_recordrtc extends question_type {
                 return get_string('err_closesquarebrackets', 'qtype_recordrtc', $a);
             }
         }
-        $pattern = "/(\[\[)([A-Za-z0-9_-]+)(:)([a-z]+)(]])/";
-        preg_match_all($pattern, $qtext, $matches, PREG_PATTERN_ORDER, 0);
+        preg_match_all(self::VALIDATE_WIDGET_PLACEHOLDERS, $qtext, $matches, PREG_PATTERN_ORDER, 0);
 
         // If medatype is audio or video, custom placeholer is not allowed.
         if (($mediatype === self::MEDIA_TYPE_AUDIO || $mediatype === self::MEDIA_TYPE_VIDEO) && $matches[2]) {
@@ -179,11 +180,43 @@ class qtype_recordrtc extends question_type {
                 $titlesused[$title] = 1;
             }
             // Validate media types.
-            $mediatypes = $matches[4];
+            $mediatypes = $matches[3];
             foreach ($mediatypes as $key => $mt) {
                 if ($mt !== self::MEDIA_TYPE_AUDIO && $mt !== self::MEDIA_TYPE_VIDEO) {
                     $a->text = $mt;
                     return get_string('err_placeholdermediatype', 'qtype_recordrtc', $a);
+                }
+            }
+            // A media placeholder is not in a correct format.
+            if (count($matches[0]) < $openingbrackets) {
+                return get_string('err_placeholderincorrectformat', 'qtype_recordrtc', $a);
+            }
+            // If medatype is customav and duration is specified check duration validity.
+            if ($mediatype === self::MEDIA_TYPE_CUSTOM_AV && $matches[4]) {
+                // Validate durations.
+                $audiotimelimit = get_config('qtype_recordrtc', 'audiotimelimit');
+                $videotimelimit = get_config('qtype_recordrtc', 'videotimelimit');
+                $durations = $matches[4];
+                foreach ($durations as $key => $d) {
+                    $placeholder = '[[' . $titles[$key] . ':' . $mediatypes[$key] . $d . ']]';
+                    if (!$d) {
+                        continue;
+                    }
+                    $dur = trim($d, ':');
+                    if (!$dur) {
+                        return get_string('err_placeholdermissingduration', 'qtype_recordrtc', $placeholder);
+                    }
+                    $duration = $this->convert_duration_to_seconds($dur);
+
+                    if ($duration <= 0) {
+                        return get_string('err_zeroornegativetimelimit', 'qtype_recordrtc', $dur);
+                    }
+                    if ($mediatypes[$key] === self::MEDIA_TYPE_AUDIO  && $duration > $audiotimelimit) {
+                        return get_string('err_audiotimelimit', 'qtype_recordrtc', $audiotimelimit);
+                    }
+                    if ($mediatypes[$key] === self::MEDIA_TYPE_VIDEO  && $duration > $videotimelimit) {
+                        return get_string('err_videotimelimit', 'qtype_recordrtc', $videotimelimit);
+                    }
                 }
             }
             // A media placeholder is not in a correct format.
@@ -204,16 +237,66 @@ class qtype_recordrtc extends question_type {
      * and when there is no placeholder in the question text, add one as default.
      *
      * @param $questiontext
-     * @return array placeholder => filename
+     * @param int $questiontimelimit
+     * @return array placeholder => [filename, mediatype, duration]
      */
-    public function get_widget_placeholders($questiontext) {
-        preg_match_all('/\[\[([a-z0-9_-]+):(audio|video)]]/i', $questiontext, $matches, PREG_SET_ORDER);
-
+    public function get_widget_placeholders(string $questiontext, int $questiontimelimit) : array {
+        preg_match_all(self::GET_WIDGET_PLACEHOLDERS, $questiontext, $matches, PREG_SET_ORDER);
         $widgetplaceholders = [];
         foreach ($matches as $match) {
-            $widgetplaceholders[$match[0]] = [$match[1], $match[2]];
+            if ($match[3]) {
+                $duration = $this->convert_duration_to_seconds($match[3]);
+            } else {
+                $duration = $questiontimelimit;
+            }
+            $widgetplaceholders[$match[0]] = [$match[1], $match[2], $duration];
         }
         return $widgetplaceholders;
+    }
+
+    /**
+     * Return an array as a widget placeholder.
+     *
+     * The array key is used as the widget placeholder to be replaced with an audi/video widegt when rendering.
+     * The value is an array containing title (filename without extension), medaitype (audio/video) and timelimit.
+     *
+     * @param string $title
+     * @param string $mediatype
+     * @param string $timelimit
+     * @param false $keyonly
+     * @return array[]|string
+     */
+    public function create_widget(string $title, string $mediatype, string $timelimit, $placeholder = false) {
+        $key = '[[' . $title . ':' . $mediatype . ':' . $timelimit . ']]';
+        if ($placeholder) {
+            return $key;
+        }
+        return  [$key => [$title, $mediatype, $this->convert_duration_to_seconds($timelimit)]];
+    }
+
+    /**
+     * Return duration in seconds.
+     *
+     * @param string $duration duration
+     * @return int duration in seconds.
+     */
+    public function convert_duration_to_seconds(string $duration) :int {
+        $minutesandseconds = explode('m', $duration);
+        // Only numbers followed by an 's'.
+        if (count($minutesandseconds) === 1) {
+            return trim($minutesandseconds[0], 's');
+        }
+        // Numbers followed by 'm', such as '1m', '2m'.
+        if (!$minutesandseconds[1]) {
+            return $minutesandseconds[0] * 60;
+        }
+        // Numbers followed by 'm', followed by numbers and 's' such as '1m20s'.
+        if (is_number($minutesandseconds[1])) {
+            $seconds = $minutesandseconds[1];
+        } else {
+            $seconds = trim($minutesandseconds[1], 's');
+        }
+        return ($minutesandseconds[0] * 60) + $seconds;
     }
 
     /**

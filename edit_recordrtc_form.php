@@ -48,10 +48,11 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $mform->addHelpButton('mediatype', 'mediatype', 'qtype_recordrtc');
         $mform->setDefault('mediatype', qtype_recordrtc::MEDIA_TYPE_AUDIO);
 
-        // Add instructions and widget placeholder templates for question authors
-        // to copy and paste into the question text.
-        $avplaceholder = $mform->createElement('static', 'avplaceholder', '',
-                '[[recorder1:audio]] &nbsp; [[recorder2:video]]');
+        // Add instructions and widget placeholder templates for question authors to copy and paste into the question text.
+        $qtype = new qtype_recordrtc();
+        $audiowidget = $qtype->create_widget('recorder1', 'audio', '10m00s', true);
+        $wideowidget = $qtype->create_widget('recorder2', 'video', '05m00s', true);
+        $avplaceholder = $mform->createElement('static', 'avplaceholder', '', "$audiowidget &nbsp; $wideowidget");
         $avplaceholdergroup = $mform->createElement('group', 'avplaceholdergroup',
                 get_string('avplaceholder', 'qtype_recordrtc'), [$avplaceholder]);
         $mform->hideIf('avplaceholdergroup', 'mediatype', 'noteq', qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV);
@@ -86,9 +87,6 @@ class qtype_recordrtc_edit_form extends question_edit_form {
                 // because it is shorter than 'Max audio recording duration' and we need to
                 // use the value of $data['timelimitinseconds'] as default for widgets in
                 // question text when the bespoke duration is not specified by the widget itself.
-
-                // TODO: Delete or modify comment above when developing #428764. we may also want to add a
-                //  separate setting for cutomav in the setting page if needed and modify this switch-statement.
                 $maxtimelimit = get_config('qtype_recordrtc', 'videotimelimit');
                 break;
 
@@ -96,13 +94,12 @@ class qtype_recordrtc_edit_form extends question_edit_form {
                 $maxtimelimit = qtype_recordrtc::DEFAULT_TIMELIMIT;
                 break;
         }
+        if ($data['timelimitinseconds'] > $maxtimelimit) {
+            $errors['timelimitinseconds'] = get_string('err_timelimit', 'qtype_recordrtc', format_time($maxtimelimit));
+        }
         if ($data['timelimitinseconds'] <= 0) {
             $errors['timelimitinseconds'] = get_string('err_timelimitpositive', 'qtype_recordrtc');
-        } else if ($data['timelimitinseconds'] > $maxtimelimit) {
-            $errors['timelimitinseconds'] = get_string('err_timelimit', 'qtype_recordrtc',
-                    format_time($maxtimelimit));
         }
-
         return $errors;
     }
 

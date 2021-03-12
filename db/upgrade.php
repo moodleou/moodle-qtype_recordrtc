@@ -180,7 +180,6 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2021032500, 'qtype', 'recordrtc');
     }
 
-
     return true;
 }
 

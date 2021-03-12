@@ -55,6 +55,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      *  - recorded:  button shows 'Record again'.
      *
      * @param {(AudioSettings|VideoSettings)} type
+     * @param {int} timelimit
      * @param {HTMLMediaElement} mediaElement
      * @param {HTMLMediaElement} noMediaPlaceholder
      * @param {HTMLButtonElement} button
@@ -64,7 +65,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      * @param {Object} questionDiv
      * @constructor
      */
-    function Recorder(type, mediaElement, noMediaPlaceholder,
+    function Recorder(type, timelimit, mediaElement, noMediaPlaceholder,
                       button, filename, owner, settings, questionDiv) {
         /**
          * @type {Recorder} reference to this recorder, for use in event handlers.
@@ -308,10 +309,10 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         }
 
         /**
-         * Start the countdown timer from settings.timeLimit.
+         * Start the countdown timer from timeLimit.
          */
         function startCountdownTimer() {
-            secondsRemaining = settings.timeLimit;
+            secondsRemaining = timelimit;
 
             updateTimerDisplay();
             countdownTicker = setInterval(updateTimerDisplay, 1000);
@@ -592,6 +593,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         recorderElements.forEach(function(widget) {
             // Get the key UI elements.
             var type = widget.dataset.mediaType;
+            var timelimit = widget.dataset.maxRecordingDuration;
             var button = widget.querySelector('.record-button button');
             var mediaElement = widget.querySelector('.media-player ' + type);
             var noMediaPlaceholder = widget.querySelector('.no-recording-placeholder');
@@ -611,7 +613,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             this.notifyButtonStatesChanged = setSubmitButtonState;
 
             // Create the recorder.
-            new Recorder(typeInfo, mediaElement, noMediaPlaceholder, button,
+            new Recorder(typeInfo, timelimit, mediaElement, noMediaPlaceholder, button,
                     filename, this, settings, questionDiv);
         });
         setSubmitButtonState();
