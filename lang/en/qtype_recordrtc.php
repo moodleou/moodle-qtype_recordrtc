@@ -30,17 +30,19 @@ $string['audiotimelimit_desc'] = 'Maximum time that a question author can set fo
 $string['avplaceholder'] = 'Audio/video placeholders';
 $string['avplaceholder_help'] = 'Place one or more recording widgets anywhere in the question text. You can copy the examples here.
 
-Each placeholder is a name, then the widget type after a colon. Each name must be different.
+Each placeholder has a name, a type and an optional duration, separated by colons. Each name must be different. The type is \'audio\' or \'video\'. The duration should be like \'30s\' or \'01m40s\'.
 
 You may be able to apply formatting to the widget, such as changing its alignment.';
 $string['customav'] = 'Customised audio/video';
 $string['downloadrecording'] = 'Download {$a}';
+$string['err_audiotimelimit'] = 'Maximum recording duration cannot be greater than {$a} seconds (Max audio recording duration setting).';
 $string['err_closesquarebrackets'] = 'Missing close square bracket(s). {$a->format}';
 $string['err_opensquarebrackets'] = 'Missing open square bracket(s). {$a->format}';
-$string['err_placeholderformat'] = 'The placeholder format is [[name:audio]] or [[name:video]], where name can only contain lower-case letters, numbers, hyphens and underscores, and must be no more than 32 characters long.';
-$string['err_placeholderincorrectformat'] = 'The placeholders in the question text are not in the correct format. {$a->format}';
+$string['err_placeholderformat'] = 'The placeholder format is either [[name:audio:duration]] or [[name:video:duration]], where name can only contain lower-case letters, numbers, hyphens and underscores, and must be no more than 32 characters long. The duration is optional and should be like \'01m20s\', \'02m\' or \'45s\'.';
+$string['err_placeholderincorrectformat'] = 'A placeholder in the question text is not in the correct format. {$a->format}';
 $string['err_placeholdermediatype'] = 'Widget type "{$a->text}" is not valid. {$a->format}';
 $string['err_placeholderneeded'] = 'You must add at least one placeholder to the question text.';
+$string['err_placeholdermissingduration'] = '{$a} missing duration. Enter the required duration in correct format or remove the last \':\' to consider system default duration for this question.';
 $string['err_placeholdernotallowed'] = 'You cannot use placeholders with Recording type {$a}.';
 $string['err_placeholdertitle'] = '"{$a->text}" is not a valid name. {$a->format}';
 $string['err_placeholdertitlecase'] = '"{$a->text}" is not a valid name. Names may only contain lower-case letters. {$a->format}';
@@ -48,6 +50,8 @@ $string['err_placeholdertitleduplicate'] = '"{$a->text}" has been used more than
 $string['err_placeholdertitlelength'] = '"{$a->text}" is longer than {$a->maxlength} characters. {$a->format}';
 $string['err_timelimit'] = 'Maximum recording duration cannot be greater than {$a}.';
 $string['err_timelimitpositive'] = 'Maximum recording duration must be greater than 0.';
+$string['err_videotimelimit'] = 'Maximum recording duration cannot be greater than {$a} seconds (Max video recording duration setting).';
+$string['err_zeroornegativetimelimit'] = '"{$a}" is not a valid. Maximum recording duration must be greater than 0.';
 $string['filex'] = 'File {$a}';
 $string['gumabort'] = 'Something strange happened which prevented the webcam/microphone from being used';
 $string['gumabort_title'] = 'Something happened';

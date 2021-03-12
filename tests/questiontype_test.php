@@ -85,17 +85,18 @@ class qtype_recordrtc_test extends question_testcase {
 
     public function test_get_widget_placeholders_no_placeholder() {
         $questiontext = 'Record your answer about your experience doing this Module.';
-        $this->assertEquals([], $this->qtype->get_widget_placeholders($questiontext));
+        $this->assertEquals([], $this->qtype->get_widget_placeholders($questiontext, 10));
     }
 
     public function test_get_widget_placeholders_with_placeholders() {
         $questiontext = 'Record the answers:
-        What is your name? [[name:audio]] Where do you live [[place:audio]]';
+        What is your name? [[name:audio]] Where do you live [[place:audio:1m10s]]';
+        $timelimitinseconds = 15;
         $expected = [
-            '[[name:audio]]' => ['name', 'audio'],
-            '[[place:audio]]' => ['place', 'audio']
+                '[[name:audio]]' => ['name', 'audio', 15],
+                '[[place:audio:1m10s]]' => ['place', 'audio', 70]
         ];
-        $this->assertEquals($expected, $this->qtype->get_widget_placeholders($questiontext));
+        $this->assertEquals($expected, $this->qtype->get_widget_placeholders($questiontext, $timelimitinseconds));
     }
 
     public function test_validate_widget_placeholders_valid() {
@@ -142,6 +143,20 @@ class qtype_recordrtc_test extends question_testcase {
         $questiontext = 'Record the answers:
         What is your name? [[name;audio]] Where do you live [[place:audio]]';
         $expected = get_string('err_placeholderincorrectformat', 'qtype_recordrtc', $a);
+        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function test_validate_widget_placeholders_missing_duration() {
+        $questiontext = 'Record the answers: What is your name? [[name:audio:]] Where do you live [[place:audio:02m10s]]';
+        $expected = get_string('err_placeholdermissingduration', 'qtype_recordrtc', '[[name:audio:]]');
+        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function test_validate_widget_placeholders_zero_duration() {
+        $questiontext = 'Record the answers: What is your name? [[name:audio:00m00s]] Where do you live [[place:audio:02m10s]]';
+        $expected = get_string('err_zeroornegativetimelimit', 'qtype_recordrtc', '00m00s');
         $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
         $this->assertEquals($expected, $actual);
     }
@@ -247,6 +262,30 @@ class qtype_recordrtc_test extends question_testcase {
                 $this->assertEquals($value, $actualquestiondata->$property);
             }
         }
+    }
+
+    /**
+     *
+     * @dataProvider convert_duration_to_seconds_test_cases()
+     * @param $recordingduration
+     * @param $expected
+     */
+    public function test_convert_duration_to_seconds($recordingduration, $expected) {
+         $this->assertEquals($expected, $this->qtype->convert_duration_to_seconds($recordingduration));
+    }
+
+    /**
+     * Data provider for test_convert_duration_to_seconds.
+     *
+     * @return array the test cases.
+     */
+    public function convert_duration_to_seconds_test_cases() {
+        return [
+            '2 minutes and 10 seconds as 02m10s' => ['2m10s', 130],
+            '1 minute and 20 seconds as 1m20s' => ['1m20s', 80],
+            '1 minute as 1m' => ['1m', 60],
+            '20 seconds as 20s' => ['20s', 20],
+        ];
     }
 
     public function test_xml_import() {

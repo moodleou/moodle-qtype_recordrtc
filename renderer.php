@@ -60,7 +60,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
 
         // Replace all the placeholders with the corresponding recording or player widget.
         $questiontext = $question->format_questiontext($qa);
-        foreach ($question->widgetplaceholders as $placeholder => [$title, $mediatype]) {
+        foreach ($question->widgetplaceholders as $placeholder => [$title, $mediatype, $maxrecordingduration]) {
             $filename = \qtype_recordrtc::get_media_filename($title, $mediatype);
             $existingfile = $question->get_file_from_response($filename, $existingfiles);
             if ($options->readonly) {
@@ -82,7 +82,8 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 }
 
                 // Recording UI.
-                $thisitem = $this->recording_ui($filename, $recordingurl, $state, $label, $mediatype, $videowidth, $videoheight);
+                $thisitem = $this->recording_ui($filename, $recordingurl, $state,
+                        $label, $mediatype, $maxrecordingduration, $videowidth, $videoheight);
             }
 
             $questiontext = str_replace($placeholder, $thisitem, $questiontext);
@@ -99,7 +100,6 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             }
             $uploadrepository = reset($repositories); // Get the first (and only) upload repo.
             $setting = [
-                    'timeLimit' => (int) $question->timelimitinseconds,
                     'audioBitRate' => (int) get_config('qtype_recordrtc', 'audiobitrate'),
                     'videoBitRate' => (int) get_config('qtype_recordrtc', 'videobitrate'),
                     'videoWidth' => (int) $videowidth,
@@ -148,7 +148,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      * @return string HTML to output.
      */
     protected function recording_ui(string $filename, ?string $recordingurl,
-            string $state, string $label, string $mediatype, $videowidth, $videoheight) {
+            string $state, string $label, string $mediatype, $maxrecordingduration, $videowidth, $videoheight) {
         if ($recordingurl) {
             $mediaplayerhideclass = '';
             $norecordinghideclass = 'hide ';
@@ -163,8 +163,8 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         [$aspectclass, $widthattribute] = $this->video_attributes($mediatype, $videowidth, $videoheight);
 
         return '
-            <span class="' . $mediatype . '-widget' . $aspectclass . '"' . $widthattribute .
-                    '" data-media-type="' . $mediatype . '" data-recording-filename="' . $filename . '">
+            <span class="' . $mediatype . '-widget' . $aspectclass . '"' . $widthattribute . '" data-media-type="' . $mediatype .
+                '" data-max-recording-duration="' . $maxrecordingduration . '" data-recording-filename="' . $filename . '">
                 <span class="' . $norecordinghideclass . 'no-recording-placeholder">' . $norecordinglangstring . '</span>
                 <span class="' . $mediaplayerhideclass . 'media-player">
                     <' . $mediatype . ' controls>
