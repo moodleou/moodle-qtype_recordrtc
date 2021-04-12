@@ -98,6 +98,7 @@ $string['privacy:metadata'] = 'The Record audio/video question type plugin does 
 $string['recordagain'] = 'Re-record';
 $string['recordingfailed'] = 'Recording failed';
 $string['recordinginprogress'] = 'Stop recording ({$a})';
+$string['startcamera'] = 'Start camera';
 $string['startrecording'] = 'Start recording';
 $string['timelimit'] = 'Maximum recording duration';
 $string['timelimit_help'] = 'This is the longest duration of a recording that the student is allowed to make. If they reach this time, the recording will automatically stop. There is an upper limit to the value that can be set here. If you need a longer time, ask an administrator.';
