@@ -94,7 +94,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         if (!$options->readonly) {
             // Initialise the JavaScript.
             $repositories = repository::get_instances(
-                    ['type' => 'upload', 'currentcontext' => $options->context->id]);
+                    ['type' => 'upload', 'currentcontext' => $options->context]);
             if (empty($repositories)) {
                 throw new moodle_exception('errornouploadrepo', 'moodle');
             }
