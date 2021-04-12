@@ -119,6 +119,9 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
                 case 'recorded':
                     startRecording();
                     break;
+                case 'starting':
+                    startSaving();
+                    break;
                 case 'recording':
                     stopRecording();
                     break;
@@ -164,30 +167,42 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         function handleCaptureStarting(stream) {
             mediaStream = stream;
 
+            // Setup the UI for during recording.
+            mediaElement.srcObject = stream;
+            mediaElement.muted = true;
+            if (type.hidePlayerDuringRecording) {
+                startSaving();
+            } else {
+                mediaElement.play();
+                mediaElement.controls = false;
+
+                button.dataset.state = 'starting';
+                setButtonLabel('startrecording');
+            }
+
+            // Make button clickable again, to allow starting/stopping recording.
+            button.disabled = false;
+            button.focus();
+        }
+
+        /**
+         * For recording types which show the media during recording,
+         * this starts the loop-back display, but does not start recording it yet.
+         */
+        function startSaving() {
             // Initialize MediaRecorder events and start recording.
             var options = getRecordingOptions();
             Log.debug('Audio/video question: creating recorder with opptions');
             Log.debug(options);
-            mediaRecorder = new MediaRecorder(stream, options);
+            mediaRecorder = new MediaRecorder(mediaStream, options);
 
             mediaRecorder.ondataavailable = handleDataAvailable;
             mediaRecorder.onstop = handleRecordingHasStopped;
             Log.debug('Audio/video question: starting recording.');
             mediaRecorder.start(1000); // Capture in one-second chunks. Firefox requires that.
 
-            // Setup the UI for during recording.
-            mediaElement.srcObject = stream;
-            mediaElement.muted = true;
-            if (!type.hidePlayerDuringRecording) {
-                mediaElement.play();
-                mediaElement.controls = false;
-            }
             button.dataset.state = 'recording';
             startCountdownTimer();
-
-            // Make button clickable again, to allow stopping recording.
-            button.disabled = false;
-            button.focus();
         }
 
         /**

@@ -78,7 +78,11 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 } else {
                     $recordingurl = null;
                     $state = 'new';
-                    $label = get_string('startrecording', 'qtype_recordrtc');
+                    if ($mediatype == 'audio') {
+                        $label = get_string('startrecording', 'qtype_recordrtc');
+                    } else {
+                        $label = get_string('startcamera', 'qtype_recordrtc');
+                    }
                 }
 
                 // Recording UI.
@@ -270,6 +274,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             'recordagain',
             'recordingfailed',
             'recordinginprogress',
+            'startcamera',
             'startrecording',
             'uploadaborted',
             'uploadcomplete',
