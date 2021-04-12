@@ -30,9 +30,9 @@ $string['audiotimelimit_desc'] = 'Maximum time that a question author can set fo
 $string['avplaceholder'] = 'Audio/video placeholders';
 $string['avplaceholder_help'] = 'Place one or more recording widgets anywhere in the question text. You can copy the examples here.
 
-Each placeholder has a name, a type and an optional duration, separated by colons. Each name must be different. The type is \'audio\' or \'video\'. The duration should be like \'30s\' or \'01m40s\'.
+Each placeholder requires, in double square brackets, a unique name (e.g. \'recorder1\'), a type (\'audio\' or \'video\') and an optional duration, separated by colons. The duration should be expressed like \'30s\' or \'05m45s\'. When no duration is set, the widget will default to the maximum recording duration.
 
-You may be able to apply formatting to the widget, such as changing its alignment.';
+You may be able to apply formatting to the widget, such as changing its alignment or placing it in a table.';
 $string['customav'] = 'Customised audio/video';
 $string['downloadrecording'] = 'Download {$a}';
 $string['err_audiotimelimit'] = 'Maximum recording duration cannot be greater than {$a} seconds (Max audio recording duration setting).';
