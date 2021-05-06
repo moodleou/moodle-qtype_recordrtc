@@ -24,18 +24,76 @@
 
 namespace qtype_recordrtc\privacy;
 
+use \core_privacy\local\metadata\collection;
+use \core_privacy\local\request\transform;
+use \core_privacy\local\request\user_preference_provider;
+use \core_privacy\local\request\writer;
+
 defined('MOODLE_INTERNAL') || die();
-
-use core_privacy\local\metadata\collection;
-use core_privacy\local\request\writer;
-
-
 /**
- * Privacy provider for the record audio and video question type.
+ * Privacy Subsystem for qtype_recordrtc implementing user_preference_provider.
+ *
+ * @copyright  2021 The Open University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\local\metadata\null_provider {
+class provider implements
+    // This component has data.
+    // We need to return default options that have been set a user preferences.
+\core_privacy\local\metadata\provider,
+\core_privacy\local\request\user_preference_provider {
 
-    public static function get_reason() : string {
-        return 'privacy:metadata';
+    /**
+     * Returns meta data about this system.
+     *
+     * @param collection $collection The initialised collection to add items to.
+     * @return  collection     A listing of user data stored through this system.
+     */
+    public static function get_metadata(collection $collection): collection {
+        $collection->add_user_preference('qtype_recordrtc_defaultmark', 'privacy:preference:defaultmark');
+        $collection->add_user_preference('qtype_recordrtc_mediatype', 'privacy:preference:mediatype');
+        $collection->add_user_preference('qtype_recordrtc_timelimitinseconds', 'privacy:preference:timelimitinseconds');
+        return $collection;
+    }
+
+    /**
+     * Export all user preferences for the plugin.
+     *
+     * @param int $userid The userid of the user whose data is to be exported.
+     */
+    public static function export_user_preferences(int $userid) {
+        $preference = get_user_preferences('qtype_recordrtc_defaultmark', null, $userid);
+        if (null !== $preference) {
+            $desc = get_string('privacy:preference:defaultmark', 'qtype_recordrtc');
+            writer::export_user_preference('qtype_recordrtc', 'defaultmark', $preference, $desc);
+        }
+
+        $preference = get_user_preferences('qtype_recordrtc_mediatype', null, $userid);
+        if (null !== $preference) {
+            $desc = get_string('privacy:preference:mediatype', 'qtype_recordrtc');
+            writer::export_user_preference('qtype_recordrtc', 'mediatype',
+                    get_string($preference, 'qtype_recordrtc'), $desc);
+        }
+
+        $preference = get_user_preferences('qtype_recordrtc_timelimitinseconds', null, $userid);
+        if (null !== $preference) {
+            $desc = get_string('privacy:preference:timelimitinseconds', 'qtype_recordrtc');
+            writer::export_user_preference('qtype_recordrtc', 'timelimitinseconds',
+                    self::get_number_with_unit($preference), $desc);
+        }
+    }
+
+    /**
+     * Convert number in seconds to number and unit (15 is '15 seconds', 120 is '2 minutes', 72 is '72 seconds')
+     *
+     * @param $preference number in seconds.
+     * @return string, number with unit (seconds or minutes).
+     */
+    private static function get_number_with_unit($preference) {
+        if ($preference > 60) {
+            if ($preference % 60 == 0) {
+                return $preference . ' minutes';
+            }
+        }
+        return $preference . ' seconds';
     }
 }

@@ -88,6 +88,12 @@ class qtype_recordrtc extends question_type {
         }
     }
 
+    public function save_defaults_for_new_questions(stdClass $fromform): void {
+        parent::save_defaults_for_new_questions($fromform);
+        $this->set_default_value('mediatype', $fromform->mediatype);
+        $this->set_default_value('timelimitinseconds', $fromform->timelimitinseconds);
+    }
+
     public function export_to_xml($question, qformat_xml $format, $extra = null) {
         $output = '';
         $output .= '    <mediatype>' . $question->options->mediatype .
