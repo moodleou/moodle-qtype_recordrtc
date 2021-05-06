@@ -20,8 +20,22 @@ Feature: Test creating record audio and video questions
 
   @javascript
   Scenario: Create a record audio and video question
-    When I add a "Record audio/video" question filling the form with:
-      | Question name    | Record audio question                               |
-      | Question text    | <p>Please record yourself talking about Moodle.</p> |
-      | General feedback | <p>I hope you spoke clearly and coherently.</p>     |
+    When I add a "item_qtype_recordrtc" question filling the form with:
+      | Question name                  | Record audio question                               |
+      | Question text                  | <p>Please record yourself talking about Moodle.</p> |
+      | General feedback               | <p>I hope you spoke clearly and coherently.</p>     |
+      | id_defaultmark                 | 2                                                   |
+      | id_mediatype                   | video                                               |
+      | id_timelimitinseconds_number   | 15                                                  |
+      | id_timelimitinseconds_timeunit | 1                                                   |
+
     Then I should see "Record audio question"
+ # Checking that the next new question form displays user preferences settings.
+    When I press "Create a new question ..."
+    And I set the field "item_qtype_recordrtc" to "1"
+    And I click on "Add" "button" in the "Choose a question type to add" "dialogue"
+    Then the following fields match these values:
+      | id_defaultmark                 | 2     |
+      | id_mediatype                   | video |
+      | id_timelimitinseconds_number   | 15    |
+      | id_timelimitinseconds_timeunit | 1     |
