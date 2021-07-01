@@ -27,6 +27,24 @@
 
 import Log from 'core/log';
 import ModalFactory from 'core/modal_factory';
+import {Mp3MediaRecorder} from '../../question/type/recordrtc/js/mp3-mediarecorder@4.0.5/index.umd.js';
+
+// This script must be preloaded here before the Worker importScripts it.
+import {mp3EncoderWorker} from '../../question/type/recordrtc/js/mp3-mediarecorder@4.0.5/worker.umd.js';
+// Shut up eslint.
+const ignore = () => {
+    return 1;
+};
+ignore(mp3EncoderWorker);
+
+const workerURL = URL.createObjectURL(new Blob([
+    // Now load the script (UMD version) in the Workers context.
+    "importScripts('" + M.cfg.wwwroot + "/question/type/recordrtc/js/mp3-mediarecorder@4.0.5/worker.umd.js');",
+
+    // The above index.umd.js script exports all methods in a new mp3EncoderWorker object.
+    "mp3EncoderWorker.initMp3MediaEncoder({vmsgWasmUrl: '" +
+            M.cfg.wwwroot + "/question/type/recordrtc/js/vmsg@0.4.0/vmsg.wasm'});",
+], {type: 'application/javascript'}));
 
 /**
  * Verify that the question type can work. If not, show a warning.
@@ -60,7 +78,7 @@ function checkCanWork() {
  * @param {HTMLMediaElement} mediaElement
  * @param {HTMLMediaElement} noMediaPlaceholder
  * @param {HTMLButtonElement} button
- * @param {string} filename the name of the audio (.ogg) or video file (.webm)
+ * @param {string} filename the name of the audio or video file
  * @param {Object} owner
  * @param {Object} settings
  * @param {Object} questionDiv
@@ -195,7 +213,8 @@ function Recorder(type, timelimit, mediaElement, noMediaPlaceholder,
         var options = getRecordingOptions();
         Log.debug('Audio/video question: creating recorder with opptions');
         Log.debug(options);
-        mediaRecorder = new MediaRecorder(mediaStream, options);
+        mediaRecorder = new Mp3MediaRecorder(mediaStream,
+            {worker: new Worker(workerURL)});
 
         mediaRecorder.ondataavailable = handleDataAvailable;
         mediaRecorder.onstop = handleRecordingHasStopped;
@@ -505,7 +524,7 @@ function Recorder(type, timelimit, mediaElement, noMediaPlaceholder,
 
         // Go through our list of mimeTypes, and take the first one that will work.
         for (var i = 0; i < type.mimeTypes.length; i++) {
-            if (MediaRecorder.isTypeSupported(type.mimeTypes[i])) {
+            if (Mp3MediaRecorder.isTypeSupported(type.mimeTypes[i])) {
                 options.mimeType = type.mimeTypes[i];
                 break;
             }
@@ -555,8 +574,7 @@ function AudioSettings() {
         audio: true
     };
     this.mimeTypes = [
-        'audio/webm;codecs=opus',
-        'audio/ogg;codecs=opus'
+        'audio/mpeg',
     ];
 }
 

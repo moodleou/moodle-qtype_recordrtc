@@ -76,7 +76,7 @@ class qtype_recordrtc_test extends question_testcase {
     }
 
     public function test_get_audio_filename() {
-        $this->assertEquals('recording.ogg', $this->qtype->get_media_filename('recording', 'audio'));
+        $this->assertEquals('recording.mp3', $this->qtype->get_media_filename('recording', 'audio'));
     }
 
     public function test_get_video_filename() {

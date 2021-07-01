@@ -43,6 +43,18 @@ Feature: Preview record audio and video questions
     And I choose "Preview" action for "Record audio question" in the question bank
     And I switch to "questionpreview" window
     And I should see "Please record yourself talking about Moodle."
+    When "teacher" has recorded "small.mp3" into the record RTC question
+    And I press "Submit and finish"
+    And "Download recording.mp3" "link" should exist
+    And I switch to the main window
+
+  Scenario: Can still access the recording from an attempt made when the format was .ogg
+    Given the following config values are set as admin:
+      | behaviour | immediatefeedback | question_preview |
+      | history   | shown             | question_preview |
+    And I choose "Preview" action for "Record audio question" in the question bank
+    And I switch to "questionpreview" window
+    And I should see "Please record yourself talking about Moodle."
     When "teacher" has recorded "moodle-tim.ogg" into the record RTC question
     And I press "Submit and finish"
     And "Download recording.ogg" "link" should exist
@@ -58,11 +70,11 @@ Feature: Preview record audio and video questions
     And I should see "Development"
     And I should see "Installation"
     And I should see "User experience"
-    When "teacher" has recorded "development.ogg" as "audio" into input "development" of the record RTC question
-    And "teacher" has recorded "installation.ogg" as "audio" into input "installation" of the record RTC question
-    And "teacher" has recorded "user_experience.ogg" as "audio" into input "user_experience" of the record RTC question
+    When "teacher" has recorded "small.mp3" as "audio" into input "development" of the record RTC question
+    And "teacher" has recorded "small.mp3" as "audio" into input "installation" of the record RTC question
+    And "teacher" has recorded "small.mp3" as "audio" into input "user_experience" of the record RTC question
     And I press "Submit and finish"
-    And "Download development.ogg" "link" should exist
-    And "Download installation.ogg" "link" should exist
-    And "Download user_experience.ogg" "link" should exist
+    And "Download development.mp3" "link" should exist
+    And "Download installation.mp3" "link" should exist
+    And "Download user_experience.mp3" "link" should exist
     And I switch to the main window
