@@ -71,6 +71,12 @@ class behat_qtype_recordrtc extends behat_base {
         $draftitemidnode = $this->get_selected_node('xpath_element', "//input[@type='hidden' and contains(@name, '_recording')]");
         $draftitemid = $draftitemidnode->getValue();
 
+        $filename = (new qtype_recordrtc())->get_media_filename($inputname, $mediatype);
+        // To test the backwards compatibility, allow ogg files to be uploaded.
+        if (substr($fixturefile, -4) === '.ogg') {
+            $filename = substr($filename, 0, -4) . '.ogg';
+        }
+
         $user = $DB->get_record('user', ['username' => $username]);
         // Create the file in the provided draft area.
         $fileinfo = [
@@ -79,7 +85,7 @@ class behat_qtype_recordrtc extends behat_base {
             'filearea'  => 'draft',
             'itemid'    => $draftitemid,
             'filepath'  => '/',
-            'filename'  => (new qtype_recordrtc())->get_media_filename($inputname, $mediatype),
+            'filename'  => $filename,
         ];
         $fs = get_file_storage();
         $fs->create_file_from_pathname($fileinfo, __DIR__ . '/../fixtures/' . $fixturefile);

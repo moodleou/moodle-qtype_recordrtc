@@ -25,24 +25,41 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
+import Log from 'core/log';
+import ModalFactory from 'core/modal_factory';
+import Notification from 'core/notification';
 
-    /**
-     * Verify that the question type can work. If not, show a warning.
-     *
-     * @return {string} 'ok' if it looks OK, else 'nowebrtc' or 'nothttps' if there is a problem.
-     */
-    function checkCanWork() {
-        if (!(navigator.mediaDevices && window.MediaRecorder)) {
-            return 'nowebrtc';
-        }
-
-        if (!(location.protocol === 'https:' || location.host.indexOf('localhost') !== -1)) {
-            return 'nothttps';
-        }
-
-        return 'ok';
+/**
+ * Verify that the question type can work. If not, show a warning.
+ *
+ * @return {string} 'ok' if it looks OK, else 'nowebrtc' or 'nothttps' if there is a problem.
+ */
+function checkCanWork() {
+    if (!(navigator.mediaDevices && window.MediaRecorder)) {
+        return 'nowebrtc';
     }
+
+    if (!(location.protocol === 'https:' || location.host.indexOf('localhost') !== -1)) {
+        return 'nothttps';
+    }
+
+    return 'ok';
+}
+
+const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-mediarecorder@4.0.5/worker.umd.js').then(() => {
+    return import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-mediarecorder@4.0.5/index.umd.js');
+
+}).then(recorderModule => {
+    const Mp3MediaRecorder = recorderModule.Mp3MediaRecorder;
+
+    const workerURL = URL.createObjectURL(new Blob([
+        // Now load the script (UMD version) in the Workers context.
+        "importScripts('" + M.cfg.wwwroot + "/question/type/recordrtc/js/mp3-mediarecorder@4.0.5/worker.umd.js');",
+
+        // The above index.umd.js script exports all methods in a new mp3EncoderWorker object.
+        "mp3EncoderWorker.initMp3MediaEncoder({vmsgWasmUrl: '" +
+        M.cfg.wwwroot + "/question/type/recordrtc/js/vmsg@0.4.0/vmsg.wasm'});",
+    ], {type: 'application/javascript'}));
 
     /**
      * Object for actually doing the recording.
@@ -59,7 +76,7 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
      * @param {HTMLMediaElement} mediaElement
      * @param {HTMLMediaElement} noMediaPlaceholder
      * @param {HTMLButtonElement} button
-     * @param {string} filename the name of the audio (.ogg) or video file (.webm)
+     * @param {string} filename the name of the audio or video file
      * @param {Object} owner
      * @param {Object} settings
      * @param {Object} questionDiv
@@ -112,7 +129,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * @param {Event} e
          */
         function handleButtonClick(e) {
-            Log.debug('Start/stop button clicked.');
             e.preventDefault();
             switch (button.dataset.state) {
                 case 'new':
@@ -152,8 +168,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             // Empty the array containing the previously recorded chunks.
             chunks = [];
             bytesRecordedSoFar = 0;
-            Log.debug('Audio/video question: Starting recording with media constraints');
-            Log.debug(type.mediaConstraints);
             navigator.mediaDevices.getUserMedia(type.mediaConstraints)
                 .then(handleCaptureStarting)
                 .catch(handleCaptureFailed);
@@ -191,14 +205,16 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          */
         function startSaving() {
             // Initialize MediaRecorder events and start recording.
-            var options = getRecordingOptions();
-            Log.debug('Audio/video question: creating recorder with opptions');
-            Log.debug(options);
-            mediaRecorder = new MediaRecorder(mediaStream, options);
+            if (type.name === 'audio') {
+                mediaRecorder = new Mp3MediaRecorder(mediaStream,
+                    {worker: new Worker(workerURL)});
+            } else {
+                mediaRecorder = new MediaRecorder(mediaStream,
+                    getRecordingOptions());
+            }
 
             mediaRecorder.ondataavailable = handleDataAvailable;
             mediaRecorder.onstop = handleRecordingHasStopped;
-            Log.debug('Audio/video question: starting recording.');
             mediaRecorder.start(1000); // Capture in one-second chunks. Firefox requires that.
 
             button.dataset.state = 'recording';
@@ -211,7 +227,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
          * @param {BlobEvent} event
          */
         function handleDataAvailable(event) {
-            Log.debug('Audio/video question: chunk of ' + event.data.size + ' bytes received.');
 
             // Check there is space to store the next chunk, and if not stop.
             bytesRecordedSoFar += event.data.size;
@@ -254,7 +269,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             button.classList.add('btn-outline-danger');
 
             // Ask the recording to stop.
-            Log.debug('Audio/video question: stopping recording.');
             mediaRecorder.stop();
 
             // Also stop each individual MediaTrack.
@@ -274,7 +288,6 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
             }
 
             // Set source of audio player.
-            Log.debug('Audio/video question: recording stopped.');
             var blob = new Blob(chunks, {type: mediaRecorder.mimeType});
             mediaElement.srcObject = null;
             mediaElement.src = URL.createObjectURL(blob);
@@ -500,13 +513,13 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
                 options.videoBitsPerSecond = parseInt(settings.videoBitRate, 10);
                 options.videoWidth = parseInt(settings.videoWidth, 10);
                 options.videoHeight = parseInt(settings.videoHeight, 10);
-            }
 
-            // Go through our list of mimeTypes, and take the first one that will work.
-            for (var i = 0; i < type.mimeTypes.length; i++) {
-                if (MediaRecorder.isTypeSupported(type.mimeTypes[i])) {
-                    options.mimeType = type.mimeTypes[i];
-                    break;
+                // Go through our list of mimeTypes, and take the first one that will work.
+                for (var i = 0; i < type.mimeTypes.length; i++) {
+                    if (MediaRecorder.isTypeSupported(type.mimeTypes[i])) {
+                        options.mimeType = type.mimeTypes[i];
+                        break;
+                    }
                 }
             }
 
@@ -542,154 +555,160 @@ define(['core/log', 'core/modal_factory'], function(Log, ModalFactory) {
         }
     }
 
-    /**
-     * Object that controls the settings for recording audio.
-     *
-     * @constructor
-     */
-    function AudioSettings() {
-        this.name = 'audio';
-        this.hidePlayerDuringRecording = true;
-        this.mediaConstraints = {
-            audio: true
-        };
-        this.mimeTypes = [
-            'audio/webm;codecs=opus',
-            'audio/ogg;codecs=opus'
-        ];
-    }
+    return Recorder;
+});
 
-    /**
-     * Object that controls the settings for recording video.
-     *
-     * @param {number} width desired width.
-     * @param {number} height desired height.
-     * @constructor
-     */
-    function VideoSettings(width, height) {
-        this.name = 'video';
-        this.hidePlayerDuringRecording = false;
-        this.mediaConstraints = {
-            audio: true,
-            video: {
-                width: {ideal: width},
-                height: {ideal: height}
-            }
-        };
-        this.mimeTypes = [
-            'video/webm;codecs=vp9,opus',
-            'video/webm;codecs=h264,opus',
-            'video/webm;codecs=vp8,opus'
-        ];
-    }
+/**
+ * Object that controls the settings for recording audio.
+ *
+ * @constructor
+ */
+function AudioSettings() {
+    this.name = 'audio';
+    this.hidePlayerDuringRecording = true;
+    this.mediaConstraints = {
+        audio: true
+    };
+    this.mimeTypes = [
+        'audio/mpeg',
+    ];
+}
 
-    /**
-     * Represents one record audio or video question.
-     *
-     * @param {string} questionId id of the outer question div.
-     * @param {Object} settings like audio bit rate.
-     * @constructor
-     */
-    function RecordRtcQuestion(questionId, settings) {
-        var questionDiv = document.getElementById(questionId);
-
-        // Check if the RTC API can work here.
-        var result = checkCanWork();
-        if (result === 'nothttps') {
-            questionDiv.querySelector('.https-warning').classList.remove('hide');
-            return;
-        } else if (result === 'nowebrtc') {
-            questionDiv.querySelector('.no-webrtc-warning').classList.remove('hide');
-            return;
-        }
-
-        // We may have more than one widget in a question.
-        var recorderElements = questionDiv.querySelectorAll('.audio-widget, .video-widget');
-        recorderElements.forEach(function(widget) {
-            // Get the key UI elements.
-            var type = widget.dataset.mediaType;
-            var timelimit = widget.dataset.maxRecordingDuration;
-            var button = widget.querySelector('.record-button button');
-            var mediaElement = widget.querySelector('.media-player ' + type);
-            var noMediaPlaceholder = widget.querySelector('.no-recording-placeholder');
-            var filename = widget.dataset.recordingFilename;
-
-            // Get the appropriate options.
-            var typeInfo;
-            if (type === 'audio') {
-                typeInfo = new AudioSettings();
-            } else {
-                typeInfo = new VideoSettings(settings.videoWidth, settings.videoHeight);
-            }
-
-            // Make the callback functions available.
-            this.showAlert = showAlert;
-            this.notifyRecordingComplete = notifyRecordingComplete;
-            this.notifyButtonStatesChanged = setSubmitButtonState;
-
-            // Create the recorder.
-            new Recorder(typeInfo, timelimit, mediaElement, noMediaPlaceholder, button,
-                    filename, this, settings, questionDiv);
-        });
-        setSubmitButtonState();
-
-        /**
-         * Set the state of the question's submit button.
-         *
-         * If any recorder does not yet have a recording, then disable the button.
-         * Otherwise, enable it.
-         */
-        function setSubmitButtonState() {
-            var anyRecorded = false;
-            questionDiv.querySelectorAll('.audio-widget, .video-widget').forEach(function(widget) {
-                if (widget.querySelector('.record-button button').dataset.state === 'recorded') {
-                    anyRecorded = true;
-                }
-            });
-            var submitButton = questionDiv.querySelector('input.submit[type=submit]');
-            if (submitButton) {
-                submitButton.disabled = !anyRecorded;
-           }
-        }
-
-        /**
-         * Show a modal alert.
-         *
-         * @param {string} subject Subject is the content of the alert (which error the alert is for).
-         * @return {Promise}
-         */
-        function showAlert(subject) {
-            return ModalFactory.create({
-                type: ModalFactory.types.ALERT,
-                title: M.util.get_string(subject + '_title', 'qtype_recordrtc'),
-                body: M.util.get_string(subject, 'qtype_recordrtc'),
-            }).then(function(modal) {
-                modal.show();
-                return modal;
-            });
-        }
-
-        /**
-         * Callback called when the recording is completed.
-         *
-         * @param {Recorder} recorder the recorder.
-         */
-        function notifyRecordingComplete(recorder) {
-            recorder.uploadMediaToServer();
-        }
-    }
-
-    return {
-        /**
-         * Initialise a record audio or video question.
-         *
-         * @param {string} questionId id of the outer question div.
-         * @param {Object} settings like audio bit rate.
-         */
-        init: function(questionId, settings) {
-            M.util.js_pending('init-' + questionId);
-            new RecordRtcQuestion(questionId, settings);
-            M.util.js_complete('init-' + questionId);
+/**
+ * Object that controls the settings for recording video.
+ *
+ * @param {number} width desired width.
+ * @param {number} height desired height.
+ * @constructor
+ */
+function VideoSettings(width, height) {
+    this.name = 'video';
+    this.hidePlayerDuringRecording = false;
+    this.mediaConstraints = {
+        audio: true,
+        video: {
+            width: {ideal: width},
+            height: {ideal: height}
         }
     };
-});
+    this.mimeTypes = [
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=h264,opus',
+        'video/webm;codecs=vp8,opus'
+    ];
+}
+
+/**
+ * Represents one record audio or video question.
+ *
+ * @param {string} questionId id of the outer question div.
+ * @param {Object} settings like audio bit rate.
+ * @constructor
+ */
+function RecordRtcQuestion(questionId, settings) {
+    var questionDiv = document.getElementById(questionId);
+
+    // Check if the RTC API can work here.
+    var result = checkCanWork();
+    if (result === 'nothttps') {
+        questionDiv.querySelector('.https-warning').classList.remove('hide');
+        return;
+    } else if (result === 'nowebrtc') {
+        questionDiv.querySelector('.no-webrtc-warning').classList.remove('hide');
+        return;
+    }
+
+    // Make the callback functions available.
+    this.showAlert = showAlert;
+    this.notifyRecordingComplete = notifyRecordingComplete;
+    this.notifyButtonStatesChanged = setSubmitButtonState;
+    const thisQuestion = this;
+
+    // We may have more than one widget in a question.
+    questionDiv.querySelectorAll('.audio-widget, .video-widget').forEach(function(widget) {
+        // Get the key UI elements.
+        var type = widget.dataset.mediaType;
+        var timelimit = widget.dataset.maxRecordingDuration;
+        var button = widget.querySelector('.record-button button');
+        var mediaElement = widget.querySelector('.media-player ' + type);
+        var noMediaPlaceholder = widget.querySelector('.no-recording-placeholder');
+        var filename = widget.dataset.recordingFilename;
+
+        // Get the appropriate options.
+        var typeInfo;
+        if (type === 'audio') {
+            typeInfo = new AudioSettings();
+        } else {
+            typeInfo = new VideoSettings(settings.videoWidth, settings.videoHeight);
+        }
+
+        // Create the recorder.
+        RecorderPromise.then(Recorder => {
+            new Recorder(typeInfo, timelimit, mediaElement, noMediaPlaceholder, button,
+                filename, thisQuestion, settings, questionDiv);
+            return 'Why should I have to return anything here?';
+        }).catch(Notification.exception);
+    });
+    setSubmitButtonState();
+
+    /**
+     * Set the state of the question's submit button.
+     *
+     * If any recorder does not yet have a recording, then disable the button.
+     * Otherwise, enable it.
+     */
+    function setSubmitButtonState() {
+        var anyRecorded = false;
+        questionDiv.querySelectorAll('.audio-widget, .video-widget').forEach(function(widget) {
+            if (widget.querySelector('.record-button button').dataset.state === 'recorded') {
+                anyRecorded = true;
+            }
+        });
+        var submitButton = questionDiv.querySelector('input.submit[type=submit]');
+        if (submitButton) {
+            submitButton.disabled = !anyRecorded;
+       }
+    }
+
+    /**
+     * Show a modal alert.
+     *
+     * @param {string} subject Subject is the content of the alert (which error the alert is for).
+     * @return {Promise}
+     */
+    function showAlert(subject) {
+        return ModalFactory.create({
+            type: ModalFactory.types.ALERT,
+            title: M.util.get_string(subject + '_title', 'qtype_recordrtc'),
+            body: M.util.get_string(subject, 'qtype_recordrtc'),
+        }).then(function(modal) {
+            modal.show();
+            return modal;
+        });
+    }
+
+    /**
+     * Callback called when the recording is completed.
+     *
+     * @param {Recorder} recorder the recorder.
+     */
+    function notifyRecordingComplete(recorder) {
+        recorder.uploadMediaToServer();
+    }
+}
+
+/**
+ * Initialise a record audio or video question.
+ *
+ * @param {string} questionId id of the outer question div.
+ * @param {Object} settings like audio bit rate.
+ */
+function init(questionId, settings) {
+    M.util.js_pending('init-' + questionId);
+    new RecordRtcQuestion(questionId, settings);
+    M.util.js_complete('init-' + questionId);
+}
+
+export {
+    init
+};

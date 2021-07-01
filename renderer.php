@@ -167,7 +167,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         [$aspectclass, $widthattribute] = $this->video_attributes($mediatype, $videowidth, $videoheight);
 
         return '
-            <span class="' . $mediatype . '-widget' . $aspectclass . '"' . $widthattribute . '" data-media-type="' . $mediatype .
+            <span class="' . $mediatype . '-widget' . $aspectclass . '"' . $widthattribute . ' data-media-type="' . $mediatype .
                 '" data-max-recording-duration="' . $maxrecordingduration . '" data-recording-filename="' . $filename . '">
                 <span class="' . $norecordinghideclass . 'no-recording-placeholder">' . $norecordinglangstring . '</span>
                 <span class="' . $mediaplayerhideclass . 'media-player">
