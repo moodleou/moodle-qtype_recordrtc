@@ -24,7 +24,7 @@
 
 $string['audio'] = 'Single audio';
 $string['audiobitrate'] = 'Audio bitrate';
-$string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality). Currently - while we record audio in MP3 format - this only affacts the audio part of video recordings.';
+$string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality). Currently - while we record audio in MP3 format - this only affects the audio part of video recordings.';
 $string['audiotimelimit'] = 'Max audio recording duration';
 $string['audiotimelimit_desc'] = 'Maximum time that a question author can set for the audio recording length.';
 $string['avplaceholder'] = 'Audio/video placeholders';
