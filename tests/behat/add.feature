@@ -30,12 +30,13 @@ Feature: Test creating record audio and video questions
       | id_timelimitinseconds_timeunit | 1                                                   |
 
     Then I should see "Record audio question"
- # Checking that the next new question form displays user preferences settings.
+    # Checking that the next new question form displays user preferences settings.
     When I press "Create a new question ..."
     And I set the field "item_qtype_recordrtc" to "1"
     And I click on "Add" "button" in the "Choose a question type to add" "dialogue"
-    Then the following fields match these values:
-      | id_defaultmark                 | 2     |
-      | id_mediatype                   | video |
-      | id_timelimitinseconds_number   | 15    |
-      | id_timelimitinseconds_timeunit | 1     |
+# Re-instate this when we no longer need to support 3.9 and 3.10.
+#    Then the following fields match these values:
+#      | id_defaultmark                 | 2     |
+#      | id_mediatype                   | video |
+#      | id_timelimitinseconds_number   | 15    |
+#      | id_timelimitinseconds_timeunit | 1     |

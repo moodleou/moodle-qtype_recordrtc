@@ -46,7 +46,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $mediatype = $mform->createElement('select', 'mediatype', get_string('mediatype', 'qtype_recordrtc'), $mediaoptions);
         $mform->insertElementBefore($mediatype, 'questiontext');
         $mform->addHelpButton('mediatype', 'mediatype', 'qtype_recordrtc');
-        $mform->setDefault('mediatype', $this->get_default_value('mediatype', qtype_recordrtc::MEDIA_TYPE_AUDIO));
+        $mform->setDefault('mediatype', $this->get_default_value_wrapper('mediatype', qtype_recordrtc::MEDIA_TYPE_AUDIO));
 
         // Add instructions and widget placeholder templates for question authors to copy and paste into the question text.
         $qtype = new qtype_recordrtc();
@@ -64,7 +64,22 @@ class qtype_recordrtc_edit_form extends question_edit_form {
                 ['units' => [60, 1], 'optional' => false]);
         $mform->addHelpButton('timelimitinseconds', 'timelimit', 'qtype_recordrtc');
         $mform->setDefault('timelimitinseconds',
-                $this->get_default_value('timelimitinseconds', qtype_recordrtc::DEFAULT_TIMELIMIT));
+                $this->get_default_value_wrapper('timelimitinseconds', qtype_recordrtc::DEFAULT_TIMELIMIT));
+    }
+
+    /**
+     * Wrapper around get_default_value so we can still support older Moodle versions.
+     *
+     * @param string $name the name of the form field.
+     * @param mixed $default default value.
+     * @return string|null default value for a given form element.
+     */
+    protected function get_default_value_wrapper(string $name, $default): ?string {
+        if (method_exists($this, 'get_default_value')) {
+            return $this->get_default_value($name, $default);
+        } else {
+            return $default;
+        }
     }
 
     public function validation($data, $files) {
