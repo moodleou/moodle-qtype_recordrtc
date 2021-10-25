@@ -24,10 +24,8 @@
 
 namespace qtype_recordrtc\privacy;
 
-use \core_privacy\local\metadata\collection;
-use \core_privacy\local\request\transform;
-use \core_privacy\local\request\user_preference_provider;
-use \core_privacy\local\request\writer;
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\writer;
 
 defined('MOODLE_INTERNAL') || die();
 /**
@@ -39,8 +37,8 @@ defined('MOODLE_INTERNAL') || die();
 class provider implements
     // This component has data.
     // We need to return default options that have been set a user preferences.
-\core_privacy\local\metadata\provider,
-\core_privacy\local\request\user_preference_provider {
+    \core_privacy\local\metadata\provider,
+    \core_privacy\local\request\user_preference_provider {
 
     /**
      * Returns meta data about this system.

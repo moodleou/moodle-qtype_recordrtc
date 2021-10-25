@@ -48,10 +48,27 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
      * @param string $fixturefile name of the file to submit.
      * @return array response data that would need to be passed to $this->process_submission().
      */
-    protected function store_submission_file(string $fixturefile) {
+    protected function store_submission_file(string $fixturefile, $filename = 'recording.ogg') {
         $response = $this->setup_empty_submission_fileares();
+        qtype_recordrtc_test_helper::clear_draft_area($response['recording']);
         qtype_recordrtc_test_helper::add_recording_to_draft_area(
-                $response['recording'], $fixturefile);
+                $response['recording'], $fixturefile, $filename);
+        return $response;
+    }
+
+    /**
+     * Prepares the data (draft file) to simulate a user submitting several files.
+     *
+     * @param string $fixturefile name of the file to submit.
+     * @return array response data that would need to be passed to $this->process_submission().
+     */
+    protected function store_submission_files(array $fixturefiles) {
+        $response = $this->setup_empty_submission_fileares();
+        qtype_recordrtc_test_helper::clear_draft_area($response['recording']);
+        foreach ($fixturefiles as $filename => $fixturefile) {
+            qtype_recordrtc_test_helper::add_recording_to_draft_area(
+                    $response['recording'], $fixturefile, $filename);
+        }
         return $response;
     }
 
@@ -76,6 +93,15 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
      */
     protected function process_submission_of_file(string $fixturefile) {
         $this->process_submission($this->store_submission_file($fixturefile));
+    }
+
+    /**
+     * Simulate a user submitting several recordings for different inputs.
+     *
+     * @param array $fixturefiles Array filename to upload (based on widget name) => fixture file name.
+     */
+    protected function process_submission_of_files(array $fixturefiles) {
+        $this->process_submission($this->store_submission_files($fixturefiles));
     }
 
     public function test_deferred_feedback_audio_with_attempt_on_last() {
@@ -141,5 +167,69 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
         $this->check_current_state(question_state::$complete);
         $this->check_current_mark(null);
         $this->check_step_count(1);
+    }
+
+    public function test_custom_av_with_per_widget_feedback() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a recordrtc question in the DB.
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $cat = $generator->create_question_category();
+        $question = $generator->create_question('recordrtc', 'customav', ['category' => $cat->id]);
+
+        // Start attempt at the question.
+        /** @var qtype_recordrtc_question $q */
+        $q = question_bank::load_question($question->id);
+        $this->start_attempt_at_question($q, 'deferredfeedback', 1);
+
+        $this->check_current_state(question_state::$todo);
+        $this->check_current_mark(null);
+        $this->check_step_count(1);
+        $this->assertEquals('manualgraded', $this->get_qa()->get_behaviour_name());
+
+        // Process a response and check the expected result.
+        $this->process_submission_of_files([
+                'development.ogg' => 'moodle-tim.ogg',
+                'user_experience.ogg' => 'moodle-sharon.ogg',
+            ]);
+
+        $this->check_current_state(question_state::$invalid);
+        $this->check_current_mark(null);
+        $this->check_step_count(2);
+        $this->save_quba();
+
+        // Save the same response again, and verify no new step is created.
+        $this->load_quba();
+        $this->process_submission_of_files([
+                'development.ogg' => 'moodle-tim.ogg',
+                'user_experience.ogg' => 'moodle-sharon.ogg',
+            ]);
+        // Feedback should not be visible during the attempt.
+        $this->render();
+        $this->assertStringNotContainsString($q->widgets['development']->feedback, $this->currentoutput);
+
+        $this->check_current_state(question_state::$invalid);
+        $this->check_current_mark(null);
+        $this->check_step_count(2);
+
+        // Now submit all and finish.
+        $this->finish();
+        $this->check_current_state(question_state::$needsgrading);
+        $this->check_current_mark(null);
+        $this->check_step_count(3);
+        $this->save_quba();
+        // Feedback should be visible after the attempt, but only for the things that were answered.
+        $this->render();
+        $this->assertStringContainsString($q->widgets['development']->feedback, $this->currentoutput);
+        $this->assertStringNotContainsString($q->widgets['installation']->feedback, $this->currentoutput);
+        $this->assertStringContainsString($q->widgets['user_experience']->feedback, $this->currentoutput);
+
+        // Feedback display should respect the display options.
+        $this->displayoptions->generalfeedback = false; // See comment in the renderer.
+        $this->render();
+        $this->assertStringNotContainsString($q->widgets['development']->feedback, $this->currentoutput);
+        $this->assertStringNotContainsString($q->widgets['installation']->feedback, $this->currentoutput);
+        $this->assertStringNotContainsString($q->widgets['user_experience']->feedback, $this->currentoutput);
     }
 }

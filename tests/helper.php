@@ -22,13 +22,15 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+use qtype_recordrtc\widget_info;
+
 
 /**
  * Test helper class for the record audio and video question type.
  */
 class qtype_recordrtc_test_helper extends question_test_helper {
-    public function get_test_questions() {
-        return ['recordrtc', 'audio', 'customav'];
+    public function get_test_questions(): array {
+        return ['audio', 'customav'];
     }
 
     /**
@@ -36,17 +38,15 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      *
      * @return qtype_recordrtc_question
      */
-    public function make_recordrtc_question_audio() {
+    public function make_recordrtc_question_audio(): qtype_recordrtc_question {
         question_bank::load_question_definition_classes('recordrtc');
         $q = new qtype_recordrtc_question();
         test_question_maker::initialise_a_question($q);
         $q->name = 'Record audio question';
         $q->questiontext = '<p>Please record yourself talking about Moodle.</p>';
-        $q->mediatype = 'audio';
-        $q->timelimitinseconds = 30;
         $q->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
         $q->qtype = question_bank::get_qtype('recordrtc');
-        $q->widgetplaceholders = ['[[recording:audio]]' => ['recording', 'audio']];
+        $q->widgets = ['recording' => new widget_info('recording', 'audio')];
         return $q;
     }
 
@@ -55,15 +55,21 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      *
      * @return stdClass the data that would be returned by $form->get_gata();
      */
-    public function get_recordrtc_question_form_data_audio() {
+    public function get_recordrtc_question_form_data_audio(): stdClass {
         $fromform = new stdClass();
 
         $fromform->name = 'Record audio question';
-        $fromform->questiontext = ['text' => '<p>Please record yourself talking about Moodle.</p>', 'format' => FORMAT_HTML];
+        $fromform->questiontext = [
+                'text' => '<p>Please record yourself talking about Moodle.</p>',
+                'format' => FORMAT_HTML,
+            ];
         $fromform->mediatype = 'audio';
         $fromform->timelimitinseconds = 30;
         $fromform->defaultmark = 1.0;
-        $fromform->generalfeedback = ['text' => '<p>I hope you spoke clearly and coherently.</p>', 'format' => FORMAT_HTML];
+        $fromform->generalfeedback = [
+                'text' => '<p>I hope you spoke clearly and coherently.</p>',
+                'format' => FORMAT_HTML,
+            ];
 
         return $fromform;
     }
@@ -73,7 +79,7 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      *
      * @return stdClass the data that would be returned by $form->get_gata();
      */
-    public function get_recordrtc_question_data_audio() {
+    public function get_recordrtc_question_data_audio(): stdClass {
         $questiondata = new stdClass();
         test_question_maker::initialise_question_data($questiondata);
 
@@ -86,6 +92,7 @@ class qtype_recordrtc_test_helper extends question_test_helper {
         $questiondata->options = new stdClass();
         $questiondata->options->mediatype = 'audio';
         $questiondata->options->timelimitinseconds = 30;
+        $questiondata->options->answers = [];
 
         return $questiondata;
     }
@@ -95,22 +102,31 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      *
      * @return qtype_recordrtc_question
      */
-    public function make_recordrtc_question_customav() {
+    public function make_recordrtc_question_customav(): qtype_recordrtc_question {
         question_bank::load_question_definition_classes('recordrtc');
         $q = new qtype_recordrtc_question();
         test_question_maker::initialise_a_question($q);
         $q->name = 'Record customav question';
         $q->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
-                            <div>Development: [[development:audio]]</div>
-                            <div>Installation: [[installation:audio]]</div>
-                            <div>User experience: [[user_experience:audio]]</div>';
+                            <p>Development: [[development:audio]]</p>
+                            <p>Installation: [[installation:audio]]</p>
+                            <p>User experience: [[user_experience:audio]]</p>';
         $q->mediatype = 'customav';
         $q->timelimitinseconds = 30;
         $q->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
         $q->qtype = question_bank::get_qtype('recordrtc');
-        $q->widgetplaceholders = ['[[development:audio]]' => ['development', 'audio']];
-        $q->widgetplaceholders = ['[[installation:audio]]' => ['installation', 'audio']];
-        $q->widgetplaceholders = ['[[user_experience:audio]]' => ['user_experience', 'audio']];
+        $q->widgets = [
+                'development' => new widget_info('development', 'audio', $q->timelimitinseconds),
+                'installation' => new widget_info('installation', 'audio', $q->timelimitinseconds),
+                'user_experience' => new widget_info('user_experience', 'audio', $q->timelimitinseconds),
+            ];
+        $q->widgets['development']->placeholder = '[[development:audio]]';
+        $q->widgets['development']->feedback = '<p>I hope you mentioned unit testing in your answer.</p>';
+        $q->widgets['installation']->placeholder = '[[installation:audio]]';
+        $q->widgets['installation']->feedback = '<p>Did you consider <i>Windows</i> servers as well as <i>Linux</i>?</p>';
+        $q->widgets['user_experience']->placeholder = '[[user_experience:audio]]';
+        $q->widgets['user_experience']->feedback = '<p>Least said about this the better!</p>';
+
         return $q;
     }
 
@@ -119,18 +135,36 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      *
      * @return stdClass the data that would be returned by $form->get_gata();
      */
-    public function get_recordrtc_question_form_data_customav() {
+    public function get_recordrtc_question_form_data_customav(): stdClass {
         $fromform = new stdClass();
 
         $fromform->name = 'Record customav question';
-        $fromform->questiontext = ['text' => '<p>Please record yourself talking about following aspects of Moodle.</p>
-                            <div>Development: [[development:audio]]</div>
-                            <div>Installation: [[installation:audio]]</div>
-                            <div>User experience: [[user_experience:audio]]</div>', 'format' => FORMAT_HTML];
+        $fromform->questiontext = [
+                'text' => '<p>Please record yourself talking about following aspects of Moodle.</p>
+                        <p>Development: [[development:audio]]</p>
+                        <p>Installation: [[installation:audio]]</p>
+                        <p>User experience: [[user_experience:audio]]</p>',
+                'format' => FORMAT_HTML,
+            ];
         $fromform->mediatype = 'customav';
         $fromform->timelimitinseconds = 30;
         $fromform->defaultmark = 1.0;
-        $fromform->generalfeedback = ['text' => '<p>I hope you spoke clearly and coherently.</p>', 'format' => FORMAT_HTML];
+        $fromform->generalfeedback = [
+                'text' => '<p>I hope you spoke clearly and coherently.</p>',
+                'format' => FORMAT_HTML,
+            ];
+        $fromform->feedbackfordevelopment = [
+                'text' => '<p>I hope you mentioned unit testing in your answer.</p>',
+                'format' => FORMAT_HTML,
+            ];
+        $fromform->feedbackforinstallation = [
+                'text' => '<p>Did you consider <i>Windows</i> servers as well as <i>Linux</i>?</p>',
+                'format' => FORMAT_HTML,
+            ];
+        $fromform->feedbackforuser_experience = [
+                'text' => '<p>Least said about this the better!</p>',
+                'format' => FORMAT_HTML,
+            ];
         return $fromform;
     }
 
@@ -139,23 +173,48 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      *
      * @return stdClass the data that would be returned by $form->get_gata();
      */
-    public function get_recordrtc_question_data_customav() {
+    public function get_recordrtc_question_data_customav(): stdClass {
         $questiondata = new stdClass();
         test_question_maker::initialise_question_data($questiondata);
 
         $questiondata->qtype = 'recordrtc';
         $questiondata->name = 'Record customav question';
         $questiondata->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
-                            <div>Development: [[development:audio]]</div>
-                            <div>Installation: [[installation:audio]]</div>
-                            <div>User experience: [[user_experience:audio]]</div>';
+                    <p>Development: [[development:audio]]</p>
+                    <p>Installation: [[installation:audio]]</p>
+                    <p>User experience: [[user_experience:audio]]</p>';
         $questiondata->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
         $questiondata->defaultmark = 1.0;
 
         $questiondata->options = new stdClass();
         $questiondata->options->mediatype = 'customav';
         $questiondata->options->timelimitinseconds = 30;
-
+        $questiondata->options->answers = [
+                14 => (object) [
+                        'id' => 14,
+                        'answer' => 'development',
+                        'answerformat' => FORMAT_PLAIN,
+                        'fraction' => 0,
+                        'feedback' => '<p>I hope you mentioned unit testing in your answer.</p>',
+                        'feedbackformat' => FORMAT_HTML,
+                    ],
+                15 => (object) [
+                        'id' => 15,
+                        'answer' => 'installation',
+                        'answerformat' => FORMAT_PLAIN,
+                        'fraction' => 0,
+                        'feedback' => '<p>Did you consider <i>Windows</i> servers as well as <i>Linux</i>?</p>',
+                        'feedbackformat' => FORMAT_HTML,
+                    ],
+                16 => (object) [
+                        'id' => 16,
+                        'answer' => 'user_experience',
+                        'answerformat' => FORMAT_PLAIN,
+                        'fraction' => 0,
+                        'feedback' => '<p>Least said about this the better!</p>',
+                        'feedbackformat' => FORMAT_HTML,
+                    ],
+            ];
         return $questiondata;
     }
 
@@ -164,7 +223,7 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      *
      * @return int The draft area's itemid.
      */
-    protected static function make_recording_draft_area() {
+    protected static function make_recording_draft_area(): int {
         $draftid = 0;
         $contextid = 0;
 
@@ -178,15 +237,13 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      *
      * @param int $draftid The itemid for the draft area in which the file should be created.
      * @param string $fixturefile The name of the file in the fixtures folder to copy.
+     * @param string $filename To store the file under. Defaults to 'recording.ogg'.
      */
-    public static function add_recording_to_draft_area(int $draftid, string $fixturefile) {
+    public static function add_recording_to_draft_area(int $draftid, string $fixturefile, string $filename) {
         global $USER;
 
         $fs = get_file_storage();
         $usercontext = context_user::instance($USER->id);
-
-        // If there is already a recording present, delete it.
-        $fs->delete_area_files($usercontext->id, 'user', 'draft', $draftid);
 
         // Create the file in the provided draft area.
         $fileinfo = [
@@ -195,9 +252,21 @@ class qtype_recordrtc_test_helper extends question_test_helper {
             'filearea'  => 'draft',
             'itemid'    => $draftid,
             'filepath'  => '/',
-            'filename'  => 'recording.ogg',
+            'filename'  => $filename,
         ];
         $fs->create_file_from_pathname($fileinfo, __DIR__ . '/fixtures/' . $fixturefile);
+    }
+
+    /**
+     * Delete all files from a particular draft file area for the current user.
+     *
+     * @param int $draftid The itemid for the draft area.
+     */
+    public static function clear_draft_area(int $draftid) {
+        global $USER;
+        $fs = get_file_storage();
+        $usercontext = context_user::instance($USER->id);
+        $fs->delete_area_files($usercontext->id, 'user', 'draft', $draftid);
     }
 
     /**
@@ -205,11 +274,13 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      * You should ensure that a user is logged in with setUser before you run this function.
      *
      * @param string $fixturefile The name of the file in the fixtures folder to copy.
+     * @param string $filename To store the file under. Defaults to 'recording.ogg'.
      * @return int The itemid of the generated draft file area.
      */
-    public static function make_recording_in_draft_area(string $fixturefile) {
+    public static function make_recording_in_draft_area(string $fixturefile, string $filename): int {
         $draftid = self::make_recording_draft_area();
-        self::add_recording_to_draft_area($draftid, $fixturefile);
+        self::clear_draft_area($draftid);
+        self::add_recording_to_draft_area($draftid, $fixturefile, $filename);
         return $draftid;
     }
 
@@ -219,10 +290,13 @@ class qtype_recordrtc_test_helper extends question_test_helper {
      * in with setUser before you run this function.
      *
      * @param string $fixturefile The name of the file in the fixtures folder to copy.
+     * @param string $filename To store the file under. Defaults to 'recording.ogg'.
      * @return question_file_saver a question_file_saver that contains the given amount of dummy files, for use in testing.
      */
-    public static function make_recording_saver(string $fixturefile) {
-        return new question_file_saver(self::make_recording_in_draft_area($fixturefile),
+    public static function make_recording_saver(
+            string $fixturefile,
+            string $filename = 'recording.ogg'): question_file_saver {
+        return new question_file_saver(self::make_recording_in_draft_area($fixturefile, $filename),
                 'question', 'response_recording');
     }
 }

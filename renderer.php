@@ -34,7 +34,8 @@ require_once($CFG->dirroot . '/repository/lib.php');
  */
 class qtype_recordrtc_renderer extends qtype_renderer {
 
-    public function formulation_and_controls(question_attempt $qa, question_display_options $options) {
+    public function formulation_and_controls(question_attempt $qa, question_display_options $options): string {
+        /** @var qtype_recordrtc_question $question */
         $question = $qa->get_question();
         $output = '';
 
@@ -60,17 +61,32 @@ class qtype_recordrtc_renderer extends qtype_renderer {
 
         // Replace all the placeholders with the corresponding recording or player widget.
         $questiontext = $question->format_questiontext($qa);
-        foreach ($question->widgetplaceholders as $placeholder => [$title, $mediatype, $maxrecordingduration]) {
-            $filename = \qtype_recordrtc::get_media_filename($title, $mediatype);
+
+        foreach ($question->widgets as $widget) {
+            $filename = qtype_recordrtc::get_media_filename($widget->name, $widget->type);
             $existingfile = $question->get_file_from_response($filename, $existingfiles);
+
             if ($options->readonly) {
                 if ($existingfile) {
                     $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile),
-                            $mediatype, $filename, $videowidth, $videoheight);
+                            $widget->type, $filename, $videowidth, $videoheight);
+                    // The next line should logically just check ->feedback, but for some reason,
+                    // manual graded behaviour always sets that to false, so check general feedback
+                    // option too.
+                    if (($options->feedback || $options->generalfeedback) && $widget->feedback !== '') {
+                        $thisitem .= html_writer::div(
+                                $question->format_text(
+                                        $widget->feedback, $widget->feedbackformat,
+                                        $qa, 'question', 'answerfeedback', $widget->answerid),
+                                'specificfeedback');
+                    }
+
                 } else {
                     $thisitem = $this->no_recording_message();
                 }
+
             } else {
+                // Being attempted.
                 if ($existingfile) {
                     $recordingurl = moodle_url::make_draftfile_url($draftitemid, '/', $filename);
                     $state = 'recorded';
@@ -78,7 +94,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 } else {
                     $recordingurl = null;
                     $state = 'new';
-                    if ($mediatype == 'audio') {
+                    if ($widget->type == 'audio') {
                         $label = get_string('startrecording', 'qtype_recordrtc');
                     } else {
                         $label = get_string('startcamera', 'qtype_recordrtc');
@@ -87,10 +103,10 @@ class qtype_recordrtc_renderer extends qtype_renderer {
 
                 // Recording UI.
                 $thisitem = $this->recording_ui($filename, $recordingurl, $state,
-                        $label, $mediatype, $maxrecordingduration, $videowidth, $videoheight);
+                        $label, $widget->type, $widget->maxduration, $videowidth, $videoheight);
             }
 
-            $questiontext = str_replace($placeholder, $thisitem, $questiontext);
+            $questiontext = str_replace($widget->placeholder, $thisitem, $questiontext);
         }
 
         $output .= html_writer::tag('div', $questiontext, ['class' => 'qtext']);
@@ -125,7 +141,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      *
      * @return string HTML for the 'this can't work here' messages.
      */
-    protected function cannot_work_warnings() {
+    protected function cannot_work_warnings(): string {
         return '
                 <div class="hide alert alert-danger https-warning">
                     <h5>' . get_string('insecurewarningtitle', 'qtype_recordrtc') . '</h5>
@@ -147,12 +163,14 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      * @param string $state value for the data-state attribute of the record button.
      * @param string $label label for the record button.
      * @param string $mediatype audio or video.
+     * @param int $maxrecordingduration
      * @param int $videowidth
      * @param int $videoheight
      * @return string HTML to output.
      */
     protected function recording_ui(string $filename, ?string $recordingurl,
-            string $state, string $label, string $mediatype, $maxrecordingduration, $videowidth, $videoheight) {
+            string $state, string $label, string $mediatype,
+            int $maxrecordingduration, int $videowidth, int $videoheight): string {
         if ($recordingurl) {
             $mediaplayerhideclass = '';
             $norecordinghideclass = 'hide ';
@@ -192,8 +210,9 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      * @param int $videoheight
      * @return string HTML to output.
      */
-    protected function playback_ui($recordingurl, string $mediatype, string $filename, $videowidth, $videoheight) {
-        // Prepare download link of icon and the title based on mimetype.
+    protected function playback_ui($recordingurl, string $mediatype, string $filename,
+            int $videowidth, int $videoheight): string {
+        // Prepare download link based on mimetype.
         $downloadlink = html_writer::link($recordingurl, $this->pix_icon('f/' . $mediatype,
                     get_string('downloadrecording', 'qtype_recordrtc', $filename),
                     null, ['class' => 'download-icon-' . $mediatype]));
@@ -219,7 +238,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      * @param int $videoheight
      * @return string[] a class name and a style attribute.
      */
-    protected function video_attributes(string $mediatype, $videowidth, $videoheight): array {
+    protected function video_attributes(string $mediatype, int $videowidth, int $videoheight): array {
         if ($mediatype !== qtype_recordrtc::MEDIA_TYPE_VIDEO) {
             return ['', ''];
         }
@@ -237,7 +256,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      *
      * @return string HTML to output.
      */
-    protected function no_recording_message() {
+    protected function no_recording_message(): string {
         return '
             <span class="playback-widget">
                 <span class="no-recording-placeholder">' .
@@ -251,7 +270,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      *
      * @return string[] lang string names from the qtype_recordrtc lang file.
      */
-    public function strings_for_js() {
+    public function strings_for_js(): array {
         return [
             'gumabort',
             'gumabort_title',
@@ -290,7 +309,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      *
      * @return array of icon mappings.
      */
-    public function qtype_recordrtc_get_fontawesome_icon_map() {
+    public function qtype_recordrtc_get_fontawesome_icon_map(): array {
         return [
             'atto_recordrtc:i/audiortc' => 'fa-microphone',
             'atto_recordrtc:i/videortc' => 'fa-video-camera',

@@ -14,6 +14,7 @@ Feature: Test duplicating a quiz containing record audio and video questions
     And the following "questions" exist:
       | questioncategory | qtype     | name                  | template | timelimitinseconds |
       | Test questions   | recordrtc | Record audio question | audio    | 42                 |
+      | Test questions   | recordrtc | Record A/V question   | customav |                    |
     And the following "activities" exist:
       | activity   | name      | course | idnumber |
       | quiz       | Test quiz | C1     | quiz     |
@@ -35,3 +36,8 @@ Feature: Test duplicating a quiz containing record audio and video questions
       | Question text                | <p>Please record yourself talking about Moodle.</p> |
       | General feedback             | <p>I hope you spoke clearly and coherently.</p>     |
       | id_timelimitinseconds_number | 42                                                  |
+    And I press "Cancel"
+    And I choose "Edit question" action for "Record A/V question" in the question bank
+    Then the following fields match these values:
+      | Question name             | Record A/V question                               |
+      | id_feedbackfordevelopment | I hope you mentioned unit testing in your answer. |

@@ -22,6 +22,8 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+use qtype_recordrtc\widget_info;
+
 global $CFG;
 require_once($CFG->dirroot . '/question/type/recordrtc/questiontype.php');
 require_once($CFG->dirroot . '/question/type/recordrtc/edit_recordrtc_form.php');
@@ -85,7 +87,7 @@ class qtype_recordrtc_test extends question_testcase {
 
     public function test_get_widget_placeholders_no_placeholder() {
         $questiontext = 'Record your answer about your experience doing this Module.';
-        $this->assertEquals([], $this->qtype->get_widget_placeholders($questiontext, 10));
+        $this->assertEquals([], $this->qtype->get_widget_placeholders($questiontext));
     }
 
     public function test_get_widget_placeholders_with_placeholders() {
@@ -93,9 +95,11 @@ class qtype_recordrtc_test extends question_testcase {
         What is your name? [[name:audio]] Where do you live [[place:audio:1m10s]]';
         $timelimitinseconds = 15;
         $expected = [
-                '[[name:audio]]' => ['name', 'audio', 15],
-                '[[place:audio:1m10s]]' => ['place', 'audio', 70]
-        ];
+                'name' => new widget_info('name', 'audio', 15),
+                'place' => new widget_info('place', 'audio', 70),
+            ];
+        $expected['name']->placeholder = '[[name:audio]]';
+        $expected['place']->placeholder = '[[place:audio:1m10s]]';
         $this->assertEquals($expected, $this->qtype->get_widget_placeholders($questiontext, $timelimitinseconds));
     }
 
@@ -170,7 +174,7 @@ class qtype_recordrtc_test extends question_testcase {
         What is your name? [[this-is-a-long-placeholder-title-more-than-32-chars:audio]] ' .
                 'Where do you live [[place:audio]]';
         $a->text = 'this-is-a-long-placeholder-title-more-than-32-chars';
-        $a->maxlength = qtype_recordrtc::MAX_LENGTH_MEDIA_TITLE;
+        $a->maxlength = qtype_recordrtc::MAX_WIDGET_NAME_LENGTH;
         $expected = get_string('err_placeholdertitlelength', 'qtype_recordrtc', $a);
         $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
         $this->assertEquals($expected, $actual);
@@ -264,30 +268,6 @@ class qtype_recordrtc_test extends question_testcase {
         }
     }
 
-    /**
-     *
-     * @dataProvider convert_duration_to_seconds_test_cases()
-     * @param $recordingduration
-     * @param $expected
-     */
-    public function test_convert_duration_to_seconds($recordingduration, $expected) {
-         $this->assertEquals($expected, $this->qtype->convert_duration_to_seconds($recordingduration));
-    }
-
-    /**
-     * Data provider for test_convert_duration_to_seconds.
-     *
-     * @return array the test cases.
-     */
-    public function convert_duration_to_seconds_test_cases() {
-        return [
-            '2 minutes and 10 seconds as 02m10s' => ['2m10s', 130],
-            '1 minute and 20 seconds as 1m20s' => ['1m20s', 80],
-            '1 minute as 1m' => ['1m', 60],
-            '20 seconds as 20s' => ['20s', 20],
-        ];
-    }
-
     public function test_xml_import() {
         $xml = '  <question type="recordrtc">
     <name>
@@ -327,6 +307,81 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assert(new question_check_specified_fields_expectation($expectedq), $q);
     }
 
+    public function test_xml_import_custom_av() {
+        $xml = '  <question type="recordrtc">
+    <name>
+      <text>Record audio question</text>
+    </name>
+    <questiontext format="html">
+      <text><![CDATA[<p>Please record yourself talking about following aspects of Moodle.</p>
+        <p>Development: [[development:audio]]</p>
+        <p>Installation: [[installation:audio]]</p>
+        <p>User experience: [[user_experience:audio]]</p>]]></text>
+    </questiontext>
+    <generalfeedback format="html">
+      <text><![CDATA[<p>I hope you spoke clearly and coherently.</p>]]></text>
+    </generalfeedback>
+    <defaultgrade>1</defaultgrade>
+    <penalty>0</penalty>
+    <hidden>0</hidden>
+    <idnumber></idnumber>
+    <mediatype>customav</mediatype>
+    <timelimitinseconds>30</timelimitinseconds>
+    <answer fraction="0" format="plain_text">
+      <text>development</text>
+      <feedback format="html">
+        <text><![CDATA[<p>I hope you mentioned unit testing in your answer.</p>]]></text>
+      </feedback>
+    </answer>
+    <answer fraction="0" format="plain_text">
+      <text>installation</text>
+      <feedback format="html">
+        <text><![CDATA[<p>Did you consider <i>Windows</i> servers as well as <i>Linux</i>?</p>]]></text>
+      </feedback>
+    </answer>
+    <answer fraction="0" format="plain_text">
+      <text>user_experience</text>
+      <feedback format="html">
+        <text><![CDATA[<p>Least said about this the better!</p>]]></text>
+      </feedback>
+    </answer>
+  </question>';
+        $xmldata = xmlize($xml);
+
+        $importer = new qformat_xml();
+        $q = $importer->try_importing_using_qtypes($xmldata['question']);
+
+        $expectedq = new stdClass();
+        $expectedq->qtype = 'recordrtc';
+        $expectedq->name = 'Record audio question';
+        $expectedq->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
+        <p>Development: [[development:audio]]</p>
+        <p>Installation: [[installation:audio]]</p>
+        <p>User experience: [[user_experience:audio]]</p>';
+        $expectedq->questiontextformat = FORMAT_HTML;
+        $expectedq->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
+        $expectedq->generalfeedbackformat = FORMAT_HTML;
+        $expectedq->defaultmark = 1;
+        $expectedq->length = 1;
+        $expectedq->penalty = 0;
+        $expectedq->mediatype = 'customav';
+        $expectedq->timelimitinseconds = 30;
+        $expectedq->feedbackfordevelopment = [
+                'text' => '<p>I hope you mentioned unit testing in your answer.</p>',
+                'format' => FORMAT_HTML,
+            ];
+        $expectedq->feedbackforinstallation = [
+                'text' => '<p>Did you consider <i>Windows</i> servers as well as <i>Linux</i>?</p>',
+                'format' => FORMAT_HTML,
+            ];
+        $expectedq->feedbackforuser_experience = [
+                'text' => '<p>Least said about this the better!</p>',
+                'format' => FORMAT_HTML,
+            ];
+
+        $this->assert(new question_check_specified_fields_expectation($expectedq), $q);
+    }
+
     public function test_xml_export() {
         $qdata = new stdClass();
         $qdata->id = 123;
@@ -334,7 +389,10 @@ class qtype_recordrtc_test extends question_testcase {
         $qdata->idnumber = null;
         $qdata->qtype = 'recordrtc';
         $qdata->name = 'Record audio question';
-        $qdata->questiontext = '<p>Please record yourself talking about Moodle.</p>';
+        $qdata->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
+        <p>Development: [[development:audio]]</p>
+        <p>Installation: [[installation:audio]]</p>
+        <p>User experience: [[user_experience:audio]]</p>';
         $qdata->questiontextformat = FORMAT_HTML;
         $qdata->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
         $qdata->generalfeedbackformat = FORMAT_HTML;
@@ -343,8 +401,34 @@ class qtype_recordrtc_test extends question_testcase {
         $qdata->penalty = 0;
         $qdata->hidden = 0;
         $qdata->options = new stdClass();
-        $qdata->options->mediatype = 'audio';
+        $qdata->options->mediatype = 'customav';
         $qdata->options->timelimitinseconds = 30;
+        $qdata->options->answers = [
+                14 => (object) [
+                        'id' => 14,
+                        'answer' => 'development',
+                        'answerformat' => FORMAT_PLAIN,
+                        'fraction' => 0,
+                        'feedback' => '<p>I hope you mentioned unit testing in your answer.</p>',
+                        'feedbackformat' => FORMAT_HTML,
+                    ],
+                15 => (object) [
+                        'id' => 15,
+                        'answer' => 'installation',
+                        'answerformat' => FORMAT_PLAIN,
+                        'fraction' => 0,
+                        'feedback' => '<p>Did you consider <i>Windows</i> servers as well as <i>Linux</i>?</p>',
+                        'feedbackformat' => FORMAT_HTML,
+                    ],
+                16 => (object) [
+                        'id' => 16,
+                        'answer' => 'user_experience',
+                        'answerformat' => FORMAT_PLAIN,
+                        'fraction' => 0,
+                        'feedback' => '<p>Least said about this the better!</p>',
+                        'feedbackformat' => FORMAT_HTML,
+                    ],
+            ];
 
         $exporter = new qformat_xml();
         $xml = $exporter->writequestion($qdata);
@@ -355,7 +439,10 @@ class qtype_recordrtc_test extends question_testcase {
       <text>Record audio question</text>
     </name>
     <questiontext format="html">
-      <text><![CDATA[<p>Please record yourself talking about Moodle.</p>]]></text>
+      <text><![CDATA[<p>Please record yourself talking about following aspects of Moodle.</p>
+        <p>Development: [[development:audio]]</p>
+        <p>Installation: [[installation:audio]]</p>
+        <p>User experience: [[user_experience:audio]]</p>]]></text>
     </questiontext>
     <generalfeedback format="html">
       <text><![CDATA[<p>I hope you spoke clearly and coherently.</p>]]></text>
@@ -364,8 +451,26 @@ class qtype_recordrtc_test extends question_testcase {
     <penalty>0</penalty>
     <hidden>0</hidden>
     <idnumber></idnumber>
-    <mediatype>audio</mediatype>
+    <mediatype>customav</mediatype>
     <timelimitinseconds>30</timelimitinseconds>
+    <answer fraction="0" format="plain_text">
+      <text>development</text>
+      <feedback format="html">
+        <text><![CDATA[<p>I hope you mentioned unit testing in your answer.</p>]]></text>
+      </feedback>
+    </answer>
+    <answer fraction="0" format="plain_text">
+      <text>installation</text>
+      <feedback format="html">
+        <text><![CDATA[<p>Did you consider <i>Windows</i> servers as well as <i>Linux</i>?</p>]]></text>
+      </feedback>
+    </answer>
+    <answer fraction="0" format="plain_text">
+      <text>user_experience</text>
+      <feedback format="html">
+        <text><![CDATA[<p>Least said about this the better!</p>]]></text>
+      </feedback>
+    </answer>
   </question>
 ';
 

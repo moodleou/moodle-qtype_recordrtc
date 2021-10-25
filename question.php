@@ -34,19 +34,9 @@ defined('MOODLE_INTERNAL') || die();
 class qtype_recordrtc_question extends question_with_responses {
 
     /**
-     * @var int the maximum length recording, in seconds, the student is allowed to make.
+     * @var qtype_recordrtc\widget_info[] the widgets that appear in this question, indexed by the widget name.
      */
-    public $timelimitinseconds;
-
-    /**
-     * @var string media type, 'audio', 'video' or 'customav'
-     */
-    public $mediatype;
-
-    /**
-     * @var string[] placeholder => filename
-     */
-    public $widgetplaceholders;
+    public $widgets;
 
     public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
         global $CFG;
@@ -107,8 +97,8 @@ class qtype_recordrtc_question extends question_with_responses {
         }
 
         $files = $response['recording']->get_files();
-        foreach ($this->widgetplaceholders as $unused => [$title, $mediatype]) {
-            $filename = \qtype_recordrtc::get_media_filename($title, $mediatype);
+        foreach ($this->widgets as $widget) {
+            $filename = \qtype_recordrtc::get_media_filename($widget->name, $widget->type);
             if (!$this->get_file_from_response($filename, $files)) {
                 return false;
             }
@@ -177,6 +167,18 @@ class qtype_recordrtc_question extends question_with_responses {
             // Response recording always accessible.
             return true;
         }
+
+        if ($component == 'question' && $filearea == 'answerfeedback') {
+            $answerid = reset($args);
+            foreach ($this->widgets as $widget) {
+                if ($answerid == $widget->answerid) {
+                    // See comment in the renderer about why we check both.
+                    return $options->feedback || $options->feedback;
+                }
+            }
+            return false; // Not one of ours.
+        }
+
         return parent::check_file_access($qa, $options, $component, $filearea,
                 $args, $forcedownload);
     }

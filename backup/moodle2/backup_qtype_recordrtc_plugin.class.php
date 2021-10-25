@@ -46,6 +46,8 @@ class backup_qtype_recordrtc_plugin extends backup_qtype_plugin {
         // Connect the visible container ASAP.
         $plugin->add_child($pluginwrapper);
 
+        $this->add_question_question_answers($pluginwrapper);
+
         // Now create the qtype own structures.
         $recordrtc = new backup_nested_element('recordrtc', array('id'), array(
             'mediatype', 'timelimitinseconds'));
