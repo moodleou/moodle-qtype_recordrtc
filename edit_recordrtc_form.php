@@ -91,8 +91,16 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $mform->setDefault('mediatype', $this->get_default_value_wrapper('mediatype', qtype_recordrtc::MEDIA_TYPE_AUDIO));
 
         // Add instructions and widget placeholder templates for question authors to copy and paste into the question text.
-        $avplaceholder = $mform->createElement('static', 'avplaceholder', '',
-                widget_info::make_placeholder('recorder1', 'audio', 120) . ' &nbsp; ' . widget_info::make_placeholder('recorder2', 'video', 90));
+        $placeholders = [
+            widget_info::make_placeholder('recorder1', 'audio', 120),
+            widget_info::make_placeholder('recorder1', 'video', 90),
+        ];
+        $placeholders = array_map(function($placehodler) {
+                return html_writer::empty_tag('input', ['type' => 'text', 'readonly' => 'readonly', 'size' => '22',
+                        'value' => $placehodler, 'onfocus' => 'this.select()',
+                        'class' => 'form-control-plaintext w-auto d-inline-block']);
+            }, $placeholders);
+        $avplaceholder = $mform->createElement('static', 'avplaceholder', '', implode('&nbsp &nbsp', $placeholders));
         $avplaceholdergroup = $mform->createElement('group', 'avplaceholdergroup',
                 get_string('avplaceholder', 'qtype_recordrtc'), [$avplaceholder]);
         $mform->hideIf('avplaceholdergroup', 'mediatype', 'noteq', qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV);
