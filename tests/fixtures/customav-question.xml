@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<quiz>
+<!-- question: 1 -->
+  <question type="recordrtc">
+    <name>
+      <text>Record audio question</text>
+    </name>
+    <questiontext format="html">
+      <text><![CDATA[<p>Please record yourself talking about following aspects of Moodle.</p>
+        <p>Development: [[development:audio]]</p>
+        <p>Installation: [[installation:audio]]</p>
+        <p>User experience: [[user_experience:audio]]</p>]]></text>
+    </questiontext>
+    <generalfeedback format="html">
+      <text><![CDATA[<p>I hope you spoke clearly and coherently.</p>]]></text>
+    </generalfeedback>
+    <defaultgrade>1</defaultgrade>
+    <penalty>0</penalty>
+    <hidden>0</hidden>
+    <idnumber></idnumber>
+    <mediatype>customav</mediatype>
+    <timelimitinseconds>30</timelimitinseconds>
+  </question>';
+</quiz>

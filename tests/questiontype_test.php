@@ -382,6 +382,125 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assert(new question_check_specified_fields_expectation($expectedq), $q);
     }
 
+    public function test_xml_import_custom_av_with_empty_feedback() {
+        $xml = '  <question type="recordrtc">
+    <name>
+      <text>Record audio question</text>
+    </name>
+    <questiontext format="html">
+      <text><![CDATA[<p>Please record yourself talking about following aspects of Moodle.</p>
+        <p>Development: [[development:audio]]</p>
+        <p>Installation: [[installation:audio]]</p>
+        <p>User experience: [[user_experience:audio]]</p>]]></text>
+    </questiontext>
+    <generalfeedback format="html">
+      <text><![CDATA[<p>I hope you spoke clearly and coherently.</p>]]></text>
+    </generalfeedback>
+    <defaultgrade>1</defaultgrade>
+    <penalty>0</penalty>
+    <hidden>0</hidden>
+    <idnumber></idnumber>
+    <mediatype>customav</mediatype>
+    <timelimitinseconds>30</timelimitinseconds>
+    <answer fraction="0" format="plain_text">
+      <text>development</text>
+      <feedback format="html">
+        <text><![CDATA[<p>I hope you mentioned unit testing in your answer.</p>]]></text>
+      </feedback>
+    </answer>
+    <answer fraction="0" format="plain_text">
+      <text>installation</text>
+      <feedback format="html">
+        <text><![CDATA[<p>Did you consider <i>Windows</i> servers as well as <i>Linux</i>?</p>]]></text>
+      </feedback>
+    </answer>
+    <answer fraction="0" format="plain_text">
+      <text>user_experience</text>
+      <feedback format="html">
+        <text></text>
+      </feedback>
+    </answer>
+  </question>';
+        $xmldata = xmlize($xml);
+
+        $importer = new qformat_xml();
+        $q = $importer->try_importing_using_qtypes($xmldata['question']);
+
+        $expectedq = new stdClass();
+        $expectedq->qtype = 'recordrtc';
+        $expectedq->name = 'Record audio question';
+        $expectedq->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
+        <p>Development: [[development:audio]]</p>
+        <p>Installation: [[installation:audio]]</p>
+        <p>User experience: [[user_experience:audio]]</p>';
+        $expectedq->questiontextformat = FORMAT_HTML;
+        $expectedq->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
+        $expectedq->generalfeedbackformat = FORMAT_HTML;
+        $expectedq->defaultmark = 1;
+        $expectedq->length = 1;
+        $expectedq->penalty = 0;
+        $expectedq->mediatype = 'customav';
+        $expectedq->timelimitinseconds = 30;
+        $expectedq->feedbackfordevelopment = [
+                'text' => '<p>I hope you mentioned unit testing in your answer.</p>',
+                'format' => FORMAT_HTML,
+        ];
+        $expectedq->feedbackforinstallation = [
+                'text' => '<p>Did you consider <i>Windows</i> servers as well as <i>Linux</i>?</p>',
+                'format' => FORMAT_HTML,
+        ];
+        $expectedq->feedbackforuser_experience = [
+                'text' => '',
+                'format' => FORMAT_HTML,
+        ];
+
+        $this->assert(new question_check_specified_fields_expectation($expectedq), $q);
+    }
+
+    public function test_xml_import_custom_av_no_feedback() {
+        $xml = '  <question type="recordrtc">
+    <name>
+      <text>Record audio question</text>
+    </name>
+    <questiontext format="html">
+      <text><![CDATA[<p>Please record yourself talking about following aspects of Moodle.</p>
+        <p>Development: [[development:audio]]</p>
+        <p>Installation: [[installation:audio]]</p>
+        <p>User experience: [[user_experience:audio]]</p>]]></text>
+    </questiontext>
+    <generalfeedback format="html">
+      <text><![CDATA[<p>I hope you spoke clearly and coherently.</p>]]></text>
+    </generalfeedback>
+    <defaultgrade>1</defaultgrade>
+    <penalty>0</penalty>
+    <hidden>0</hidden>
+    <idnumber></idnumber>
+    <mediatype>customav</mediatype>
+    <timelimitinseconds>30</timelimitinseconds>
+  </question>';
+        $xmldata = xmlize($xml);
+
+        $importer = new qformat_xml();
+        $q = $importer->try_importing_using_qtypes($xmldata['question']);
+
+        $expectedq = new stdClass();
+        $expectedq->qtype = 'recordrtc';
+        $expectedq->name = 'Record audio question';
+        $expectedq->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
+        <p>Development: [[development:audio]]</p>
+        <p>Installation: [[installation:audio]]</p>
+        <p>User experience: [[user_experience:audio]]</p>';
+        $expectedq->questiontextformat = FORMAT_HTML;
+        $expectedq->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
+        $expectedq->generalfeedbackformat = FORMAT_HTML;
+        $expectedq->defaultmark = 1;
+        $expectedq->length = 1;
+        $expectedq->penalty = 0;
+        $expectedq->mediatype = 'customav';
+        $expectedq->timelimitinseconds = 30;
+        $this->assert(new question_check_specified_fields_expectation($expectedq), $q);
+    }
+
     public function test_xml_export() {
         $qdata = new stdClass();
         $qdata->id = 123;

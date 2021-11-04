@@ -18,17 +18,18 @@ Feature: Test exporting record audio and video questions
       | contextlevel | reference | name           |
       | Course       | C1        | Test questions |
     And the following "questions" exist:
-      | questioncategory | qtype     | name                  | template |
-      | Test questions   | recordrtc | Record audio question | audio    |
+      | questioncategory | qtype     | name                     | template |
+      | Test questions   | recordrtc | Record audio question    | audio    |
+      | Test questions   | recordrtc | Record customav question | customav |
     And I log in as "teacher"
     And I am on "Course 1" course homepage
 
   @javascript
-  Scenario: Export a record audio and video questions
+  Scenario: Export a record audio question
     When I navigate to "Question bank > Export" in current page administration
     And I set the field "id_format_xml" to "1"
     And I press "Export questions to file"
-    Then following "click here" should download between "800" and "1200" bytes
+    Then following "click here" should download between "2400" and "2600" bytes
     # If the download step is the last in the scenario then we can sometimes run
     # into the situation where the download page causes a http redirect but behat
     # has already conducted its reset (generating an error). By putting a logout

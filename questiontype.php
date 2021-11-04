@@ -96,6 +96,10 @@ class qtype_recordrtc extends question_type {
         foreach ($widgets as $widget) {
             $fieldname = 'feedbackfor' . $widget->name;
 
+            // Check for, and ignore, when answer(feedback) is not set on the form.
+            if (!isset($fromform->{$fieldname})) {
+                continue;
+            }
             // Check for, and ignore, completely blank answer from the form.
             if (html_is_blank($fromform->{$fieldname}['text'])) {
                 continue;

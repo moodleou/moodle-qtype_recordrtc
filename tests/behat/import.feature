@@ -18,7 +18,7 @@ Feature: Test importing record audio and video questions
     And I am on "Course 1" course homepage
 
   @javascript @_file_upload
-  Scenario: import a record audio and video question.
+  Scenario: import a recordrtc question with Single audio.
     When I navigate to "Question bank > Import" in current page administration
     And I set the field "id_format_xml" to "1"
     And I upload "question/type/recordrtc/tests/fixtures/audio-question.xml" file to "Import" filemanager
@@ -26,5 +26,18 @@ Feature: Test importing record audio and video questions
     Then I should see "Parsing questions from import file."
     And I should see "Importing 1 questions from file"
     And I should see "Please record yourself talking about Moodle."
+    And I press "Continue"
+    And I should see "Record audio question"
+
+  @javascript @_file_upload
+  Scenario: import a recordrtc question with Customised audio/video without feedback.
+    When I navigate to "Question bank > Import" in current page administration
+    And I set the field "id_format_xml" to "1"
+    And I upload "question/type/recordrtc/tests/fixtures/customav-question.xml" file to "Import" filemanager
+    And I press "id_submitbutton"
+    Then I should see "Parsing questions from import file."
+    And I should see "Importing 1 questions from file"
+    And I should see "Please record yourself talking about following aspects of Moodle."
+    And I should see "Development: [[development:audio]]"
     And I press "Continue"
     And I should see "Record audio question"
