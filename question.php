@@ -173,7 +173,7 @@ class qtype_recordrtc_question extends question_with_responses {
             foreach ($this->widgets as $widget) {
                 if ($answerid == $widget->answerid) {
                     // See comment in the renderer about why we check both.
-                    return $options->feedback || $options->feedback;
+                    return $options->feedback || $options->generalfeedback;
                 }
             }
             return false; // Not one of ours.
