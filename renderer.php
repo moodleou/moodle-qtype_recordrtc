@@ -59,9 +59,18 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                     $question->get_validation_error([]), ['class' => 'validationerror']);
         }
 
-        // Replace all the placeholders with the corresponding recording or player widget.
-        $questiontext = $question->format_questiontext($qa);
+        // Before we prepare the question text for display, which include applying the
+        // Moodle text filters, we have to protect the placeholders with
+        // <span class="nolink">...</span> tags.
+        $questiontext = $question->questiontext;
+        foreach ($question->widgets as $widget) {
+            $questiontext = str_replace($widget->placeholder, $widget->get_protected_placeholder(),
+                    $questiontext);
+        }
+        $questiontext = $question->format_text($questiontext, $question->questiontextformat,
+                $qa, 'question', 'questiontext', $question->id);
 
+        // Replace all the placeholders with the corresponding recording or player widget.
         foreach ($question->widgets as $widget) {
             $filename = qtype_recordrtc::get_media_filename($widget->name, $widget->type);
             $existingfile = $question->get_file_from_response($filename, $existingfiles);
@@ -106,7 +115,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                         $label, $widget->type, $widget->maxduration, $videowidth, $videoheight);
             }
 
-            $questiontext = str_replace($widget->placeholder, $thisitem, $questiontext);
+            $questiontext = str_replace($widget->get_protected_placeholder(), $thisitem, $questiontext);
         }
 
         $output .= html_writer::tag('div', $questiontext, ['class' => 'qtext']);

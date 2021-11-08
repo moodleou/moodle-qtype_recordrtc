@@ -67,6 +67,16 @@ class widget_info {
     }
 
     /**
+     * Get the placeholder, wrapped in <span class="nolink">...</span>, to protect
+     * from Moodle filters.
+     *
+     * @return string
+     */
+    public function get_protected_placeholder(): string {
+        return \html_writer::span($this->placeholder, 'nolink');
+    }
+
+    /**
      * Create what the placeholder would need to be for a particular widget.
      *
      * @param string $name The internal name of this widget (used, for example, as part of the filename).

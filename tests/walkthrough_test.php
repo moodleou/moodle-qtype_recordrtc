@@ -232,4 +232,84 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
         $this->assertStringNotContainsString($q->widgets['installation']->feedback, $this->currentoutput);
         $this->assertStringNotContainsString($q->widgets['user_experience']->feedback, $this->currentoutput);
     }
+
+    public function test_custom_av_rendering_with_glossary_filter() {
+        global $CFG, $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // There was a bug where the question broke if you had the word 'audio'
+        // in a glossary set to autolink.
+
+        // Create a glossary set to autolink, containing the word 'audio'.
+        filter_set_global_state('glossary', TEXTFILTER_ON);
+        $CFG->glossary_linkentries = 1;
+
+        // Create a test course.
+        $course = $this->getDataGenerator()->create_course();
+        $coursecontext = context_course::instance($course->id);
+
+        // Create a glossary.
+        $glossary = $this->getDataGenerator()->create_module('glossary',
+                ['course' => $course->id, 'mainglossary' => 1]);
+
+        // Create two entries with ampersands and one normal entry.
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_glossary');
+        $audioentry = $generator->create_content($glossary, ['concept' => 'audio']);
+        $moodleentry = $generator->create_content($glossary, ['concept' => 'Moodle']);
+
+        // Create a recordrtc question in the DB.
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $cat = $generator->create_question_category(['contextid' => $coursecontext->id]);
+        $question = $generator->create_question('recordrtc', 'customav', ['category' => $cat->id]);
+
+        // Start attempt at the question.
+        /** @var qtype_recordrtc_question $q */
+        $q = question_bank::load_question($question->id);
+        $this->start_attempt_at_question($q, 'deferredfeedback', 1);
+
+        // Verify that the output contains the 'Moodle' glossary entry link,
+        // to verify that auto-linking is working.
+        $PAGE->set_context($coursecontext);
+        $this->render();
+        $this->assert_contains_glossary_link($moodleentry, $this->currentoutput);
+
+        // ... but that the output does does not contain a link to the audio entry.
+        $this->assert_does_not_contain_glossary_link($audioentry, $this->currentoutput);
+
+        // Also check that we have an audio recorder widget in there.
+        $this->assertStringContainsString('<span class="audio-widget', $this->currentoutput);
+    }
+
+    /**
+     * Assert that some HTML contains a Moodle glossary link.
+     *
+     * @param stdClass $glossaryentry from the generator.
+     * @param string $html HTML to test.
+     */
+    protected function assert_contains_glossary_link(stdClass $glossaryentry, string $html): void {
+        $this->assertMatchesRegularExpression($this->get_glossary_link_regexp($glossaryentry), $html);
+    }
+
+    /**
+     * Assert that some HTML does not contains a Moodle glossary link.
+     *
+     * @param stdClass $glossaryentry from the generator.
+     * @param string $html HTML to test.
+     */
+    protected function assert_does_not_contain_glossary_link(stdClass $glossaryentry, string $html): void {
+        $this->assertDoesNotMatchRegularExpression($this->get_glossary_link_regexp($glossaryentry), $html);
+    }
+
+    /**
+     * Asssert that some HTML contains a Moodle glossary link.
+     *
+     * @param stdClass $glossaryentry from the generator.
+     * @param string $html HTML to test.
+     */
+    protected function get_glossary_link_regexp(stdClass $glossaryentry): string {
+        // If you are wondering, eid= is part of the link URL, and title is the title
+        // attribute of the HTML tag.
+        return '~eid=' . $glossaryentry->id . '.*?title="(.*?)' . $glossaryentry->concept . '"~';
+    }
 }
