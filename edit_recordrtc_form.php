@@ -93,7 +93,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         // Add instructions and widget placeholder templates for question authors to copy and paste into the question text.
         $placeholders = [
             widget_info::make_placeholder('recorder1', 'audio', 120),
-            widget_info::make_placeholder('recorder1', 'video', 90),
+            widget_info::make_placeholder('recorder2', 'video', 90),
         ];
         $placeholders = array_map(function($placehodler) {
                 return html_writer::empty_tag('input', ['type' => 'text', 'readonly' => 'readonly', 'size' => '22',
