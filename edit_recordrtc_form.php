@@ -96,11 +96,11 @@ class qtype_recordrtc_edit_form extends question_edit_form {
             widget_info::make_placeholder('recorder2', 'video', 90),
         ];
         $placeholders = array_map(function($placehodler) {
-                return html_writer::empty_tag('input', ['type' => 'text', 'readonly' => 'readonly', 'size' => '22',
+                return html_writer::empty_tag('input', ['type' => 'text', 'readonly' => 'readonly', 'size' => '24',
                         'value' => $placehodler, 'onfocus' => 'this.select()',
-                        'class' => 'form-control-plaintext w-auto d-inline-block']);
+                        'class' => 'form-control-plaintext d-inline-block w-auto mr-3']);
             }, $placeholders);
-        $avplaceholder = $mform->createElement('static', 'avplaceholder', '', implode('&nbsp &nbsp', $placeholders));
+        $avplaceholder = $mform->createElement('static', 'avplaceholder', '', implode("\n", $placeholders));
         $avplaceholdergroup = $mform->createElement('group', 'avplaceholdergroup',
                 get_string('avplaceholder', 'qtype_recordrtc'), [$avplaceholder]);
         $mform->hideIf('avplaceholdergroup', 'mediatype', 'noteq', qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV);
