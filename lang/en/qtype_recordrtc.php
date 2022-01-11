@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['allowpausing'] = 'Allow pausing';
+$string['allowpausing_help'] = 'If enabled, an extra \'pause\' button will be added to the recording widgets.';
 $string['audio'] = 'Single audio';
 $string['audiobitrate'] = 'Audio bitrate';
 $string['audiobitrate_desc'] = 'Quality of audio recording (larger number means higher quality). Currently - while we record audio in MP3 format - this only affects the audio part of video recordings.';
@@ -89,6 +91,7 @@ $string['nowebrtctitle'] = 'WebRTC not supported';
 $string['optionsforaudio'] = 'Audio options';
 $string['optionsforaudioandvideo'] = 'Audio and video options';
 $string['optionsforvideo'] = 'Video options';
+$string['pause'] = 'Pause';
 $string['pleaserecordsomethingineachpart'] = 'Please complete your answer.';
 $string['pluginname'] = 'Record audio/video';
 $string['pluginname_help'] = 'Students respond to the question text by recording audio or video (or a mix of both if you select the \'Customised audio/video\' option) directly into their browser. This can then be graded manually, or by self-assessment if you have installed The Open University\'s free optional behaviour plugin.';
@@ -97,6 +100,7 @@ $string['pluginnameadding'] = 'Adding a record audio/video question';
 $string['pluginnameediting'] = 'Editing a record audio/video question';
 $string['pluginnamesummary'] = 'Students respond to the question text by recording audio or video (or a mix of both if you select the \'Customised audio/video\' option) directly into their browser. This can then be graded manually, or by self-assessment if you have installed The Open University\'s free optional behaviour plugin.';
 $string['privacy:metadata'] = 'Record audio/video question type plugin allows question authors to set default options as user preferences.';
+$string['privacy:preference:allowpausing'] = 'The \'Pause\' button is disabled/enabled for a given question.';
 $string['privacy:preference:defaultmark'] = 'The default mark set for a given question.';
 $string['privacy:preference:mediatype'] = 'Whether media type is set to \'Single audio\', \'Single video\' or \'Customised audio/video\'';
 $string['privacy:preference:timelimitinseconds'] = 'The \'Maximum recording duration\' set for a given question.';
@@ -105,8 +109,10 @@ $string['recordingfailed'] = 'Recording failed';
 $string['recordinginprogress'] = 'Stop recording ({$a})';
 $string['startcamera'] = 'Start camera';
 $string['startrecording'] = 'Start recording';
+$string['stoprecording'] = 'Stop recording';
 $string['timelimit'] = 'Maximum recording duration';
 $string['timelimit_help'] = 'This is the longest duration of a recording that the student is allowed to make. If they reach this time, the recording will automatically stop. There is an upper limit to the value that can be set here. If you need a longer time, ask an administrator.';
+$string['unpause'] = 'Upause';
 $string['updateform'] = 'Update the form';
 $string['uploadaborted'] = 'Saving aborted';
 $string['uploadcomplete'] = 'Recording uploaded';

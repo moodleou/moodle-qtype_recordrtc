@@ -303,6 +303,7 @@ class qtype_recordrtc_test extends question_testcase {
         $expectedq->penalty = 0;
         $expectedq->mediatype = 'audio';
         $expectedq->timelimitinseconds = 30;
+        $expectedq->allowpausing = 0;
 
         $this->assert(new question_check_specified_fields_expectation($expectedq), $q);
     }
@@ -327,6 +328,7 @@ class qtype_recordrtc_test extends question_testcase {
     <idnumber></idnumber>
     <mediatype>customav</mediatype>
     <timelimitinseconds>30</timelimitinseconds>
+    <allowpausing>1</allowpausing>
     <answer fraction="0" format="plain_text">
       <text>development</text>
       <feedback format="html">
@@ -366,6 +368,7 @@ class qtype_recordrtc_test extends question_testcase {
         $expectedq->penalty = 0;
         $expectedq->mediatype = 'customav';
         $expectedq->timelimitinseconds = 30;
+        $expectedq->allowpausing = 1;
         $expectedq->feedbackfordevelopment = [
                 'text' => '<p>I hope you mentioned unit testing in your answer.</p>',
                 'format' => FORMAT_HTML,
@@ -522,6 +525,7 @@ class qtype_recordrtc_test extends question_testcase {
         $qdata->options = new stdClass();
         $qdata->options->mediatype = 'customav';
         $qdata->options->timelimitinseconds = 30;
+        $qdata->options->allowpausing = 1;
         $qdata->options->answers = [
                 14 => (object) [
                         'id' => 14,
@@ -572,6 +576,7 @@ class qtype_recordrtc_test extends question_testcase {
     <idnumber></idnumber>
     <mediatype>customav</mediatype>
     <timelimitinseconds>30</timelimitinseconds>
+    <allowpausing>1</allowpausing>
     <answer fraction="0" format="plain_text">
       <text>development</text>
       <feedback format="html">

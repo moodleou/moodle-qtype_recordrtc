@@ -50,6 +50,7 @@ class provider implements
         $collection->add_user_preference('qtype_recordrtc_defaultmark', 'privacy:preference:defaultmark');
         $collection->add_user_preference('qtype_recordrtc_mediatype', 'privacy:preference:mediatype');
         $collection->add_user_preference('qtype_recordrtc_timelimitinseconds', 'privacy:preference:timelimitinseconds');
+        $collection->add_user_preference('qtype_recordrtc_pausing', 'privacy:preference:allowpausing');
         return $collection;
     }
 
@@ -77,6 +78,12 @@ class provider implements
             $desc = get_string('privacy:preference:timelimitinseconds', 'qtype_recordrtc');
             writer::export_user_preference('qtype_recordrtc', 'timelimitinseconds',
                     self::get_number_with_unit($preference), $desc);
+        }
+        $preference = get_user_preferences('qtype_recordrtc_pausing', null, $userid);
+        if (null !== $preference) {
+            $desc = get_string('privacy:preference:allowpausing', 'qtype_recordrtc');
+            writer::export_user_preference('qtype_recordrtc', 'allowpausing',
+                    get_string($preference, 'qtype_recordrtc'), $desc);
         }
     }
 

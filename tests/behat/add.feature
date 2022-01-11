@@ -28,6 +28,7 @@ Feature: Test creating record audio and video questions
       | id_mediatype                   | video                                               |
       | id_timelimitinseconds_number   | 15                                                  |
       | id_timelimitinseconds_timeunit | 1                                                   |
+      | Allow pausing                  | Yes                                                 |
 
     Then I should see "Record audio question"
     # Checking that the next new question form displays user preferences settings.
@@ -40,3 +41,4 @@ Feature: Test creating record audio and video questions
 #      | id_mediatype                   | video |
 #      | id_timelimitinseconds_number   | 15    |
 #      | id_timelimitinseconds_timeunit | 1     |
+#      | Allow pausing                  | Yes   |

@@ -69,13 +69,14 @@ class qtype_recordrtc extends question_type {
     }
 
     public function extra_question_fields() {
-        return array('qtype_recordrtc_options', 'mediatype', 'timelimitinseconds');
+        return ['qtype_recordrtc_options', 'mediatype', 'timelimitinseconds', 'allowpausing'];
     }
 
     public function save_defaults_for_new_questions(stdClass $fromform): void {
         parent::save_defaults_for_new_questions($fromform);
         $this->set_default_value('mediatype', $fromform->mediatype);
         $this->set_default_value('timelimitinseconds', $fromform->timelimitinseconds);
+        $this->set_default_value('allowpausing', $fromform->allowpausing);
     }
 
     public function save_question_options($fromform) {
@@ -167,6 +168,7 @@ class qtype_recordrtc extends question_type {
                 "</mediatype>\n";
         $output .= '    <timelimitinseconds>' . $question->options->timelimitinseconds .
                 "</timelimitinseconds>\n";
+        $output .= '    <allowpausing>' . $question->options->allowpausing . "</allowpausing>\n";
         $output .= $format->write_answers($question->options->answers);
         return $output;
     }
@@ -180,9 +182,10 @@ class qtype_recordrtc extends question_type {
         $qo = $format->import_headers($data);
         $qo->qtype = $questiontype;
 
-        $qo->mediatype = $format->getpath($data, array('#', 'mediatype', 0, '#'), self::MEDIA_TYPE_AUDIO);
-        $qo->timelimitinseconds = $format->getpath($data, array('#', 'timelimitinseconds', 0, '#'),
+        $qo->mediatype = $format->getpath($data, ['#', 'mediatype', 0, '#'], self::MEDIA_TYPE_AUDIO);
+        $qo->timelimitinseconds = $format->getpath($data, ['#', 'timelimitinseconds', 0, '#'],
                 get_config('qtype_recordrtc', 'audiotimelimit'));
+        $qo->allowpausing = $format->getpath($data, ['#', 'allowpausing', 0, '#'], 0);
 
         // Load any answers and simulate the corresponding form data.
         if (isset($data['#']['answer'])) {

@@ -180,6 +180,20 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2021032500, 'qtype', 'recordrtc');
     }
 
+    if ($oldversion < 2022011200) {
+
+        // Define field pausing to be added to qtype_recordrtc_options.
+        $table = new xmldb_table('qtype_recordrtc_options');
+        $field = new xmldb_field('allowpausing', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'timelimitinseconds');
+
+        // Conditionally launch add field allowpausing.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Recordrtc savepoint reached.
+        upgrade_plugin_savepoint(true, 2022011200, 'qtype', 'recordrtc');
+    }
     return true;
 }
 

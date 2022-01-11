@@ -124,6 +124,10 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $mform->setDefault('timelimitinseconds',
                 $this->get_default_value_wrapper('timelimitinseconds', qtype_recordrtc::DEFAULT_TIMELIMIT));
 
+        $mform->addElement('selectyesno', 'allowpausing', get_string('allowpausing', 'qtype_recordrtc'), '');
+        $mform->addHelpButton('allowpausing', 'allowpausing', 'qtype_recordrtc');
+        $mform->setDefault('allowpausing', $this->get_default_value('allowpausing', 0));
+
         // Fields for widget feedback.
         if ($currentmediatype === qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV) {
             $this->add_per_input_feedback_fields();

@@ -49,8 +49,8 @@ class backup_qtype_recordrtc_plugin extends backup_qtype_plugin {
         $this->add_question_question_answers($pluginwrapper);
 
         // Now create the qtype own structures.
-        $recordrtc = new backup_nested_element('recordrtc', array('id'), array(
-            'mediatype', 'timelimitinseconds'));
+        $recordrtc = new backup_nested_element('recordrtc', ['id'],
+                ['mediatype', 'timelimitinseconds', 'allowpausing']);
 
         // Now the own qtype tree.
         $pluginwrapper->add_child($recordrtc);
