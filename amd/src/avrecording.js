@@ -18,9 +18,17 @@
  * JavaScript to the recording work.
  *
  * We would like to thank the creators of atto_recordrtc, whose
- * work inspired this.
+ * work originally inspired this.
  *
- * @package   qtype_recordrtc
+ * This script uses some third-party JavaScript and loading that within Moodle/ES6
+ * requires some contortions. The main classes here are:
+ *
+ * * Recorder - represents one recording widget. This works in a way that is
+ *   not particularly specific to this question type.
+ * * RecordRtcQuestion - represents one question, which may contain several recorders.
+ *   It deals with the interaction between the recorders and the question.
+ *
+ * @module    qtype_recordrtc/avrecording
  * @copyright 2019 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -64,73 +72,88 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
     /**
      * Object for actually doing the recording.
      *
-     * The recorder can be in one of 4 states, which is stored in a data-state
-     * attribute on the button. The states are:
-     *  - new:       there is no recording yet. Button shows 'Start recording'.
-     *  - recording: buttons shows a countdown of remaining time. Media is being recorded.
-     *  - saving:    buttons shows a progress indicator.
-     *  - recorded:  button shows 'Record again'.
+     * The recorder can be in one of several states, which is stored in a data-state
+     * attribute on the outer span (widget). The states are:
      *
-     * @param {(AudioSettings|VideoSettings)} type
-     * @param {int} timelimit
-     * @param {HTMLMediaElement} mediaElement
-     * @param {HTMLMediaElement} noMediaPlaceholder
-     * @param {HTMLButtonElement} button
-     * @param {string} filename the name of the audio or video file
-     * @param {Object} owner
-     * @param {Object} settings
-     * @param {Object} questionDiv
+     *  - new:       there is no recording yet. Button shows 'Start recording' (audio) or 'Start camera' (video).
+     *  - starting:  (video only) camera has started, but we are not recording yet. Button show 'Start recording'.
+     *  - recording: Media is being recorded. Pause button visible if allowed. Main button shows 'Stop'. Countdown displayed.
+     *  - paused:    If pause was pressed. Media recording paused, but resumable. Pause button changed to say 'resume'.
+     *  - saving:    Media being uploaded. Progress indication shown. Pause button hidden if was visible.
+     *  - recorded:  Recording and upload complete. Buttons shows 'Record again'.
+     *
+     * @param {HTMLElement} widget the DOM node that is the top level of the whole recorder.
+     * @param {(AudioSettings|VideoSettings)} mediaSettings information about the media type.
+     * @param {Object} owner the object we are doing the recording for. Must provide three callback functions
+     *                       showAlert notifyRecordingComplete notifyButtonStatesChanged.
+     * @param {Object} uploadInfo object with fields uploadRepositoryId, draftItemId, contextId and maxUploadSize.
      * @constructor
      */
-    function Recorder(type, timelimit, mediaElement, noMediaPlaceholder,
-                      button, filename, owner, settings, questionDiv) {
+    function Recorder(widget, mediaSettings, owner, uploadInfo) {
         /**
          * @type {Recorder} reference to this recorder, for use in event handlers.
          */
-        var recorder = this;
+        const recorder = this;
 
         /**
          * @type {MediaStream} during recording, the stream of incoming media.
          */
-        var mediaStream = null;
+        let mediaStream = null;
 
         /**
          * @type {MediaRecorder} the recorder that is capturing stream.
          */
-        var mediaRecorder = null;
+        let mediaRecorder = null;
 
         /**
-         * @type {Blob[]} the chunks of data that have been captured so far duing the current recording.
+         * @type {Blob[]} the chunks of data that have been captured so far during the current recording.
          */
-        var chunks = [];
+        let chunks = [];
 
         /**
          * @type {number} number of bytes recorded so far, so we can auto-stop
          * before hitting Moodle's file-size limit.
          */
-        var bytesRecordedSoFar = 0;
+        let bytesRecordedSoFar = 0;
 
         /**
-         * @type {number} time left in seconds, so we can auto-stop at the time limit.
+         * @type {number} when paused, the time left in milliseconds, so we can auto-stop at the time limit.
          */
-        var secondsRemaining = 0;
+        let timeRemaining = 0;
+
+        /**
+         * @type {number} while recording, the time we reach the time-limit, so we can auto-stop then.
+         * This is milliseconds since Unix epoch, so comparable with Date.now().
+         */
+        let stopTime = 0;
 
         /**
          * @type {number} intervalID returned by setInterval() while the timer is running.
          */
-        var countdownTicker = 0;
+        let countdownTicker = 0;
 
-        button.addEventListener('click', handleButtonClick);
+        const button = widget.querySelector('button.qtype_recordrtc-main-button');
+        const pauseButton = widget.querySelector('.qtype_recordrtc-pause-button button');
+        const controlRow = widget.querySelector('.qtype_recordrtc-control-row');
+        const mediaElement = widget.querySelector('.qtype_recordrtc-media-player ' + mediaSettings.name);
+        const noMediaPlaceholder = widget.querySelector('.qtype_recordrtc-no-recording-placeholder');
+        const timeDisplay = widget.querySelector('.qtype_recordrtc-time-left');
+
+        widget.addEventListener('click', handleButtonClick);
         this.uploadMediaToServer = uploadMediaToServer; // Make this method available.
 
         /**
-         * Handles clicks on the start/stop button.
+         * Handles clicks on the start/stop and pause buttons.
          *
          * @param {Event} e
          */
         function handleButtonClick(e) {
+            const clickedButton = e.target.closest('button');
+            if (!clickedButton) {
+                return; // Not actually a button click.
+            }
             e.preventDefault();
-            switch (button.dataset.state) {
+            switch (widget.dataset.state) {
                 case 'new':
                 case 'recorded':
                     startRecording();
@@ -139,7 +162,18 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
                     startSaving();
                     break;
                 case 'recording':
-                    stopRecording();
+                    if (clickedButton === pauseButton) {
+                        pause();
+                    } else {
+                        stopRecording();
+                    }
+                    break;
+                case 'paused':
+                    if (clickedButton === pauseButton) {
+                        resume();
+                    } else {
+                        stopRecording();
+                    }
                     break;
             }
         }
@@ -149,14 +183,16 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
          */
         function startRecording() {
 
-            if (type.hidePlayerDuringRecording) {
+            if (mediaSettings.name === 'audio') {
                 mediaElement.parentElement.classList.add('hide');
-                noMediaPlaceholder.classList.remove('hide');
-                noMediaPlaceholder.textContent = '\u00a0';
+                noMediaPlaceholder.classList.add('hide');
+                timeDisplay.classList.remove('hide');
+
             } else {
                 mediaElement.parentElement.classList.remove('hide');
                 noMediaPlaceholder.classList.add('hide');
             }
+            pauseButton?.parentElement.classList.remove('hide');
 
             // Change look of recording button.
             button.classList.remove('btn-outline-danger');
@@ -168,7 +204,7 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
             // Empty the array containing the previously recorded chunks.
             chunks = [];
             bytesRecordedSoFar = 0;
-            navigator.mediaDevices.getUserMedia(type.mediaConstraints)
+            navigator.mediaDevices.getUserMedia(mediaSettings.mediaConstraints)
                 .then(handleCaptureStarting)
                 .catch(handleCaptureFailed);
         }
@@ -184,17 +220,21 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
             // Setup the UI for during recording.
             mediaElement.srcObject = stream;
             mediaElement.muted = true;
-            if (type.hidePlayerDuringRecording) {
+            if (mediaSettings.name === 'audio') {
                 startSaving();
             } else {
                 mediaElement.play();
                 mediaElement.controls = false;
 
-                button.dataset.state = 'starting';
+                widget.dataset.state = 'starting';
                 setButtonLabel('startrecording');
+                widget.querySelector('.qtype_recordrtc-stop-button').disabled = false;
             }
 
             // Make button clickable again, to allow starting/stopping recording.
+            if (pauseButton) {
+                pauseButton.disabled = false;
+            }
             button.disabled = false;
             button.focus();
         }
@@ -205,7 +245,7 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
          */
         function startSaving() {
             // Initialize MediaRecorder events and start recording.
-            if (type.name === 'audio') {
+            if (mediaSettings.name === 'audio') {
                 mediaRecorder = new Mp3MediaRecorder(mediaStream,
                     {worker: new Worker(workerURL)});
             } else {
@@ -214,11 +254,18 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
             }
 
             mediaRecorder.ondataavailable = handleDataAvailable;
+            mediaRecorder.onpause = handleDataAvailable;
             mediaRecorder.onstop = handleRecordingHasStopped;
             mediaRecorder.start(1000); // Capture in one-second chunks. Firefox requires that.
 
-            button.dataset.state = 'recording';
+            widget.dataset.state = 'recording';
+            setButtonLabel('stoprecording');
             startCountdownTimer();
+            if (mediaSettings.name === 'video') {
+                button.parentElement.classList.add('hide');
+                controlRow.classList.remove('hide');
+                controlRow.classList.add('d-flex');
+            }
         }
 
         /**
@@ -227,10 +274,13 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
          * @param {BlobEvent} event
          */
         function handleDataAvailable(event) {
+            if (!event.data) {
+                return; // It seems this can happen around pausing.
+            }
 
             // Check there is space to store the next chunk, and if not stop.
             bytesRecordedSoFar += event.data.size;
-            if (settings.maxUploadSize >= 0 && bytesRecordedSoFar >= settings.maxUploadSize) {
+            if (uploadInfo.maxUploadSize >= 0 && bytesRecordedSoFar >= uploadInfo.maxUploadSize) {
 
                 // Extra check to avoid alerting twice.
                 if (!localStorage.getItem('alerted')) {
@@ -255,6 +305,28 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
         }
 
         /**
+         * Pause recording.
+         */
+        function pause() {
+            // Stop the count-down timer.
+            stopCountdownTimer();
+            setPauseButtonLabel('resume');
+            mediaRecorder.pause();
+            widget.dataset.state = 'paused';
+        }
+
+        /**
+         * Continue recording.
+         */
+        function resume() {
+            // Stop the count-down timer.
+            resumeCountdownTimer();
+            widget.dataset.state = 'recording';
+            setPauseButtonLabel('pause');
+            mediaRecorder.resume();
+        }
+
+        /**
          * Start recording (because the button was clicked or because we have reached a limit).
          */
         function stopRecording() {
@@ -267,13 +339,14 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
             // Update the button.
             button.classList.remove('btn-danger');
             button.classList.add('btn-outline-danger');
+            pauseButton?.parentElement.classList.add('hide');
 
             // Ask the recording to stop.
             mediaRecorder.stop();
 
             // Also stop each individual MediaTrack.
-            var tracks = mediaStream.getTracks();
-            for (var i = 0; i < tracks.length; i++) {
+            const tracks = mediaStream.getTracks();
+            for (let i = 0; i < tracks.length; i++) {
                 tracks[i].stop();
             }
         }
@@ -282,13 +355,13 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
          * Callback that is called by the media system once recording has finished.
          */
         function handleRecordingHasStopped() {
-            if (button.dataset.state === 'new') {
+            if (widget.dataset.state === 'new') {
                 // This can happens if an error occurs when recording is starting. Do nothing.
                 return;
             }
 
-            // Set source of audio player.
-            var blob = new Blob(chunks, {type: mediaRecorder.mimeType});
+            // Set source of the media player.
+            const blob = new Blob(chunks, {type: mediaRecorder.mimeType});
             mediaElement.srcObject = null;
             mediaElement.src = URL.createObjectURL(blob);
 
@@ -299,11 +372,20 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
             noMediaPlaceholder.classList.add('hide');
             mediaElement.focus();
 
-            // Encure the button while things change.
+            if (mediaSettings.name === 'audio') {
+                timeDisplay.classList.add('hide');
+
+            } else {
+                button.parentElement.classList.remove('hide');
+                controlRow.classList.add('hide');
+                controlRow.classList.remove('d-flex');
+            }
+
+            // Ensure the button while things change.
             button.disabled = true;
             button.classList.remove('btn-danger');
             button.classList.add('btn-outline-danger');
-            button.dataset.state = 'recorded';
+            widget.dataset.state = 'recorded';
 
             if (chunks.length > 0) {
                 owner.notifyRecordingComplete(recorder);
@@ -323,33 +405,33 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
             setButtonLabel('recordagain');
             button.classList.remove('btn-danger');
             button.classList.add('btn-outline-danger');
-            button.dataset.state = 'new';
+            widget.dataset.state = 'new';
 
             if (mediaRecorder) {
                 mediaRecorder.stop();
             }
 
             // Changes 'CertainError' -> 'gumcertain' to match language string names.
-            var stringName = 'gum' + error.name.replace('Error', '').toLowerCase();
+            const stringName = 'gum' + error.name.replace('Error', '').toLowerCase();
 
             owner.showAlert(stringName);
             enableAllButtons();
         }
 
         /**
-         * Start the countdown timer from timeLimit.
+         * Start the countdown timer.
          */
         function startCountdownTimer() {
-            secondsRemaining = timelimit;
-
+            timeRemaining = widget.dataset.maxRecordingDuration * 1000;
+            resumeCountdownTimer();
             updateTimerDisplay();
-            countdownTicker = setInterval(updateTimerDisplay, 1000);
         }
 
         /**
          * Stop the countdown timer.
          */
         function stopCountdownTimer() {
+            timeRemaining = stopTime - Date.now();
             if (countdownTicker !== 0) {
                 clearInterval(countdownTicker);
                 countdownTicker = 0;
@@ -357,45 +439,56 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
         }
 
         /**
+         * Start or resume the countdown timer.
+         */
+        function resumeCountdownTimer() {
+            stopTime = Date.now() + timeRemaining;
+            if (countdownTicker === 0) {
+                countdownTicker = setInterval(updateTimerDisplay, 100);
+            }
+        }
+
+        /**
          * Update the countdown timer, and stop recording if we have reached 0.
          */
         function updateTimerDisplay() {
-            var secs = secondsRemaining % 60;
-            var mins = Math.round((secondsRemaining - secs) / 60);
-            setButtonLabel('recordinginprogress', pad(mins) + ':' + pad(secs));
+            const millisecondsRemaining = stopTime - Date.now();
+            const secondsRemaining = Math.round(millisecondsRemaining / 1000);
+            const secs = secondsRemaining % 60;
+            const mins = Math.round((secondsRemaining - secs) / 60);
 
-            if (secondsRemaining === -1) {
+            timeDisplay.innerText = M.util.get_string('timedisplay', 'qtype_recordrtc',
+                    {mins: pad(mins), secs: pad(secs)});
+
+            if (millisecondsRemaining <= 0) {
                 stopRecording();
             }
-            secondsRemaining -= 1;
         }
 
         /**
          * Zero-pad a string to be at least two characters long.
          *
-         * Used fro
-         * @param {number} val, e.g. 1 or 10
+         * @param {number} val e.g. 1 or 10
          * @return {string} e.g. '01' or '10'.
          */
         function pad(val) {
-            var valString = val + '';
+            const valString = val + '';
 
             if (valString.length < 2) {
                 return '0' + valString;
             } else {
-                return valString;
+                return '' + valString;
             }
         }
 
         /**
-         * Upload the recorded media back to Moodle.
+         * Trigger the upload of the recorded media back to Moodle.
          */
         function uploadMediaToServer() {
             setButtonLabel('uploadpreparing');
 
-            var fetchRequest = new XMLHttpRequest();
-
-            // Get media of audio/video tag.
+            // First we need to get the media data from the media element.
+            const fetchRequest = new XMLHttpRequest();
             fetchRequest.open('GET', mediaElement.src);
             fetchRequest.responseType = 'blob';
             fetchRequest.addEventListener('load', handleRecordingFetched);
@@ -403,31 +496,31 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
         }
 
         /**
-         * Callback called once we have the data from the media element.
+         * Callback called once we have the data from the media element, ready to upload to Moodle.
          *
          * @param {ProgressEvent} e
          */
         function handleRecordingFetched(e) {
-            var fetchRequest = e.target;
+            const fetchRequest = e.target;
             if (fetchRequest.status !== 200) {
                 // No data.
                 return;
             }
 
             // Blob is now the media that the audio/video tag's src pointed to.
-            var blob = fetchRequest.response;
+            const blob = fetchRequest.response;
 
             // Create FormData to send to PHP filepicker-upload script.
-            var formData = new FormData();
-            formData.append('repo_upload_file', blob, filename);
+            const formData = new FormData();
+            formData.append('repo_upload_file', blob, widget.dataset.recordingFilename);
             formData.append('sesskey', M.cfg.sesskey);
-            formData.append('repo_id', settings.uploadRepositoryId);
-            formData.append('itemid', settings.draftItemId);
+            formData.append('repo_id', uploadInfo.uploadRepositoryId);
+            formData.append('itemid', uploadInfo.draftItemId);
             formData.append('savepath', '/');
-            formData.append('ctx_id', settings.contextId);
-            formData.append('overwrite', 1);
+            formData.append('ctx_id', uploadInfo.contextId);
+            formData.append('overwrite', '1');
 
-            var uploadRequest = new XMLHttpRequest();
+            const uploadRequest = new XMLHttpRequest();
             uploadRequest.addEventListener('readystatechange', handleUploadReadyStateChanged);
             uploadRequest.upload.addEventListener('progress', handleUploadProgress);
             uploadRequest.addEventListener('error', handleUploadError);
@@ -441,7 +534,12 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
          * @param {ProgressEvent} e
          */
         function handleUploadReadyStateChanged(e) {
-            var uploadRequest = e.target;
+            const uploadRequest = e.target;
+            const response = JSON.parse(uploadRequest.responseText);
+            if (response.errorcode) {
+                handleUploadError();
+            }
+
             if (uploadRequest.readyState === 4 && uploadRequest.status === 200) {
                 // When request finished and successful.
                 setButtonLabel('recordagain');
@@ -480,20 +578,28 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
          * Display a progress message in the upload progress area.
          *
          * @param {string} langString
-         * @param {Object|String} a optional variable to populate placeholder with
+         * @param {Object|String|null} [a] optional variable to populate placeholder with
          */
         function setButtonLabel(langString, a) {
             button.innerText = M.util.get_string(langString, 'qtype_recordrtc', a);
         }
 
         /**
+         * Display a progress message in the upload progress area.
+         *
+         * @param {string} langString
+         */
+        function setPauseButtonLabel(langString) {
+            pauseButton.innerText = M.util.get_string(langString, 'qtype_recordrtc');
+        }
+
+        /**
          * Display a message in the upload progress area.
          *
          * @param {string} langString
-         * @param {Object|String} a optional variable to populate placeholder with
          */
-        function setPlaceholderMessage(langString, a) {
-            noMediaPlaceholder.textContent = M.util.get_string(langString, 'qtype_recordrtc', a);
+        function setPlaceholderMessage(langString) {
+            noMediaPlaceholder.textContent = M.util.get_string(langString, 'qtype_recordrtc');
             mediaElement.parentElement.classList.add('hide');
             noMediaPlaceholder.classList.remove('hide');
         }
@@ -504,20 +610,20 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
          * @returns {Object}
          */
         function getRecordingOptions() {
-            var options = {};
+            const options = {};
 
             // Get the relevant bit rates from settings.
-            if (type.name === 'audio') {
-                options.audioBitsPerSecond = parseInt(settings.audioBitRate, 10);
-            } else if (type.name === 'video') {
-                options.videoBitsPerSecond = parseInt(settings.videoBitRate, 10);
-                options.videoWidth = parseInt(settings.videoWidth, 10);
-                options.videoHeight = parseInt(settings.videoHeight, 10);
+            if (mediaSettings.name === 'audio') {
+                options.audioBitsPerSecond = mediaSettings.bitRate;
+            } else if (mediaSettings.name === 'video') {
+                options.videoBitsPerSecond = mediaSettings.bitRate;
+                options.videoWidth = mediaSettings.width;
+                options.videoHeight = mediaSettings.height;
 
                 // Go through our list of mimeTypes, and take the first one that will work.
-                for (var i = 0; i < type.mimeTypes.length; i++) {
-                    if (MediaRecorder.isTypeSupported(type.mimeTypes[i])) {
-                        options.mimeType = type.mimeTypes[i];
+                for (let i = 0; i < mediaSettings.mimeTypes.length; i++) {
+                    if (MediaRecorder.isTypeSupported(mediaSettings.mimeTypes[i])) {
+                        options.mimeType = mediaSettings.mimeTypes[i];
                         break;
                     }
                 }
@@ -547,7 +653,7 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
          * @param {boolean} enabled true if the button should be enabled.
          */
         function disableOrEnableButtons(enabled = false) {
-            questionDiv.querySelectorAll('button, input[type=submit], input[type=button]').forEach(
+            widget.closest('.que').querySelectorAll('button, input[type=submit], input[type=button]').forEach(
                 function(button) {
                     button.disabled = !enabled;
                 }
@@ -561,11 +667,12 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
 /**
  * Object that controls the settings for recording audio.
  *
+ * @param {string} bitRate desired audio bitrate.
  * @constructor
  */
-function AudioSettings() {
+function AudioSettings(bitRate) {
     this.name = 'audio';
-    this.hidePlayerDuringRecording = true;
+    this.bitRate = parseInt(bitRate, 10);
     this.mediaConstraints = {
         audio: true
     };
@@ -577,18 +684,21 @@ function AudioSettings() {
 /**
  * Object that controls the settings for recording video.
  *
- * @param {number} width desired width.
- * @param {number} height desired height.
+ * @param {string} bitRate desired video bitrate.
+ * @param {string} width desired width.
+ * @param {string} height desired height.
  * @constructor
  */
-function VideoSettings(width, height) {
+function VideoSettings(bitRate, width, height) {
     this.name = 'video';
-    this.hidePlayerDuringRecording = false;
+    this.bitRate = parseInt(bitRate, 10);
+    this.width = parseInt(width, 10);
+    this.height = parseInt(height, 10);
     this.mediaConstraints = {
         audio: true,
         video: {
-            width: {ideal: width},
-            height: {ideal: height}
+            width: {ideal: this.width},
+            height: {ideal: this.height}
         }
     };
     this.mimeTypes = [
@@ -606,10 +716,10 @@ function VideoSettings(width, height) {
  * @constructor
  */
 function RecordRtcQuestion(questionId, settings) {
-    var questionDiv = document.getElementById(questionId);
+    const questionDiv = document.getElementById(questionId);
 
     // Check if the RTC API can work here.
-    var result = checkCanWork();
+    const result = checkCanWork();
     if (result === 'nothttps') {
         questionDiv.querySelector('.https-warning').classList.remove('hide');
         return;
@@ -625,28 +735,19 @@ function RecordRtcQuestion(questionId, settings) {
     const thisQuestion = this;
 
     // We may have more than one widget in a question.
-    questionDiv.querySelectorAll('.audio-widget, .video-widget').forEach(function(widget) {
-        // Get the key UI elements.
-        var type = widget.dataset.mediaType;
-        var timelimit = widget.dataset.maxRecordingDuration;
-        var button = widget.querySelector('.record-button button');
-        var mediaElement = widget.querySelector('.media-player ' + type);
-        var noMediaPlaceholder = widget.querySelector('.no-recording-placeholder');
-        var filename = widget.dataset.recordingFilename;
-
+    questionDiv.querySelectorAll('.qtype_recordrtc-audio-widget, .qtype_recordrtc-video-widget').forEach(function(widget) {
         // Get the appropriate options.
-        var typeInfo;
-        if (type === 'audio') {
-            typeInfo = new AudioSettings();
+        let typeInfo;
+        if (widget.dataset.mediaType === 'audio') {
+            typeInfo = new AudioSettings(settings.audioBitRate);
         } else {
-            typeInfo = new VideoSettings(settings.videoWidth, settings.videoHeight);
+            typeInfo = new VideoSettings(settings.videoBitRate, settings.videoWidth, settings.videoHeight);
         }
 
         // Create the recorder.
         RecorderPromise.then(Recorder => {
-            new Recorder(typeInfo, timelimit, mediaElement, noMediaPlaceholder, button,
-                filename, thisQuestion, settings, questionDiv);
-            return 'Why should I have to return anything here?';
+            new Recorder(widget, typeInfo, thisQuestion, settings);
+            return 'Not used';
         }).catch(Notification.exception);
     });
     setSubmitButtonState();
@@ -658,16 +759,16 @@ function RecordRtcQuestion(questionId, settings) {
      * Otherwise, enable it.
      */
     function setSubmitButtonState() {
-        var anyRecorded = false;
-        questionDiv.querySelectorAll('.audio-widget, .video-widget').forEach(function(widget) {
-            if (widget.querySelector('.record-button button').dataset.state === 'recorded') {
+        let anyRecorded = false;
+        questionDiv.querySelectorAll('.qtype_recordrtc-audio-widget, .qtype_recordrtc-video-widget').forEach(function(widget) {
+            if (widget.dataset.state === 'recorded') {
                 anyRecorded = true;
             }
         });
-        var submitButton = questionDiv.querySelector('input.submit[type=submit]');
+        const submitButton = questionDiv.querySelector('input.submit[type=submit]');
         if (submitButton) {
             submitButton.disabled = !anyRecorded;
-       }
+        }
     }
 
     /**

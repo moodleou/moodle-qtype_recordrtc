@@ -278,7 +278,7 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
         $this->assert_does_not_contain_glossary_link($audioentry, $this->currentoutput);
 
         // Also check that we have an audio recorder widget in there.
-        $this->assertStringContainsString('<span class="audio-widget', $this->currentoutput);
+        $this->assertStringContainsString('<span class="qtype_recordrtc-audio-widget', $this->currentoutput);
     }
 
     /**

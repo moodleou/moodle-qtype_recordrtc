@@ -38,6 +38,11 @@ class qtype_recordrtc_question extends question_with_responses {
      */
     public $widgets;
 
+    /**
+     * @var bool whether the user can pause in the middle of recording.
+     */
+    public $allowpausing;
+
     public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
         global $CFG;
         if (is_readable($CFG->dirroot . '/question/behaviour/selfassess/behaviour.php') &&

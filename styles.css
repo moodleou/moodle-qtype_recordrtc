@@ -1,75 +1,23 @@
 /* Styles for audio widgets. */
-.que.recordrtc .audio-widget {
-    display: inline-flex;
-    margin: 2px 0;
+.que.recordrtc .qtype_recordrtc-audio-widget {
     width: 20em;
-    max-width: 100%;
-}
-.que.recordrtc .audio-widget .no-recording-placeholder {
-    flex-grow: 1;
-    padding-top: 0.45em;
-}
-.que.recordrtc .audio-widget .media-player {
-    flex-grow: 1;
-}
-.que.recordrtc .audio-widget .media-player audio {
-    height: 2.437em;
-    vertical-align: -0.8em;
-    width: 100%;
-    max-width: 100%;
-}
-.que.recordrtc .audio-widget .record-button {
-    margin-left: 4px;
-}
-.que.recordrtc .audio-widget button {
-    white-space: nowrap;
-    margin-right: 0;
-}
-.que.recordrtc .audio-widget a {
-    white-space: nowrap;
-    line-height: 2.437em;
-}
-.que.recordrtc .audio-widget .download-icon {
-    vertical-align: middle;
-    margin-right: 2px;
 }
 
 /* Styles for video widgets. */
-.que.recordrtc .video-widget {
-    display: inline-flex;
-    flex-direction: column;
-    max-width: 100%;
-}
-.que.recordrtc .video-widget .no-recording-placeholder {
-    margin-bottom: 4px;
-}
-.que.recordrtc .video-widget.recordrtc-ratio-16x9 .no-recording-placeholder {
+.que.recordrtc .qtype_recordrtc-ratio-16x9 .qtype_recordrtc-no-recording-placeholder {
     padding: calc(28.125% - 10.5px) 0;
 }
-.que.recordrtc .video-widget.recordrtc-ratio-4x3 .no-recording-placeholder {
+.que.recordrtc .qtype_recordrtc-ratio-4x3 .qtype_recordrtc-no-recording-placeholder {
     padding: calc(37.5% - 10.5px) 0;
-}
-.que.recordrtc .video-widget .media-player video {
-    width: 100%;
-}
-.que.recordrtc .video-widget button {
-    display: block;
-    margin: 0;
-    width: 100%;
-    text-align: center;
-}
-.que.recordrtc .audio-widget .download-icon {
-    vertical-align: middle;
-    margin-right: 2px;
 }
 
 /* Other styles used while the question is being attempted. */
-.que.recordrtc .no-recording-placeholder {
+.que.recordrtc .qtype_recordrtc-no-recording-placeholder,
+.que.recordrtc .qtype_recordrtc-time-left {
     color: #676463;
     background-color: #f0f0f1;
-    text-align: center;
 }
-.que.recordrtc .download-icon {
+.que.recordrtc .qtype_recordrtc-download-icon img {
     height: 28px;
     width: 28px;
 }

@@ -1,0 +1,50 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template qtype_recordrtc/audio_recorder
+
+    Display the media for playback when the question is being reviewed.
+
+    Context variables required for this template:
+    * hasrecording: true if there is a recording.
+    * filename: The filename to use for downloading the audio.
+    * recordingurl: The URL of the recording.
+
+    Example context (json):
+    {
+        "hasrecording": true,
+        "filename": 'recording.mp3',
+        "recordingurl": 'http://example.com/moodle/pluginfile.php?...',
+    }
+}}
+<span class="qtype_recordrtc-audio-widget d-inline-flex mw-100 my-1">
+    {{#hasrecording}}
+        <span class="qtype_recordrtc-media-player flex-grow-1">
+            <audio controls class="w-100, mw-100">
+                <source src="{{recordingurl}}">
+            </audio>
+        </span>
+        <a href="{{recordingurl}}" class="qtype_recordrtc-download-icon align-middle">
+            {{#pix}}f/audio, core, {{#str}}downloadrecording, qtype_recordrtc, {{filename}}{{/str}}{{/pix}}
+        </a>
+    {{/hasrecording}}
+    {{^hasrecording}}
+        <span class="qtype_recordrtc-no-recording-placeholder flex-grow-1 text-center">
+            {{#str}}norecording, qtype_recordrtc{{/str}}
+        </span>
+    {{/hasrecording}}
+</span>

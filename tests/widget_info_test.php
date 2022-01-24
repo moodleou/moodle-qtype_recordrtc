@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 use qtype_recordrtc\widget_info;
 
 global $CFG;
@@ -35,7 +37,7 @@ class widget_info_test extends advanced_testcase {
      *
      * @return array the test cases.
      */
-    public function duration_to_seconds_cases() {
+    public function duration_to_seconds_cases(): array {
         return [
             '20 seconds as 20s' => ['20s', 20, '20s'],
             '1 minute as 1m' => ['1m', 60, '1m00s'],
@@ -46,20 +48,31 @@ class widget_info_test extends advanced_testcase {
     }
 
     /**
+     * Tests for widget_info::duration_to_seconds.
+     *
      * @dataProvider duration_to_seconds_cases();
+     *
+     * @param string $duration The input duration string.
+     * @param int $seconds how many seconds that translates to.
      */
-    public function test_duration_to_seconds(string $duration, int $seconds, string $notused) {
+    public function test_duration_to_seconds(string $duration, int $seconds): void {
         $this->assertEquals($seconds, widget_info::duration_to_seconds($duration));
     }
 
     /**
+     * Tests for widget_info::duration_to_seconds.
+     *
      * @dataProvider duration_to_seconds_cases();
+     *
+     * @param string $notused Not used - just so we can use the same data provides for two tests.
+     * @param int $seconds a period in seconds.
+     * @param string $duration the normalised version of the input duration string for that.
      */
-    public function test_seconds_to_duration(string $notused, int $seconds, string $duration) {
+    public function test_seconds_to_duration(string $notused, int $seconds, string $duration): void {
         $this->assertEquals($duration, widget_info::seconds_to_duration($seconds));
     }
 
-    public function test_make_placeholder() {
+    public function test_make_placeholder(): void {
         $this->assertEquals('[[welcome:audio:30s]]', widget_info::make_placeholder('welcome', 'audio', 30));
     }
 

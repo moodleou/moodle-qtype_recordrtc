@@ -1,0 +1,35 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template qtype_recordrtc/cannot_work_warnings
+
+    The warning messages which might need to be displayed when this qestion type cannot work.
+
+    Context variables required for this template:
+    * None.
+
+    Example context (json):
+    {}
+}}
+<div class="hide alert alert-danger https-warning">
+    <h5>{{#str}}insecurewarningtitle, qtype_recordrtc{{/str}}</h5>
+    <p>{{#str}}insecurewarning, qtype_recordrtc{{/str}}</p>
+</div>
+<div class="hide alert alert-danger no-webrtc-warning">
+    <h5>{{#str}}nowebrtctitle, qtype_recordrtc{{/str}}</h5>
+    <p>{{#str}}nowebrtc, qtype_recordrtc{{/str}}</p>
+</div>

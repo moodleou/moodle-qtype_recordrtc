@@ -25,6 +25,10 @@
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/repository/lib.php');
 
+use qtype_recordrtc\output\audio_playback;
+use qtype_recordrtc\output\audio_recorder;
+use qtype_recordrtc\output\video_playback;
+use qtype_recordrtc\output\video_recorder;
 
 /**
  * Generates output for record audio and video questions.
@@ -38,8 +42,6 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         /** @var qtype_recordrtc_question $question */
         $question = $qa->get_question();
         $output = '';
-
-        [$videowidth, $videoheight] = explode(',', get_config('qtype_recordrtc', 'videosize'));
 
         $existingfiles = $qa->get_last_qt_files('recording', $options->context->id);
         if (!$options->readonly) {
@@ -76,9 +78,21 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             $existingfile = $question->get_file_from_response($filename, $existingfiles);
 
             if ($options->readonly) {
+                // Review.
                 if ($existingfile) {
-                    $thisitem = $this->playback_ui($qa->get_response_file_url($existingfile),
-                            $widget->type, $filename, $videowidth, $videoheight);
+                    $recordingurl = $qa->get_response_file_url($existingfile);
+                } else {
+                    $recordingurl = null;
+                }
+
+                if ($widget->type === 'audio') {
+                    $playback = new audio_playback($filename, $recordingurl);
+                } else {
+                    $playback = new video_playback($filename, $recordingurl);
+                }
+
+                $thisitem = $this->render($playback);
+                if ($existingfile) {
                     // The next line should logically just check ->feedback, but for some reason,
                     // manual graded behaviour always sets that to false, so check general feedback
                     // option too.
@@ -89,30 +103,24 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                                         $qa, 'question', 'answerfeedback', $widget->answerid),
                                 'specificfeedback');
                     }
-
-                } else {
-                    $thisitem = $this->no_recording_message();
                 }
 
             } else {
                 // Being attempted.
                 if ($existingfile) {
                     $recordingurl = moodle_url::make_draftfile_url($draftitemid, '/', $filename);
-                    $state = 'recorded';
-                    $label = get_string('recordagain', 'qtype_recordrtc');
                 } else {
                     $recordingurl = null;
-                    $state = 'new';
-                    if ($widget->type == 'audio') {
-                        $label = get_string('startrecording', 'qtype_recordrtc');
-                    } else {
-                        $label = get_string('startcamera', 'qtype_recordrtc');
-                    }
+                }
+
+                if ($widget->type === 'audio') {
+                    $recorder = new audio_recorder($filename, $widget->maxduration, $question->allowpausing, $recordingurl);
+                } else {
+                    $recorder = new video_recorder($filename, $widget->maxduration, $question->allowpausing, $recordingurl);
                 }
 
                 // Recording UI.
-                $thisitem = $this->recording_ui($filename, $recordingurl, $state,
-                        $label, $widget->type, $widget->maxduration, $videowidth, $videoheight);
+                $thisitem = $this->render($recorder);
             }
 
             $questiontext = str_replace($widget->get_protected_placeholder(), $thisitem, $questiontext);
@@ -131,8 +139,6 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             $setting = [
                     'audioBitRate' => (int) get_config('qtype_recordrtc', 'audiobitrate'),
                     'videoBitRate' => (int) get_config('qtype_recordrtc', 'videobitrate'),
-                    'videoWidth' => (int) $videowidth,
-                    'videoHeight' => (int) $videoheight,
                     'maxUploadSize' => $question->get_upload_size_limit($options->context),
                     'uploadRepositoryId' => (int) $uploadrepository->id,
                     'contextId' => $options->context->id,
@@ -151,127 +157,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
      * @return string HTML for the 'this can't work here' messages.
      */
     protected function cannot_work_warnings(): string {
-        return '
-                <div class="hide alert alert-danger https-warning">
-                    <h5>' . get_string('insecurewarningtitle', 'qtype_recordrtc') . '</h5>
-                    <p>' . get_string('insecurewarning', 'qtype_recordrtc') . '</p>
-                </div>
-                <div class="hide alert alert-danger no-webrtc-warning">
-                    <h5>' . get_string('nowebrtctitle', 'qtype_recordrtc') . '</h5>
-                    <p>' . get_string('nowebrtc', 'qtype_recordrtc') . '</p>
-                </div>';
-    }
-
-    /**
-     * Generate the HTML for the recording UI.
-     *
-     * Note: the JavaScript relies on a lot of the CSS class names here.
-     *
-     * @param string $filename the filename to use for this recording.
-     * @param string|null $recordingurl URL for the recording, if there is one, else null.
-     * @param string $state value for the data-state attribute of the record button.
-     * @param string $label label for the record button.
-     * @param string $mediatype audio or video.
-     * @param int $maxrecordingduration
-     * @param int $videowidth
-     * @param int $videoheight
-     * @return string HTML to output.
-     */
-    protected function recording_ui(string $filename, ?string $recordingurl,
-            string $state, string $label, string $mediatype,
-            int $maxrecordingduration, int $videowidth, int $videoheight): string {
-        if ($recordingurl) {
-            $mediaplayerhideclass = '';
-            $norecordinghideclass = 'hide ';
-        } else {
-            $mediaplayerhideclass = 'hide ';
-            $norecordinghideclass = '';
-
-        }
-        // Set the 'No recording' language string.
-        $norecordinglangstring = get_string('norecording', 'qtype_recordrtc');
-
-        [$aspectclass, $widthattribute] = $this->video_attributes($mediatype, $videowidth, $videoheight);
-
-        return '
-            <span class="' . $mediatype . '-widget' . $aspectclass . '"' . $widthattribute . ' data-media-type="' . $mediatype .
-                '" data-max-recording-duration="' . $maxrecordingduration . '" data-recording-filename="' . $filename . '">
-                <span class="' . $norecordinghideclass . 'no-recording-placeholder">' . $norecordinglangstring . '</span>
-                <span class="' . $mediaplayerhideclass . 'media-player">
-                    <' . $mediatype . ' controls>
-                        <source src="' . $recordingurl . '">
-                    </' . $mediatype . '>
-                </span>
-                <span class="record-button">
-                    <button type="button" class="btn btn-outline-danger osep-smallbutton"
-                            data-state="' . $state . '">' . $label . '</button>
-                </span>
-            </span>';
-    }
-
-    /**
-     * Render the playback UI - e.g. when the question is reviewed.
-     *
-     * @param string $recordingurl URL for the recording.
-     * @param string $mediatype audio or video.
-     * @param string $filename the name of the audio or video file.
-     * @param int $videowidth
-     * @param int $videoheight
-     * @return string HTML to output.
-     */
-    protected function playback_ui($recordingurl, string $mediatype, string $filename,
-            int $videowidth, int $videoheight): string {
-        // Prepare download link based on mimetype.
-        $downloadlink = html_writer::link($recordingurl, $this->pix_icon('f/' . $mediatype,
-                    get_string('downloadrecording', 'qtype_recordrtc', $filename),
-                    null, ['class' => 'download-icon-' . $mediatype]));
-
-        [$aspectclass, $widthattribute] = $this->video_attributes($mediatype, $videowidth, $videoheight);
-
-        return '
-            <span class="' . $mediatype . '-widget' . $aspectclass . '"' . $widthattribute . '>
-                <span class="media-player">
-                    <' . $mediatype . ' controls>
-                        <source src="' . $recordingurl .'">
-                    </' . $mediatype . '>
-                </span>
-                ' . $downloadlink . '
-            </span>';
-    }
-
-    /**
-     * Get the snippits needed for video elements.
-     *
-     * @param string $mediatype
-     * @param int $videowidth
-     * @param int $videoheight
-     * @return string[] a class name and a style attribute.
-     */
-    protected function video_attributes(string $mediatype, int $videowidth, int $videoheight): array {
-        if ($mediatype !== qtype_recordrtc::MEDIA_TYPE_VIDEO) {
-            return ['', ''];
-        }
-
-        if ($videowidth / $videoheight > 1.5) {
-            $aspectclass = ' recordrtc-ratio-16x9';
-        } else {
-            $aspectclass = ' recordrtc-ratio-4x3';
-        }
-        return [$aspectclass, ' style="width: ' . $videowidth . 'px;"'];
-    }
-
-    /**
-     * Render a message to say there is no recording.
-     *
-     * @return string HTML to output.
-     */
-    protected function no_recording_message(): string {
-        return '
-            <span class="playback-widget">
-                <span class="no-recording-placeholder">' .
-                    get_string('norecording', 'qtype_recordrtc') .
-                '</span>
-            </span>';
+        return $this->render_from_template('qtype_recordrtc/cannot_work_warnings', []);
     }
 
     /**
@@ -299,11 +185,14 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             'gumtype_title',
             'nearingmaxsize',
             'nearingmaxsize_title',
+            'pause',
             'recordagain',
             'recordingfailed',
-            'recordinginprogress',
+            'resume',
             'startcamera',
             'startrecording',
+            'stoprecording',
+            'timedisplay',
             'uploadaborted',
             'uploadcomplete',
             'uploadfailed',

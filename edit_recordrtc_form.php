@@ -95,7 +95,8 @@ class qtype_recordrtc_edit_form extends question_edit_form {
             widget_info::make_placeholder('recorder1', 'audio', 120),
             widget_info::make_placeholder('recorder2', 'video', 90),
         ];
-        $placeholders = array_map(function($placehodler) {
+        $placeholders = array_map(
+            function($placehodler) {
                 return html_writer::empty_tag('input', ['type' => 'text', 'readonly' => 'readonly', 'size' => '24',
                         'value' => $placehodler, 'onfocus' => 'this.select()',
                         'class' => 'form-control-plaintext d-inline-block w-auto mr-3']);
@@ -206,13 +207,13 @@ class qtype_recordrtc_edit_form extends question_edit_form {
             // Prepare the feedback editor to display files in draft area.
             $draftitemid = file_get_submitted_draft_itemid('feedback[' . $key . ']');
             $question->{$fieldname}['text'] = file_prepare_draft_area(
-                    $draftitemid,          // Draftid
-                    $this->context->id,    // context
-                    'question',            // component
-                    'answerfeedback',      // filarea
-                    !empty($answer->id) ? (int) $answer->id : null, // itemid
-                    $this->fileoptions,    // options
-                    $answer->feedback      // text.
+                    $draftitemid,          // Draftid.
+                    $this->context->id,    // Context.
+                    'question',            // Component.
+                    'answerfeedback',      // Filarea.
+                    !empty($answer->id) ? (int) $answer->id : null, // Itemid.
+                    $this->fileoptions,    // Options.
+                    $answer->feedback      // Text.
             );
             $question->{$fieldname}['itemid'] = $draftitemid;
             $question->{$fieldname}['format'] = $answer->feedbackformat;
