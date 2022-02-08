@@ -30,6 +30,7 @@
     Example context (json):
     {
         "filename": "recording.webm"
+        "widgetname": "recording"
         "maxrecordingduration": 30,
         "allowpausing": true,
         "hasrecording": false,
@@ -39,7 +40,7 @@
     }
 }}
 <span class="qtype_recordrtc-video-widget qtype_recordrtc-ratio-{{aspectratio}} d-flex flex-column mw-100"
-      style="width: {{width}}px" data-media-type="video"
+      style="width: {{width}}px" data-media-type="video" data-widget-name="{{widgetname}}"
       data-state="{{^hasrecording}}new{{/hasrecording}}{{#hasrecording}}recorded{{/hasrecording}}"
       data-max-recording-duration="{{maxrecordingduration}}" data-recording-filename="{{filename}}">
     <span class="qtype_recordrtc-no-recording-placeholder mb-1 text-center{{#hasrecording}} hide{{/hasrecording}}">{{#str}}norecording, qtype_recordrtc{{/str}}</span>
@@ -50,8 +51,8 @@
     </span>
     <span>
         <button type="button" class="qtype_recordrtc-main-button btn osep-smallbutton m-0 w-100">
-            {{^hasrecording}}{{#str}}startcamera, qtype_recordrtc{{/str}}{{/hasrecording}}
-            {{#hasrecording}}{{#str}}recordagain, qtype_recordrtc{{/str}}{{/hasrecording}}
+            {{^hasrecording}}{{#str}}startcamerax, qtype_recordrtc, <span class="sr-only">{{widgetname}}</span>{{/str}}{{/hasrecording}}
+            {{#hasrecording}}{{#str}}recordagainx, qtype_recordrtc, <span class="sr-only">{{widgetname}}</span>{{/str}}{{/hasrecording}}
         </button>
     </span>
     <span class="qtype_recordrtc-control-row w-100 hide">

@@ -28,13 +28,15 @@
     Example context (json):
     {
         "filename": "recording.mp3"
+        "widgetname": "recording"
         "maxrecordingduration": 30,
         "allowpausing": true,
         "hasrecording": false,
         "recordingurl": 'http://example.com/moodle/draftfile.php?...',
     }
 }}
-<span class="qtype_recordrtc-audio-widget d-inline-flex mw-100 my-1" data-media-type="audio"
+<span class="qtype_recordrtc-audio-widget d-inline-flex mw-100 my-1"
+      data-media-type="audio" data-widget-name="{{widgetname}}"
       data-state="{{^hasrecording}}new{{/hasrecording}}{{#hasrecording}}recorded{{/hasrecording}}"
       data-max-recording-duration="{{maxrecordingduration}}" data-recording-filename="{{filename}}">
     <span class="qtype_recordrtc-no-recording-placeholder flex-grow-1 text-center{{#hasrecording}} hide{{/hasrecording}}">{{#str}}norecording, qtype_recordrtc{{/str}}</span>
@@ -52,7 +54,7 @@
         </span>
     {{/allowpausing}}
     <button type="button" class="qtype_recordrtc-main-button btn osep-smallbutton ml-1 mr-0 text-nowrap">
-        {{^hasrecording}}{{#str}}startrecording, qtype_recordrtc{{/str}}{{/hasrecording}}
-        {{#hasrecording}}{{#str}}recordagain, qtype_recordrtc{{/str}}{{/hasrecording}}
+        {{^hasrecording}}{{#str}}startrecordingx, qtype_recordrtc, <span class="sr-only">{{widgetname}}</span>{{/str}}{{/hasrecording}}
+        {{#hasrecording}}{{#str}}recordagainx, qtype_recordrtc, <span class="sr-only">{{widgetname}}</span>{{/str}}{{/hasrecording}}
     </button>
 </span>

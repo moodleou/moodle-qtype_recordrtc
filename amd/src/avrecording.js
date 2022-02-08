@@ -402,7 +402,7 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
             Log.debug(error);
 
             setPlaceholderMessage('recordingfailed');
-            setButtonLabel('recordagain');
+            setButtonLabel('recordagainx');
             button.classList.remove('btn-danger');
             button.classList.add('btn-outline-danger');
             widget.dataset.state = 'new';
@@ -535,14 +535,18 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
          */
         function handleUploadReadyStateChanged(e) {
             const uploadRequest = e.target;
-            const response = JSON.parse(uploadRequest.responseText);
-            if (response.errorcode) {
-                handleUploadError();
+            if (uploadRequest.readyState !== 4) {
+                return; // Not finished yet. We will get more of these events when it is.
             }
 
-            if (uploadRequest.readyState === 4 && uploadRequest.status === 200) {
+            const response = JSON.parse(uploadRequest.responseText);
+            if (response.errorcode) {
+                handleUploadError(); // Moodle sends back errors with a 200 status code for some reason!
+            }
+
+            if (uploadRequest.status === 200) {
                 // When request finished and successful.
-                setButtonLabel('recordagain');
+                setButtonLabel('recordagainx');
                 enableAllButtons();
             } else if (uploadRequest.status === 404) {
                 setPlaceholderMessage('uploadfailed404');
@@ -578,10 +582,13 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
          * Display a progress message in the upload progress area.
          *
          * @param {string} langString
-         * @param {Object|String|null} [a] optional variable to populate placeholder with
+         * @param {string|null} [a] optional variable to populate placeholder with
          */
         function setButtonLabel(langString, a) {
-            button.innerText = M.util.get_string(langString, 'qtype_recordrtc', a);
+            if (!a) {
+                a = '<span class="sr-only">' + widget.dataset.widgetName + '</span>';
+            }
+            button.innerHTML = M.util.get_string(langString, 'qtype_recordrtc', a);
         }
 
         /**

@@ -62,9 +62,19 @@ abstract class recorder_base implements renderable, templatable {
         $this->recordingurl = $recordingurl;
     }
 
+    /**
+     * Get the widget name, derived from the filename.
+     *
+     * @return string the widget name.
+     */
+    public function get_widget_name(): string {
+        return str_replace('_', ' ', preg_replace('~\.[a-z0-9]*$~', '', $this->filename));
+    }
+
     public function export_for_template(renderer_base $output): array {
         return [
             'filename' => $this->filename,
+            'widgetname' => $this->get_widget_name(),
             'maxrecordingduration' => $this->maxrecordingduration,
             'allowpausing' => $this->allowpausing,
             'hasrecording' => $this->recordingurl !== null,
