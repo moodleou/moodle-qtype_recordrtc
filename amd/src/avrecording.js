@@ -339,7 +339,10 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
             // Update the button.
             button.classList.remove('btn-danger');
             button.classList.add('btn-outline-danger');
-            pauseButton?.parentElement.classList.add('hide');
+            if (pauseButton) {
+                setPauseButtonLabel('pause');
+                pauseButton.parentElement.classList.add('hide');
+            }
 
             // Ask the recording to stop.
             mediaRecorder.stop();
