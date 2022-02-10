@@ -54,8 +54,8 @@
         </span>
     {{/allowpausing}}
     <button type="button" class="qtype_recordrtc-main-button btn osep-smallbutton ml-1 mr-0 text-nowrap">
-        {{! Seemingly unnecessary space inside the span is needed for screen-readers. }}
-        {{^hasrecording}}{{#str}}startrecordingx, qtype_recordrtc, <span class="sr-only"> {{widgetname}}</span>{{/str}}{{/hasrecording}}
-        {{#hasrecording}}{{#str}}recordagainx, qtype_recordrtc, <span class="sr-only"> {{widgetname}}</span>{{/str}}{{/hasrecording}}
+        {{! Seemingly unnecessary space inside the span is needed for screen-readers, and it must be a non-breaking space. }}
+        {{^hasrecording}}{{#str}}startrecordingx, qtype_recordrtc, <span class="sr-only">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
+        {{#hasrecording}}{{#str}}recordagainx, qtype_recordrtc, <span class="sr-only">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
     </button>
 </span>
