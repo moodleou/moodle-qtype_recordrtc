@@ -589,7 +589,8 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
          */
         function setButtonLabel(langString, a) {
             if (!a) {
-                a = '<span class="sr-only">' + widget.dataset.widgetName + '</span>';
+                // Seemingly unnecessary space inside the span is needed for screen-readers.
+                a = '<span class="sr-only"> ' + widget.dataset.widgetName + '</span>';
             }
             button.innerHTML = M.util.get_string(langString, 'qtype_recordrtc', a);
         }
