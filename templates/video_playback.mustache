@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template qtype_recordrtc/audio_recorder
+    @template qtype_recordrtc/video_playback
 
     Display the media for playback when the question is being reviewed.
 
@@ -29,10 +29,10 @@
     Example context (json):
     {
         "hasrecording": true,
-        "filename": 'recording.mp3',
-        "recordingurl": 'http://example.com/moodle/pluginfile.php?...',
-        "aspectratio": '16x9',
-        "width": 640,
+        "filename": "recording.mp3",
+        "recordingurl": "http://example.com/moodle/pluginfile.php?...",
+        "aspectratio": "16x9",
+        "width": 640
     }
 }}
 <span class="qtype_recordrtc-video-widget qtype_recordrtc-ratio-{{aspectratio}} d-flex flex-column mw-100"
