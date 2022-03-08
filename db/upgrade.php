@@ -47,8 +47,8 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
         $table->add_field('timelimitinseconds', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '30');
 
         // Adding keys to table qtype_pmatch_test_responses.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_key('questionid', XMLDB_KEY_FOREIGN, array('questionid'), 'question', array('id'));
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('questionid', XMLDB_KEY_FOREIGN, ['questionid'], 'question', ['id']);
 
         // Conditionally launch create table for qtype_recordrtc_options.
         if (!$dbman->table_exists($table)) {

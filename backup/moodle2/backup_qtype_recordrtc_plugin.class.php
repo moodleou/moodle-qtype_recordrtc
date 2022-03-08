@@ -57,7 +57,7 @@ class backup_qtype_recordrtc_plugin extends backup_qtype_plugin {
 
         // Set source to populate the data.
         $recordrtc->set_source_table('qtype_recordrtc_options',
-            array('questionid' => backup::VAR_PARENTID));
+            ['questionid' => backup::VAR_PARENTID]);
 
         // Don't need to annotate ids nor files.
 

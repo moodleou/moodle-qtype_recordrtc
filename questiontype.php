@@ -91,7 +91,7 @@ class qtype_recordrtc extends question_type {
 
         $context = $fromform->context;
         $oldanswers = $DB->get_records('question_answers',
-                array('question' => $fromform->id), 'id ASC');
+                ['question' => $fromform->id], 'id ASC');
 
         // Insert all the new answers.
         foreach ($widgets as $widget) {
@@ -127,7 +127,7 @@ class qtype_recordrtc extends question_type {
         $fs = get_file_storage();
         foreach ($oldanswers as $oldanswer) {
             $fs->delete_area_files($context->id, 'question', 'answerfeedback', $oldanswer->id);
-            $DB->delete_records('question_answers', array('id' => $oldanswer->id));
+            $DB->delete_records('question_answers', ['id' => $oldanswer->id]);
         }
     }
 
