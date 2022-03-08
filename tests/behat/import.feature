@@ -14,12 +14,10 @@ Feature: Test importing record audio and video questions
     And the following "course enrolments" exist:
       | user    | course | role           |
       | teacher | C1     | editingteacher |
-    And I log in as "teacher"
-    And I am on "Course 1" course homepage
 
   @javascript @_file_upload
   Scenario: import a recordrtc question with Single audio.
-    When I navigate to "Question bank > Import" in current page administration
+    When I am on the "Course 1" "core_question > course question import" page logged in as teacher
     And I set the field "id_format_xml" to "1"
     And I upload "question/type/recordrtc/tests/fixtures/audio-question.xml" file to "Import" filemanager
     And I press "id_submitbutton"
@@ -31,7 +29,7 @@ Feature: Test importing record audio and video questions
 
   @javascript @_file_upload
   Scenario: import a recordrtc question with Customised audio/video without feedback.
-    When I navigate to "Question bank > Import" in current page administration
+    When I am on the "Course 1" "core_question > course question import" page logged in as teacher
     And I set the field "id_format_xml" to "1"
     And I upload "question/type/recordrtc/tests/fixtures/customav-question.xml" file to "Import" filemanager
     And I press "id_submitbutton"

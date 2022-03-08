@@ -20,13 +20,10 @@ Feature: Test editing record audio and video questions
     And the following "questions" exist:
       | questioncategory | qtype     | name                  | template |
       | Test questions   | recordrtc | Record audio question | audio    |
-    And I log in as "teacher"
-    And I am on "Course 1" course homepage
-    And I navigate to "Question bank" in current page administration
 
   @javascript
   Scenario: Edit record audio and video question
-    When I choose "Edit question" action for "Record audio question" in the question bank
+    When I am on the "Record audio question" "core_question > edit" page logged in as teacher
     And I set the following fields to these values:
       | Question name                  | Edited question name |
       | id_timelimitinseconds_number   | 11                   |

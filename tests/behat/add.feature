@@ -14,13 +14,11 @@ Feature: Test creating record audio and video questions
     And the following "course enrolments" exist:
       | user    | course | role           |
       | teacher | C1     | editingteacher |
-    And I log in as "teacher"
-    And I am on "Course 1" course homepage
-    And I navigate to "Question bank" in current page administration
 
   @javascript
   Scenario: Create a record audio and video question
-    When I add a "item_qtype_recordrtc" question filling the form with:
+    When I am on the "Course 1" "core_question > course question bank" page logged in as teacher
+    And I add a "item_qtype_recordrtc" question filling the form with:
       | Question name                  | Record audio question                               |
       | Question text                  | <p>Please record yourself talking about Moodle.</p> |
       | General feedback               | <p>I hope you spoke clearly and coherently.</p>     |
@@ -32,7 +30,7 @@ Feature: Test creating record audio and video questions
 
     Then I should see "Record audio question"
     # Checking that the next new question form displays user preferences settings.
-    When I press "Create a new question ..."
+    And I press "Create a new question ..."
     And I set the field "item_qtype_recordrtc" to "1"
     And I click on "Add" "button" in the "Choose a question type to add" "dialogue"
 # Re-instate this when we no longer need to support 3.9 and 3.10.

@@ -21,13 +21,9 @@ Feature: Preview record audio and video questions
       | questioncategory | qtype     | name                     | template |
       | Test questions   | recordrtc | Record audio question    | audio    |
       | Test questions   | recordrtc | Record customav question | customav |
-    And I log in as "teacher"
-    And I am on "Course 1" course homepage
-    And I navigate to "Question bank" in current page administration
 
   Scenario: Preview a question and try to submit nothing.
-    When I choose "Preview" action for "Record audio question" in the question bank
-    And I switch to "questionpreview" window
+    When I am on the "Record audio question" "core_question > preview" page logged in as teacher
     Then I should see "Please record yourself talking about Moodle."
     And I press "Save"
     And I should see "Not yet answered"
@@ -40,8 +36,7 @@ Feature: Preview record audio and video questions
     Given the following config values are set as admin:
       | behaviour | immediatefeedback | question_preview |
       | history   | shown             | question_preview |
-    And I choose "Preview" action for "Record audio question" in the question bank
-    And I switch to "questionpreview" window
+    When I am on the "Record audio question" "core_question > preview" page logged in as teacher
     And I should see "Please record yourself talking about Moodle."
     When "teacher" has recorded "small.mp3" into the record RTC question
     And I press "Submit and finish"
@@ -52,8 +47,7 @@ Feature: Preview record audio and video questions
     Given the following config values are set as admin:
       | behaviour | immediatefeedback | question_preview |
       | history   | shown             | question_preview |
-    And I choose "Preview" action for "Record audio question" in the question bank
-    And I switch to "questionpreview" window
+    When I am on the "Record audio question" "core_question > preview" page logged in as teacher
     And I should see "Please record yourself talking about Moodle."
     When "teacher" has recorded "moodle-tim.ogg" into the record RTC question
     And I press "Submit and finish"
@@ -64,8 +58,7 @@ Feature: Preview record audio and video questions
     Given the following config values are set as admin:
       | behaviour | immediatefeedback | question_preview |
       | history   | shown             | question_preview |
-    And I choose "Preview" action for "Record customav question" in the question bank
-    And I switch to "questionpreview" window
+    When I am on the "Record customav question" "core_question > preview" page logged in as teacher
     And I should see "Please record yourself talking about following aspects of Moodle."
     And I should see "Development"
     And I should see "Installation"
