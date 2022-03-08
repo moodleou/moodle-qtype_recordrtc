@@ -258,8 +258,7 @@ class qtype_recordrtc_test extends question_testcase {
         $fromform = $form->get_data();
 
         $returnedfromsave = $this->qtype->save_question($questiondata, $fromform);
-        $actualquestionsdata = question_load_questions([$returnedfromsave->id]);
-        $actualquestiondata = end($actualquestionsdata);
+        $actualquestiondata = question_bank::load_question_data($returnedfromsave->id);
 
         foreach ($questiondata as $property => $value) {
             if (!in_array($property, ['id', 'version', 'timemodified', 'timecreated', 'options'])) {
