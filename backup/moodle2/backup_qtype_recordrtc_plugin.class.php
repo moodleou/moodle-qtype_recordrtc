@@ -15,18 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Recordrtc question type backup handler
- *
- * @package    qtype_recordrtc
- * @copyright  2020 The Open University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-defined('MOODLE_INTERNAL') || die();
-
-/**
  * Provides the information to backup recordrtc questions
  *
+ * @package   qtype_recordrtc
  * @copyright  2020 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -34,8 +25,10 @@ class backup_qtype_recordrtc_plugin extends backup_qtype_plugin {
 
     /**
      * Returns the qtype information to attach to question element
+     *
+     * @return backup_plugin_element backup structure.
      */
-    protected function define_question_plugin_structure() {
+    protected function define_question_plugin_structure(): backup_plugin_element {
 
         // Define the virtual plugin element with the condition to fulfill.
         $plugin = $this->get_plugin_element(null, '../../qtype', 'recordrtc');

@@ -13,16 +13,12 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-/**
- * Contains the the record audio and video question type class.
- *
- * @package   qtype_recordrtc
- * @copyright 2019 The Open University
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-defined('MOODLE_INTERNAL') || die();
 
-use qtype_recordrtc\widget_info;
+namespace qtype_recordrtc;
+
+use qtype_recordrtc;
+
+defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/question/type/recordrtc/questiontype.php');
@@ -33,10 +29,15 @@ require_once($CFG->dirroot . '/question/format/xml/format.php');
 
 
 /**
- * Unit tests for the the record audio and video question type question type class.
+ * Unit tests for the record audio and video question type class.
+ *
+ * @package   qtype_recordrtc
+ * @copyright 2019 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_recordrtc_test extends question_testcase {
+class questiontype_test extends \question_testcase {
 
+    /** @var qtype_recordrtc $qtype an instance of the question type class. */
     protected $qtype;
 
     protected function setUp(): void {
@@ -48,49 +49,50 @@ class qtype_recordrtc_test extends question_testcase {
      * @param string $expectedxml Expected.
      * @param string $xml Actual.
      */
-    protected function assert_same_xml($expectedxml, $xml) {
+    protected function assert_same_xml(string $expectedxml, string $xml) {
         $this->assertEquals(str_replace("\r\n", "\n", $expectedxml),
                 str_replace("\r\n", "\n", $xml));
     }
 
     /**
      * Get the data representing a question, in the form returned by load_question.
-     * @return stdClass
+     *
+     * @return \stdClass
      */
-    protected function get_test_question_data() {
-        return test_question_maker::get_question_data('recordrtc', 'customav');
+    protected function get_test_question_data(): \stdClass {
+        return \test_question_maker::get_question_data('recordrtc', 'customav');
     }
 
     public function test_name() {
-        $this->assertEquals($this->qtype->name(), 'recordrtc');
+        $this->assertEquals('recordrtc', $this->qtype->name());
     }
 
-    public function test_can_analyse_responses() {
+    public function test_can_analyse_responses(): void {
         $this->assertFalse($this->qtype->can_analyse_responses());
     }
 
-    public function test_get_random_guess_score() {
+    public function test_get_random_guess_score(): void {
         $this->assertEquals(0, $this->qtype->get_random_guess_score($this->get_test_question_data()));
     }
 
-    public function test_get_possible_responses() {
+    public function test_get_possible_responses(): void {
         $this->assertEquals([], $this->qtype->get_possible_responses($this->get_test_question_data()));
     }
 
-    public function test_get_audio_filename() {
+    public function test_get_audio_filename(): void {
         $this->assertEquals('recording.mp3', $this->qtype->get_media_filename('recording', 'audio'));
     }
 
-    public function test_get_video_filename() {
+    public function test_get_video_filename(): void {
         $this->assertEquals('name.webm', $this->qtype->get_media_filename('name', 'video'));
     }
 
-    public function test_get_widget_placeholders_no_placeholder() {
+    public function test_get_widget_placeholders_no_placeholder(): void {
         $questiontext = 'Record your answer about your experience doing this Module.';
         $this->assertEquals([], $this->qtype->get_widget_placeholders($questiontext));
     }
 
-    public function test_get_widget_placeholders_with_placeholders() {
+    public function test_get_widget_placeholders_with_placeholders(): void {
         $questiontext = 'Record the answers:
         What is your name? [[name:audio]] Where do you live [[place:audio:1m10s]]';
         $timelimitinseconds = 15;
@@ -103,7 +105,7 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assertEquals($expected, $this->qtype->get_widget_placeholders($questiontext, $timelimitinseconds));
     }
 
-    public function test_validate_widget_placeholders_valid() {
+    public function test_validate_widget_placeholders_valid(): void {
         $a = new \stdClass();
         $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
 
@@ -115,7 +117,7 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function test_validate_widget_placeholders_missing_open() {
+    public function test_validate_widget_placeholders_missing_open(): void {
         $a = new \stdClass();
         $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
 
@@ -127,7 +129,7 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function test_validate_widget_placeholders_missing_close() {
+    public function test_validate_widget_placeholders_missing_close(): void {
         $a = new \stdClass();
         $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
 
@@ -139,7 +141,7 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function test_validate_widget_placeholders_invalid() {
+    public function test_validate_widget_placeholders_invalid(): void {
         $a = new \stdClass();
         $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
 
@@ -151,21 +153,21 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function test_validate_widget_placeholders_missing_duration() {
+    public function test_validate_widget_placeholders_missing_duration(): void {
         $questiontext = 'Record the answers: What is your name? [[name:audio:]] Where do you live [[place:audio:02m10s]]';
         $expected = get_string('err_placeholdermissingduration', 'qtype_recordrtc', '[[name:audio:]]');
         $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
         $this->assertEquals($expected, $actual);
     }
 
-    public function test_validate_widget_placeholders_zero_duration() {
+    public function test_validate_widget_placeholders_zero_duration(): void {
         $questiontext = 'Record the answers: What is your name? [[name:audio:00m00s]] Where do you live [[place:audio:02m10s]]';
         $expected = get_string('err_zeroornegativetimelimit', 'qtype_recordrtc', '00m00s');
         $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
         $this->assertEquals($expected, $actual);
     }
 
-    public function test_validate_widget_placeholders_too_long() {
+    public function test_validate_widget_placeholders_too_long(): void {
         $a = new \stdClass();
         $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
 
@@ -180,7 +182,7 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function test_validate_widget_placeholders_unknown_media_type() {
+    public function test_validate_widget_placeholders_unknown_media_type(): void {
         $a = new \stdClass();
         $a->format = get_string ('err_placeholderformat', 'qtype_recordrtc');
 
@@ -193,7 +195,7 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function test_validate_widget_placeholders_upper_case() {
+    public function test_validate_widget_placeholders_upper_case(): void {
         $a = new \stdClass();
         $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
 
@@ -206,7 +208,7 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function test_validate_widget_placeholders_duplicate() {
+    public function test_validate_widget_placeholders_duplicate(): void {
         $a = new \stdClass();
         $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
 
@@ -219,7 +221,7 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function test_validate_widget_placeholders_not_allowed() {
+    public function test_validate_widget_placeholders_not_allowed(): void {
 
         // Placeholder(s) provided within the question text with mediatype set to 'audio'.
         $questiontext = 'Record the answers by saying your name [[name:audio]]';
@@ -229,7 +231,7 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function test_validate_widget_placeholders_needed() {
+    public function test_validate_widget_placeholders_needed(): void {
         // No placeholder(s) provided within the question text with mediatype set to 'custonav'.
         $questiontext = 'Record the answers:
         What is your name? Where do you live?';
@@ -239,26 +241,26 @@ class qtype_recordrtc_test extends question_testcase {
         $this->assertEquals($expected, $actual);
     }
 
-    public function test_question_saving() {
+    public function test_question_saving(): void {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $cat = $generator->create_question_category();
 
-        $formdata = test_question_maker::get_question_form_data('recordrtc', 'customav');
+        $formdata = \test_question_maker::get_question_form_data('recordrtc', 'customav');
         $formdata->category = "{$cat->id},{$cat->contextid}";
-        qtype_recordrtc_edit_form::mock_submit((array) $formdata);
+        \qtype_recordrtc_edit_form::mock_submit((array) $formdata);
 
-        $questiondata = test_question_maker::get_question_data('recordrtc', 'customav');
-        $form = question_test_helper::get_question_editing_form($cat, $questiondata);
+        $questiondata = \test_question_maker::get_question_data('recordrtc', 'customav');
+        $form = \question_test_helper::get_question_editing_form($cat, $questiondata);
 
         $this->assertTrue($form->is_validated());
 
         $fromform = $form->get_data();
 
         $returnedfromsave = $this->qtype->save_question($questiondata, $fromform);
-        $actualquestiondata = question_bank::load_question_data($returnedfromsave->id);
+        $actualquestiondata = \question_bank::load_question_data($returnedfromsave->id);
 
         foreach ($questiondata as $property => $value) {
             if (!in_array($property, ['id', 'version', 'timemodified', 'timecreated', 'options'])) {
@@ -287,10 +289,10 @@ class qtype_recordrtc_test extends question_testcase {
   </question>';
         $xmldata = xmlize($xml);
 
-        $importer = new qformat_xml();
+        $importer = new \qformat_xml();
         $q = $importer->try_importing_using_qtypes($xmldata['question']);
 
-        $expectedq = new stdClass();
+        $expectedq = new \stdClass();
         $expectedq->qtype = 'recordrtc';
         $expectedq->name = 'Record audio question';
         $expectedq->questiontext = '<p>Please record yourself talking about Moodle.</p>';
@@ -304,7 +306,7 @@ class qtype_recordrtc_test extends question_testcase {
         $expectedq->timelimitinseconds = 30;
         $expectedq->allowpausing = 0;
 
-        $this->assert(new question_check_specified_fields_expectation($expectedq), $q);
+        $this->assert(new \question_check_specified_fields_expectation($expectedq), $q);
     }
 
     public function test_xml_import_custom_av() {
@@ -349,10 +351,10 @@ class qtype_recordrtc_test extends question_testcase {
   </question>';
         $xmldata = xmlize($xml);
 
-        $importer = new qformat_xml();
+        $importer = new \qformat_xml();
         $q = $importer->try_importing_using_qtypes($xmldata['question']);
 
-        $expectedq = new stdClass();
+        $expectedq = new \stdClass();
         $expectedq->qtype = 'recordrtc';
         $expectedq->name = 'Record audio question';
         $expectedq->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
@@ -381,7 +383,7 @@ class qtype_recordrtc_test extends question_testcase {
                 'format' => FORMAT_HTML,
             ];
 
-        $this->assert(new question_check_specified_fields_expectation($expectedq), $q);
+        $this->assert(new \question_check_specified_fields_expectation($expectedq), $q);
     }
 
     public function test_xml_import_custom_av_with_empty_feedback() {
@@ -425,10 +427,10 @@ class qtype_recordrtc_test extends question_testcase {
   </question>';
         $xmldata = xmlize($xml);
 
-        $importer = new qformat_xml();
+        $importer = new \qformat_xml();
         $q = $importer->try_importing_using_qtypes($xmldata['question']);
 
-        $expectedq = new stdClass();
+        $expectedq = new \stdClass();
         $expectedq->qtype = 'recordrtc';
         $expectedq->name = 'Record audio question';
         $expectedq->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
@@ -456,7 +458,7 @@ class qtype_recordrtc_test extends question_testcase {
                 'format' => FORMAT_HTML,
         ];
 
-        $this->assert(new question_check_specified_fields_expectation($expectedq), $q);
+        $this->assert(new \question_check_specified_fields_expectation($expectedq), $q);
     }
 
     public function test_xml_import_custom_av_no_feedback() {
@@ -482,10 +484,10 @@ class qtype_recordrtc_test extends question_testcase {
   </question>';
         $xmldata = xmlize($xml);
 
-        $importer = new qformat_xml();
+        $importer = new \qformat_xml();
         $q = $importer->try_importing_using_qtypes($xmldata['question']);
 
-        $expectedq = new stdClass();
+        $expectedq = new \stdClass();
         $expectedq->qtype = 'recordrtc';
         $expectedq->name = 'Record audio question';
         $expectedq->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
@@ -500,13 +502,13 @@ class qtype_recordrtc_test extends question_testcase {
         $expectedq->penalty = 0;
         $expectedq->mediatype = 'customav';
         $expectedq->timelimitinseconds = 30;
-        $this->assert(new question_check_specified_fields_expectation($expectedq), $q);
+        $this->assert(new \question_check_specified_fields_expectation($expectedq), $q);
     }
 
     public function test_xml_export() {
-        $qdata = new stdClass();
+        $qdata = new \stdClass();
         $qdata->id = 123;
-        $qdata->contextid = context_system::instance()->id;
+        $qdata->contextid = \context_system::instance()->id;
         $qdata->idnumber = null;
         $qdata->qtype = 'recordrtc';
         $qdata->name = 'Record audio question';
@@ -521,7 +523,7 @@ class qtype_recordrtc_test extends question_testcase {
         $qdata->length = 1;
         $qdata->penalty = 0;
         $qdata->hidden = 0;
-        $qdata->options = new stdClass();
+        $qdata->options = new \stdClass();
         $qdata->options->mediatype = 'customav';
         $qdata->options->timelimitinseconds = 30;
         $qdata->options->allowpausing = 1;
@@ -552,7 +554,7 @@ class qtype_recordrtc_test extends question_testcase {
                     ],
             ];
 
-        $exporter = new qformat_xml();
+        $exporter = new \qformat_xml();
         $xml = $exporter->writequestion($qdata);
 
         $expectedxml = '<!-- question: 123  -->

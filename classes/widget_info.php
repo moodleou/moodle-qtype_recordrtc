@@ -14,19 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace qtype_recordrtc;
+
 /**
- * Privacy provider for the record audio and video question type.
+ * This class holds all the information about one placeholder in a question.
  *
  * @package   qtype_recordrtc
  * @copyright 2019 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-namespace qtype_recordrtc;
-
-
-/**
- * This class holds all the information about one placeholder in a question.
  */
 class widget_info {
     /** @var string The internal name of this widget (used, for example, as part of the filename). */

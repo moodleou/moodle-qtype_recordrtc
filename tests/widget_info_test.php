@@ -14,15 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
+namespace qtype_recordrtc;
 
-use qtype_recordrtc\widget_info;
+use qtype_recordrtc;
+
+defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/question/type/questionbase.php');
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 require_once($CFG->dirroot . '/question/type/recordrtc/question.php');
-
 
 /**
  * Unit tests for the widget_info class.
@@ -31,7 +32,7 @@ require_once($CFG->dirroot . '/question/type/recordrtc/question.php');
  * @copyright  2021 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class widget_info_test extends advanced_testcase {
+class widget_info_test extends \advanced_testcase {
 
     /**
      * Data provider for test_convert_duration_to_seconds.

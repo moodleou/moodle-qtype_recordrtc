@@ -1,5 +1,15 @@
 # Change log for the Record audio and video question type
 
+## Changes in 1.5
+
+* New feature to allow recording to be paused in the middle (if the teacher wants it).
+* New option to have bits of feedback which are displayed beside each input.
+* Improved display of the placeholders people might want to add to the question text.
+* Fixed a bug where the glossary filter could mess up the place-holders.
+* Improve the help text.
+* This version works with Moodle 4.0.
+
+
 ## Changes in 1.4
 
 * Improvement to the user flow when staring a video recording. Now, the first click on the button is

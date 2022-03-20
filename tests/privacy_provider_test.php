@@ -14,13 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Privacy provider tests.
- *
- * @package    qtype_recordrtc
- * @copyright  2021 The Open university
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace qtype_recordrtc;
 
 use qtype_recordrtc\privacy\provider;
 use core_privacy\local\request\writer;
@@ -37,12 +31,12 @@ require_once($CFG->dirroot . '/question/type/recordrtc/classes/privacy/provider.
  * @copyright  2021 The Open university
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_recordrtc_privacy_provider_test extends \core_privacy\tests\provider_testcase {
+class privacy_provider_test extends \core_privacy\tests\provider_testcase {
     // Include the privacy helper which has assertions on it.
 
     public function test_get_metadata() {
         $collection = new \core_privacy\local\metadata\collection('qtype_recordrtc');
-        $actual = \qtype_recordrtc\privacy\provider::get_metadata($collection);
+        $actual = provider::get_metadata($collection);
         $this->assertEquals($collection, $actual);
     }
 
@@ -63,7 +57,7 @@ class qtype_recordrtc_privacy_provider_test extends \core_privacy\tests\provider
      * @param string $value The value stored in the database
      * @param string $expected The expected transformed value
      */
-    public function test_export_user_preferences($name, $value, $expected) {
+    public function test_export_user_preferences(string $name, string $value, string $expected) {
         $this->resetAfterTest();
         $user = $this->getDataGenerator()->create_user();
         set_user_preference("qtype_recordrtc_$name", $value, $user);
@@ -72,11 +66,11 @@ class qtype_recordrtc_privacy_provider_test extends \core_privacy\tests\provider
         $this->assertTrue($writer->has_any_data());
         $preferences = $writer->get_user_preferences('qtype_recordrtc');
         foreach ($preferences as $key => $pref) {
-            $preference = get_user_preferences("qtype_recordrtc_{$key}", null, $user->id);
+            $preference = get_user_preferences("qtype_recordrtc_$key", null, $user->id);
             if ($preference === null) {
                 continue;
             }
-            $desc = get_string("privacy:preference:{$key}", 'qtype_recordrtc');
+            $desc = get_string("privacy:preference:$key", 'qtype_recordrtc');
             $this->assertEquals($expected, $pref->value);
             $this->assertEquals($desc, $pref->description);
         }
@@ -87,17 +81,17 @@ class qtype_recordrtc_privacy_provider_test extends \core_privacy\tests\provider
      *
      * @return array Array of valid user preferences.
      */
-    public function user_preference_provider() {
+    public function user_preference_provider(): array {
         return [
-                'default mark 2' => ['defaultmark', 1.5, 1.5],
-                'mediatype  audio' => ['mediatype', 'audio', get_string('audio', 'qtype_recordrtc')],
-                'mediatype  video' => ['mediatype', 'video', get_string('video', 'qtype_recordrtc')],
-                'mediatype  customav' => ['mediatype', 'customav', get_string('customav', 'qtype_recordrtc')],
-                'Max recording duration' => ['timelimitinseconds', 15, '15 seconds'],
-                'Max recording duration' => ['timelimitinseconds', 60, '1 minutes'],
-                'Max recording duration' => ['timelimitinseconds', 120, '2 minutes'],
-                'Max recording duration' => ['timelimitinseconds', 65, '65 seconds'],
-                'Max recording duration' => ['timelimitinseconds', 121, '121 seconds'],
+                'default mark 2' => ['defaultmark', '1.5', '1.5'],
+                'mediatype audio' => ['mediatype', 'audio', get_string('audio', 'qtype_recordrtc')],
+                'mediatype video' => ['mediatype', 'video', get_string('video', 'qtype_recordrtc')],
+                'mediatype customav' => ['mediatype', 'customav', get_string('customav', 'qtype_recordrtc')],
+                'Max recording duration 1' => ['timelimitinseconds', '15', '15 seconds'],
+                'Max recording duration 2' => ['timelimitinseconds', '60', '1 minutes'],
+                'Max recording duration 3' => ['timelimitinseconds', '120', '2 minutes'],
+                'Max recording duration 4' => ['timelimitinseconds', '65', '65 seconds'],
+                'Max recording duration 5' => ['timelimitinseconds', '121', '121 seconds'],
         ];
     }
 }

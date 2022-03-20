@@ -14,6 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace qtype_recordrtc;
+
+use qtype_recordrtc_question;
+use qtype_recordrtc_test_helper;
+
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
+
 /**
  * Unit tests for what happens when a record audio and video question is attempted.
  *
@@ -21,24 +31,14 @@
  * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-global $CFG;
-require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
-
-
-/**
- * Unit tests for what happens when a record audio and video question is attempted.
- */
-class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_base {
+class walkthrough_test extends \qbehaviour_walkthrough_test_base {
 
     /**
      * Helper to get the qa of the qusetion being attempted.
      *
-     * @return question_attempt
+     * @return \question_attempt
      */
-    protected function get_qa() {
+    protected function get_qa(): \question_attempt {
         return $this->quba->get_question_attempt($this->slot);
     }
 
@@ -46,9 +46,11 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
      * Prepares the data (draft file) to simulate a user submitting a given fixture file.
      *
      * @param string $fixturefile name of the file to submit.
+     * @param string $filename filename to submit the file under.
      * @return array response data that would need to be passed to $this->process_submission().
      */
-    protected function store_submission_file(string $fixturefile, $filename = 'recording.ogg') {
+    protected function store_submission_file(
+            string $fixturefile, string $filename = 'recording.ogg'): array {
         $response = $this->setup_empty_submission_fileares();
         qtype_recordrtc_test_helper::clear_draft_area($response['recording']);
         qtype_recordrtc_test_helper::add_recording_to_draft_area(
@@ -59,10 +61,10 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
     /**
      * Prepares the data (draft file) to simulate a user submitting several files.
      *
-     * @param string $fixturefile name of the file to submit.
+     * @param array $fixturefiles list of files to submit file to submit.
      * @return array response data that would need to be passed to $this->process_submission().
      */
-    protected function store_submission_files(array $fixturefiles) {
+    protected function store_submission_files(array $fixturefiles): array {
         $response = $this->setup_empty_submission_fileares();
         qtype_recordrtc_test_helper::clear_draft_area($response['recording']);
         foreach ($fixturefiles as $filename => $fixturefile) {
@@ -77,11 +79,11 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
      *
      * @return array response data that would need to be passed to $this->process_submission().
      */
-    protected function setup_empty_submission_fileares() {
+    protected function setup_empty_submission_fileares(): array {
         $this->render();
         if (!preg_match('/name="' . preg_quote($this->get_qa()->get_qt_field_name('recording')) .
                 '" value="(\d+)"/', $this->currentoutput, $matches)) {
-            throw new coding_exception('Draft item id not found.');
+            throw new \coding_exception('Draft item id not found.');
         }
         return ['recording' => $matches[1]];
     }
@@ -91,7 +93,7 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
      *
      * @param string $fixturefile name of the file to submit.
      */
-    protected function process_submission_of_file(string $fixturefile) {
+    protected function process_submission_of_file(string $fixturefile): void {
         $this->process_submission($this->store_submission_file($fixturefile));
     }
 
@@ -109,15 +111,16 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
         $this->setAdminUser();
 
         // Create a recordrtc question in the DB.
+        /** @var \core_question_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $cat = $generator->create_question_category();
         $question = $generator->create_question('recordrtc', 'audio', ['category' => $cat->id]);
 
         // Start attempt at the question.
-        $q = question_bank::load_question($question->id);
+        $q = \question_bank::load_question($question->id);
         $this->start_attempt_at_question($q, 'deferredfeedback', 1);
 
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_current_mark(null);
         $this->check_step_count(1);
         $this->assertEquals('manualgraded', $this->get_qa()->get_behaviour_name());
@@ -125,7 +128,7 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
         // Process a response and check the expected result.
         $this->process_submission_of_file('moodle-tim.ogg');
 
-        $this->check_current_state(question_state::$complete);
+        $this->check_current_state(\question_state::$complete);
         $this->check_current_mark(null);
         $this->check_step_count(2);
         $this->save_quba();
@@ -134,13 +137,13 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
         $this->load_quba();
         $this->process_submission_of_file('moodle-tim.ogg');
 
-        $this->check_current_state(question_state::$complete);
+        $this->check_current_state(\question_state::$complete);
         $this->check_current_mark(null);
         $this->check_step_count(2);
 
         // Now submit all and finish.
         $this->finish();
-        $this->check_current_state(question_state::$needsgrading);
+        $this->check_current_state(\question_state::$needsgrading);
         $this->check_current_mark(null);
         $this->check_step_count(3);
         $this->save_quba();
@@ -149,14 +152,14 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
         $this->load_quba();
         $oldqa = $this->get_question_attempt();
 
-        $q = question_bank::load_question($question->id);
-        $this->quba = question_engine::make_questions_usage_by_activity('unit_test',
-                context_system::instance());
+        $q = \question_bank::load_question($question->id);
+        $this->quba = \question_engine::make_questions_usage_by_activity('unit_test',
+                \context_system::instance());
         $this->quba->set_preferred_behaviour('deferredfeedback');
         $this->slot = $this->quba->add_question($q, 1);
         $this->quba->start_question_based_on($this->slot, $oldqa);
 
-        $this->check_current_state(question_state::$complete);
+        $this->check_current_state(\question_state::$complete);
         $this->check_current_mark(null);
         $this->check_step_count(1);
         $this->save_quba();
@@ -164,7 +167,7 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
         // Now save the same response again, and ensure that a new step is not created.
         $this->process_submission_of_file('moodle-tim.ogg');
 
-        $this->check_current_state(question_state::$complete);
+        $this->check_current_state(\question_state::$complete);
         $this->check_current_mark(null);
         $this->check_step_count(1);
     }
@@ -174,16 +177,17 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
         $this->setAdminUser();
 
         // Create a recordrtc question in the DB.
+        /** @var \core_question_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $cat = $generator->create_question_category();
         $question = $generator->create_question('recordrtc', 'customav', ['category' => $cat->id]);
 
         // Start attempt at the question.
         /** @var qtype_recordrtc_question $q */
-        $q = question_bank::load_question($question->id);
+        $q = \question_bank::load_question($question->id);
         $this->start_attempt_at_question($q, 'deferredfeedback', 1);
 
-        $this->check_current_state(question_state::$todo);
+        $this->check_current_state(\question_state::$todo);
         $this->check_current_mark(null);
         $this->check_step_count(1);
         $this->assertEquals('manualgraded', $this->get_qa()->get_behaviour_name());
@@ -194,7 +198,7 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
                 'user_experience.ogg' => 'moodle-sharon.ogg',
             ]);
 
-        $this->check_current_state(question_state::$invalid);
+        $this->check_current_state(\question_state::$invalid);
         $this->check_current_mark(null);
         $this->check_step_count(2);
         $this->save_quba();
@@ -209,13 +213,13 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
         $this->render();
         $this->assertStringNotContainsString($q->widgets['development']->feedback, $this->currentoutput);
 
-        $this->check_current_state(question_state::$invalid);
+        $this->check_current_state(\question_state::$invalid);
         $this->check_current_mark(null);
         $this->check_step_count(2);
 
         // Now submit all and finish.
         $this->finish();
-        $this->check_current_state(question_state::$needsgrading);
+        $this->check_current_state(\question_state::$needsgrading);
         $this->check_current_mark(null);
         $this->check_step_count(3);
         $this->save_quba();
@@ -247,25 +251,27 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
 
         // Create a test course.
         $course = $this->getDataGenerator()->create_course();
-        $coursecontext = context_course::instance($course->id);
+        $coursecontext = \context_course::instance($course->id);
 
         // Create a glossary.
         $glossary = $this->getDataGenerator()->create_module('glossary',
                 ['course' => $course->id, 'mainglossary' => 1]);
 
         // Create two entries with ampersands and one normal entry.
+        /** @var \mod_glossary_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_glossary');
         $audioentry = $generator->create_content($glossary, ['concept' => 'audio']);
         $moodleentry = $generator->create_content($glossary, ['concept' => 'Moodle']);
 
         // Create a recordrtc question in the DB.
+        /** @var \core_question_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $cat = $generator->create_question_category(['contextid' => $coursecontext->id]);
         $question = $generator->create_question('recordrtc', 'customav', ['category' => $cat->id]);
 
         // Start attempt at the question.
         /** @var qtype_recordrtc_question $q */
-        $q = question_bank::load_question($question->id);
+        $q = \question_bank::load_question($question->id);
         $this->start_attempt_at_question($q, 'deferredfeedback', 1);
 
         // Verify that the output contains the 'Moodle' glossary entry link,
@@ -284,30 +290,29 @@ class qtype_recordrtc_walkthrough_testcase extends qbehaviour_walkthrough_test_b
     /**
      * Assert that some HTML contains a Moodle glossary link.
      *
-     * @param stdClass $glossaryentry from the generator.
+     * @param \stdClass $glossaryentry from the generator.
      * @param string $html HTML to test.
      */
-    protected function assert_contains_glossary_link(stdClass $glossaryentry, string $html): void {
+    protected function assert_contains_glossary_link(\stdClass $glossaryentry, string $html): void {
         $this->assertMatchesRegularExpression($this->get_glossary_link_regexp($glossaryentry), $html);
     }
 
     /**
      * Assert that some HTML does not contains a Moodle glossary link.
      *
-     * @param stdClass $glossaryentry from the generator.
+     * @param \stdClass $glossaryentry from the generator.
      * @param string $html HTML to test.
      */
-    protected function assert_does_not_contain_glossary_link(stdClass $glossaryentry, string $html): void {
+    protected function assert_does_not_contain_glossary_link(\stdClass $glossaryentry, string $html): void {
         $this->assertDoesNotMatchRegularExpression($this->get_glossary_link_regexp($glossaryentry), $html);
     }
 
     /**
      * Asssert that some HTML contains a Moodle glossary link.
      *
-     * @param stdClass $glossaryentry from the generator.
-     * @param string $html HTML to test.
+     * @param \stdClass $glossaryentry from the generator.
      */
-    protected function get_glossary_link_regexp(stdClass $glossaryentry): string {
+    protected function get_glossary_link_regexp(\stdClass $glossaryentry): string {
         // If you are wondering, eid= is part of the link URL, and title is the title
         // attribute of the HTML tag.
         return '~eid=' . $glossaryentry->id . '.*?title="(.*?)' . $glossaryentry->concept . '"~';

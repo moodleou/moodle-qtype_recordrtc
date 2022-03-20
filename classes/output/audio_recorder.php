@@ -18,6 +18,10 @@ namespace qtype_recordrtc\output;
 
 /**
  * Represents an audio widget, for output.
+ *
+ * @package   qtype_recordrtc
+ * @copyright 2022 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class audio_recorder extends recorder_base {
 }

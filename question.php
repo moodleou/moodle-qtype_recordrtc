@@ -15,19 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Question class for the record audio and video question type.
- *
- * @package   qtype_recordrtc
- * @copyright 2019 The Open University
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-defined('MOODLE_INTERNAL') || die();
-
-
-/**
  * A record audio and video question that is being attempted.
  *
+ * @package   qtype_recordrtc
  * @copyright 2019 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -53,7 +43,7 @@ class qtype_recordrtc_question extends question_with_responses {
         }
     }
 
-    public function get_expected_data() {
+    public function get_expected_data(): array {
         return ['recording' => question_attempt::PARAM_FILES];
     }
 
@@ -63,14 +53,14 @@ class qtype_recordrtc_question extends question_with_responses {
      * @param context $context the context we are in.
      * @return int max size in bytes.
      */
-    public function get_upload_size_limit(context $context) {
+    public function get_upload_size_limit(context $context): int {
         global $CFG;
 
         // This logic is roughly copied from lib/form/filemanager.php.
 
         // Get the course file size limit.
-        $coursebytes = $maxbytes = 0;
-        list($context, $course, $cm) = get_context_info_array($context->id);
+        $coursebytes = 0;
+        [$context, $course] = get_context_info_array($context->id);
         if (is_object($course)) {
             $coursebytes = $course->maxbytes;
         }
@@ -95,7 +85,7 @@ class qtype_recordrtc_question extends question_with_responses {
         return get_string('filex', 'qtype_recordrtc', $file->get_filename());
     }
 
-    public function is_complete_response(array $response) {
+    public function is_complete_response(array $response): bool {
         // Have all parts of the question been answered?
         if (!isset($response['recording']) || $response['recording'] === '') {
             return false;
@@ -103,7 +93,7 @@ class qtype_recordrtc_question extends question_with_responses {
 
         $files = $response['recording']->get_files();
         foreach ($this->widgets as $widget) {
-            $filename = \qtype_recordrtc::get_media_filename($widget->name, $widget->type);
+            $filename = qtype_recordrtc::get_media_filename($widget->name, $widget->type);
             if (!$this->get_file_from_response($filename, $files)) {
                 return false;
             }
@@ -111,7 +101,7 @@ class qtype_recordrtc_question extends question_with_responses {
         return true;
     }
 
-    public function is_gradable_response(array $response) {
+    public function is_gradable_response(array $response): bool {
         // Has any parts of the question been answered? If so we might give partial credit.
         if (!isset($response['recording']) || $response['recording'] === '') {
             return false;
@@ -149,25 +139,25 @@ class qtype_recordrtc_question extends question_with_responses {
         return null;
     }
 
-    public function get_validation_error(array $response) {
+    public function get_validation_error(array $response): string {
         if ($this->is_complete_response($response)) {
             return '';
         }
         return get_string('pleaserecordsomethingineachpart', 'qtype_recordrtc');
     }
 
-    public function is_same_response(array $prevresponse, array $newresponse) {
+    public function is_same_response(array $prevresponse, array $newresponse): bool {
         return question_utils::arrays_same_at_key_missing_is_blank(
                 $prevresponse, $newresponse, 'recording');
     }
 
-    public function get_correct_response() {
+    public function get_correct_response(): ?array {
         // Not possible to give a correct response.
         return null;
     }
 
     public function check_file_access($qa, $options, $component, $filearea,
-            $args, $forcedownload) {
+            $args, $forcedownload): bool {
         if ($component == 'question' && $filearea == 'response_recording') {
             // Response recording always accessible.
             return true;

@@ -21,9 +21,12 @@ use renderable;
 use renderer_base;
 use templatable;
 
-
 /**
  * Base class which holds the information which applies to both audio an video widgets.
+ *
+ * @package   qtype_recordrtc
+ * @copyright 2022 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class playback_base implements renderable, templatable {
 

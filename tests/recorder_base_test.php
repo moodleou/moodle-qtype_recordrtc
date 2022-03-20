@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use qtype_recordrtc\widget_info;
+namespace qtype_recordrtc;
 
 /**
  * Unit tests for the widget_info class.
@@ -23,7 +23,7 @@ use qtype_recordrtc\widget_info;
  * @copyright 2022 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class recorder_base_test extends advanced_testcase {
+class recorder_base_test extends \advanced_testcase {
 
     /**
      * Data provider for test_convert_duration_to_seconds.

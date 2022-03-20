@@ -15,16 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Recordrtc question type restore handler
- *
- * @package    qtype_recordrtc
- * @copyright  2020 The Open University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-defined('MOODLE_INTERNAL') || die();
-
-/**
  * Restore plugin class that provides the necessary information needed to restore one ordering qtype plugin
  *
  * @package    qtype_recordrtc
@@ -37,14 +27,16 @@ class restore_qtype_recordrtc_plugin extends restore_qtype_plugin {
      *
      * @return string The type name
      */
-    protected static function qtype_name() {
+    protected static function qtype_name(): string {
         return 'recordrtc';
     }
 
     /**
      * Returns the paths to be handled by the plugin at question level
+     *
+     * @return array restore paths.
      */
-    protected function define_question_plugin_structure() {
+    protected function define_question_plugin_structure(): array {
 
         $paths = [];
 
@@ -62,7 +54,7 @@ class restore_qtype_recordrtc_plugin extends restore_qtype_plugin {
      *
      * @param array $data
      */
-    public function process_recordrtc($data) {
+    public function process_recordrtc(array $data): void {
         global $DB;
 
         $data = (object)$data;

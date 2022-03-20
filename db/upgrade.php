@@ -22,15 +22,13 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Upgrade code for the recordrtc question type.
  *
  * @param int $oldversion the version we are upgrading from.
  * @return bool
  */
-function xmldb_qtype_recordrtc_upgrade($oldversion) {
+function xmldb_qtype_recordrtc_upgrade(int $oldversion): bool {
     global $DB;
 
     $dbman = $DB->get_manager();
@@ -114,7 +112,7 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
             $done = 0;
             foreach ($rs as $row) {
                 $pbar->update($done, $toupdatecount,
-                        "Creating options for record audio/video questions - {$done}/{$toupdatecount} (id = {$row->id}).");
+                        "Creating options for record audio/video questions - $done/$toupdatecount (id = $row->id).");
 
                 $newoptions = new stdClass();
                 $newoptions->questionid = $row->id;
@@ -125,7 +123,7 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
                 $done++;
             }
             $pbar->update($done, $toupdatecount,
-                    "Creating options for record audio questions - {$done}/{$toupdatecount}.");
+                    "Creating options for record audio questions - $done/$toupdatecount.");
             $rs->close();
         }
 
@@ -154,7 +152,7 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
             foreach ($rs as $row) {
                 $pbar->update($done, $toupdatecount,
                     "Changing the mediatype of questions with multiple audio inputs from 'audio' to 'customav' - " .
-                    "{$done}/{$toupdatecount} (id = {$row->id}).");
+                    "$done/$toupdatecount (id = $row->id).");
 
                 $DB->set_field('qtype_recordrtc_options', 'mediatype', 'customav', ['questionid' => $row->id]);
 
@@ -162,7 +160,7 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
             }
             $pbar->update($done, $toupdatecount,
                 "Changed the mediatype of questions with multiple audio inputs from 'audio' to 'customav' - " .
-                "{$done}/{$toupdatecount}.");
+                "$done/$toupdatecount.");
             $rs->close();
         }
 
@@ -194,6 +192,7 @@ function xmldb_qtype_recordrtc_upgrade($oldversion) {
         // Recordrtc savepoint reached.
         upgrade_plugin_savepoint(true, 2022011200, 'qtype', 'recordrtc');
     }
+
     return true;
 }
 

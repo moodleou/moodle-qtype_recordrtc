@@ -14,13 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Contains the helper class for the select missing words question type tests.
- *
- * @package    qtype_recordrtc
- * @copyright  2013 The Open University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace qtype_recordrtc;
+
+use qtype_recordrtc_question;
+use qtype_recordrtc_test_helper;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,24 +30,27 @@ require_once($CFG->dirroot . '/question/type/recordrtc/question.php');
 /**
  * Unit tests for the record audio and video question definition class.
  *
+ * @package    qtype_recordrtc
  * @copyright  2019 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class qtype_recordrtc_question_test extends advanced_testcase {
+class question_test extends \advanced_testcase {
 
     /**
      * Get a question instance to test.
      *
      * @return qtype_recordrtc_question the question.
      */
-    protected function get_a_test_question() {
-        return test_question_maker::make_question('recordrtc', 'audio');
+    protected function get_a_test_question(): qtype_recordrtc_question {
+        return \test_question_maker::make_question('recordrtc', 'audio');
     }
 
     /**
+     * Get a question instance, with a response.
+     *
      * @return array get an audio question an a non-blank response.
      */
-    protected function get_a_test_question_and_response() {
+    protected function get_a_test_question_and_response(): array {
         $this->resetAfterTest();
         $this->setAdminUser();
 

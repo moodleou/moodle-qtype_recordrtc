@@ -60,15 +60,15 @@ class qtype_recordrtc extends question_type {
     /** @var string get_widget_placeholders pattern. */
     const GET_WIDGET_PLACEHOLDERS = '/\[\[([a-z0-9_-]+):(audio|video):*([0-9]*m*[0-9]*s*)]]/i';
 
-    public function is_manual_graded() {
+    public function is_manual_graded(): bool {
         return true;
     }
 
-    public function response_file_areas() {
+    public function response_file_areas(): array {
         return ['recording'];
     }
 
-    public function extra_question_fields() {
+    public function extra_question_fields(): array {
         return ['qtype_recordrtc_options', 'mediatype', 'timelimitinseconds', 'allowpausing'];
     }
 
@@ -162,9 +162,8 @@ class qtype_recordrtc extends question_type {
         }
     }
 
-    public function export_to_xml($question, qformat_xml $format, $extra = null) {
-        $output = '';
-        $output .= '    <mediatype>' . $question->options->mediatype .
+    public function export_to_xml($question, qformat_xml $format, $extra = null): string {
+        $output = '    <mediatype>' . $question->options->mediatype .
                 "</mediatype>\n";
         $output .= '    <timelimitinseconds>' . $question->options->timelimitinseconds .
                 "</timelimitinseconds>\n";
@@ -208,20 +207,20 @@ class qtype_recordrtc extends question_type {
      * @return string|null
      * @throws coding_exception
      */
-    public function validate_widget_placeholders($qtext, $mediatype) {
+    public function validate_widget_placeholders(string $qtext, string $mediatype): ?string {
 
         // The placeholder format.
-        $a = new \stdClass();
+        $a = new stdClass();
         $a->text = null;
         $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
 
         // Check correctness of open and close square brackets within the question text.
         $openingbrackets = 0;
         $closingbrackets = 0;
-        if (preg_match_all("/\[\[/", $qtext, $matches, PREG_SPLIT_NO_EMPTY, 0)) {
+        if (preg_match_all("/\[\[/", $qtext, $matches, PREG_SPLIT_NO_EMPTY)) {
             $openingbrackets = count($matches[0]);
         }
-        if (preg_match_all("/]]/", $qtext, $matches, PREG_SPLIT_NO_EMPTY, 0)) {
+        if (preg_match_all("/]]/", $qtext, $matches, PREG_SPLIT_NO_EMPTY)) {
             $closingbrackets = count($matches[0]);
         }
         if ($openingbrackets || $closingbrackets) {
@@ -232,7 +231,7 @@ class qtype_recordrtc extends question_type {
                 return get_string('err_closesquarebrackets', 'qtype_recordrtc', $a);
             }
         }
-        preg_match_all(self::VALIDATE_WIDGET_PLACEHOLDERS, $qtext, $matches, PREG_PATTERN_ORDER, 0);
+        preg_match_all(self::VALIDATE_WIDGET_PLACEHOLDERS, $qtext, $matches);
 
         // If medatype is audio or video, custom placeholer is not allowed.
         if (($mediatype === self::MEDIA_TYPE_AUDIO || $mediatype === self::MEDIA_TYPE_VIDEO) && $matches[2]) {
@@ -267,7 +266,7 @@ class qtype_recordrtc extends question_type {
             }
             // Validate media types.
             $mediatypes = $matches[3];
-            foreach ($mediatypes as $key => $mt) {
+            foreach ($mediatypes as $mt) {
                 if ($mt !== self::MEDIA_TYPE_AUDIO && $mt !== self::MEDIA_TYPE_VIDEO) {
                     $a->text = $mt;
                     return get_string('err_placeholdermediatype', 'qtype_recordrtc', $a);
@@ -322,11 +321,11 @@ class qtype_recordrtc extends question_type {
      * Returns an array of widget placeholders when there are placeholders in question text
      * and when there is no placeholder in the question text, add one as default.
      *
-     * @param $questiontext
+     * @param string $questiontext
      * @param int|null $questiontimelimit
      * @return widget_info[] indexed by widget name.
      */
-    public function get_widget_placeholders(string $questiontext, int $questiontimelimit = null) : array {
+    public function get_widget_placeholders(string $questiontext, int $questiontimelimit = null): array {
         if ($questiontimelimit == null) {
             $questiontimelimit = self::DEFAULT_TIMELIMIT;
         }
@@ -352,11 +351,12 @@ class qtype_recordrtc extends question_type {
      * @param string $mediatype 'audio' or 'video'.
      * @return string the file name that should be used.
      */
-    public static function get_media_filename(string $filename, string $mediatype) {
+    public static function get_media_filename(string $filename, string $mediatype): string {
         if ($mediatype === self::MEDIA_TYPE_AUDIO) {
             return $filename . '.mp3';
         } else if ($mediatype === self::MEDIA_TYPE_VIDEO) {
             return $filename . '.webm';
         }
+        throw new coding_exception('Unknown media type ' . $mediatype);
     }
 }

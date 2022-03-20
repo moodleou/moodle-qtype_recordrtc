@@ -130,3 +130,5 @@ $string['videosize'] = 'Video size';
 $string['videosize_desc'] = 'The size of the video.';
 $string['videotimelimit'] = 'Max video recording duration';
 $string['videotimelimit_desc'] = 'Maximum time that a question author can set for the video recording length.';
+$string['xminutes'] = '{$a} minutes';
+$string['xseconds'] = '{$a} seconds';

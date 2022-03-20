@@ -14,24 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Defines the editing form for record audio and video questions.
- *
- * @package   qtype_recordrtc
- * @copyright 2019 The Open University
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 defined('MOODLE_INTERNAL') || die();
 
 use qtype_recordrtc\widget_info;
 
 require_once($CFG->dirroot . '/question/type/edit_question_form.php');
 
-
 /**
  * The editing form for record audio and video questions.
  *
+ * @package   qtype_recordrtc
  * @copyright 2019 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -155,14 +147,20 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $mform->addElement('header', 'feedbackheader', get_string('feedbackheader', 'qtype_recordrtc'));
 
         foreach ($widgets as $widget) {
-            $mform->addElement('editor', $this->feedback_field($widget->name),
+            $mform->addElement('editor', $this->feedback_field_name($widget->name),
                     get_string('feedbackfor', 'qtype_recordrtc', $widget->name),
                     ['rows' => 3], $this->editoroptions);
             $mform->setType($widget->name, PARAM_RAW);
         }
     }
 
-    protected function feedback_field(string $widgetname): string {
+    /**
+     * Get the field name for the feedback field for a widget.
+     *
+     * @param string $widgetname widget name.
+     * @return string corresponding feedback field name.
+     */
+    protected function feedback_field_name(string $widgetname): string {
         return 'feedbackfor' . $widgetname;
     }
 
@@ -189,7 +187,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
 
     /**
      * Perform the necessary preprocessing for the fields added by
-     * {@link add_per_input_feedback_fields()}.
+     * {@see add_per_input_feedback_fields()}.
      *
      * @param stdClass $question the data beig passed to the form.
      * @return stdClass updated $question
@@ -202,7 +200,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $key = 0;
         foreach ($question->options->answers as $answer) {
             $widgetname = $answer->answer;
-            $fieldname = $this->feedback_field($widgetname);
+            $fieldname = $this->feedback_field_name($widgetname);
 
             // Prepare the feedback editor to display files in draft area.
             $draftitemid = file_get_submitted_draft_itemid('feedback[' . $key . ']');

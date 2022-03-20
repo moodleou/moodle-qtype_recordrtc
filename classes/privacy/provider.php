@@ -27,7 +27,6 @@ namespace qtype_recordrtc\privacy;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\writer;
 
-defined('MOODLE_INTERNAL') || die();
 /**
  * Privacy Subsystem for qtype_recordrtc implementing user_preference_provider.
  *
@@ -90,15 +89,13 @@ class provider implements
     /**
      * Convert number in seconds to number and unit (15 is '15 seconds', 120 is '2 minutes', 72 is '72 seconds')
      *
-     * @param $preference number in seconds.
+     * @param int $preference number in seconds.
      * @return string, number with unit (seconds or minutes).
      */
-    private static function get_number_with_unit($preference) {
-        if ($preference > 60) {
-            if ($preference % 60 == 0) {
-                return $preference . ' minutes';
-            }
+    private static function get_number_with_unit(int $preference): string {
+        if ($preference >= MINSECS && $preference % MINSECS == 0) {
+            return get_string('xminutes', 'qtype_recordrtc', $preference / 60);
         }
-        return $preference . ' seconds';
+        return get_string('xseconds', 'qtype_recordrtc', $preference);
     }
 }
