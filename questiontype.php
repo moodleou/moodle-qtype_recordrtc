@@ -215,32 +215,23 @@ class qtype_recordrtc extends question_type {
         $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
 
         // Check correctness of open and close square brackets within the question text.
-        $openingbrackets = 0;
-        $closingbrackets = 0;
-        if (preg_match_all("/\[\[/", $qtext, $matches, PREG_SPLIT_NO_EMPTY)) {
-            $openingbrackets = count($matches[0]);
-        }
-        if (preg_match_all("/]]/", $qtext, $matches, PREG_SPLIT_NO_EMPTY)) {
-            $closingbrackets = count($matches[0]);
-        }
-        if ($openingbrackets || $closingbrackets) {
-            if ($openingbrackets < $closingbrackets) {
-                return get_string('err_opensquarebrackets', 'qtype_recordrtc', $a);
-            }
-            if ($openingbrackets > $closingbrackets) {
-                return get_string('err_closesquarebrackets', 'qtype_recordrtc', $a);
-            }
+        $openingbrackets = substr_count($qtext, '[[');
+        $closingbrackets = substr_count($qtext, ']]');
+        if ($openingbrackets < $closingbrackets) {
+            return get_string('err_opensquarebrackets', 'qtype_recordrtc', $a);
+        } else if ($openingbrackets > $closingbrackets) {
+            return get_string('err_closesquarebrackets', 'qtype_recordrtc', $a);
         }
         preg_match_all(self::VALIDATE_WIDGET_PLACEHOLDERS, $qtext, $matches);
 
-        // If medatype is audio or video, custom placeholer is not allowed.
+        // If mediatype is audio or video, custom place-holder is not allowed.
         if (($mediatype === self::MEDIA_TYPE_AUDIO || $mediatype === self::MEDIA_TYPE_VIDEO) && $matches[2]) {
             return get_string('err_placeholdernotallowed', 'qtype_recordrtc',
                 get_string($mediatype, 'qtype_recordrtc'));
         }
 
         if ($matches) {
-            // Validate widgetnames.
+            // Validate widget names.
             $widgetnames = $matches[2];
             $widgetnamesused = [];
             foreach ($widgetnames as $widgetname) {

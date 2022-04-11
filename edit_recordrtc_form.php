@@ -224,7 +224,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $errors = parent::validation($fromform, $files);
 
         // Validate placeholders in the question text.
-        $placeholdererrors = (new qtype_recordrtc)->validate_widget_placeholders(
+        $placeholdererrors = (new qtype_recordrtc())->validate_widget_placeholders(
                 $fromform['questiontext']['text'], $fromform['mediatype']);
         if ($placeholdererrors) {
             $errors['questiontext'] = $placeholdererrors;
