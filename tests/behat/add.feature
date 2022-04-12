@@ -27,16 +27,42 @@ Feature: Test creating record audio and video questions
       | id_timelimitinseconds_number   | 15                                                  |
       | id_timelimitinseconds_timeunit | 1                                                   |
       | Allow pausing                  | Yes                                                 |
+    Then "Record audio question" "table_row" should exist
 
-    Then I should see "Record audio question"
-    # Checking that the next new question form displays user preferences settings.
+    # Check that the next new question form displays user preferences settings.
     And I press "Create a new question ..."
     And I set the field "item_qtype_recordrtc" to "1"
     And I click on "Add" "button" in the "Choose a question type to add" "dialogue"
-# Re-instate this when we no longer need to support 3.9 and 3.10.
-#    Then the following fields match these values:
-#      | id_defaultmark                 | 2     |
-#      | id_mediatype                   | video |
-#      | id_timelimitinseconds_number   | 15    |
-#      | id_timelimitinseconds_timeunit | 1     |
-#      | Allow pausing                  | Yes   |
+    And the following fields match these values:
+      | id_defaultmark                 | 2     |
+      | id_mediatype                   | video |
+      | id_timelimitinseconds_number   | 15    |
+      | id_timelimitinseconds_timeunit | 1     |
+      | Allow pausing                  | Yes   |
+
+  @javascript
+  Scenario: Validation and reload form workflow
+    Given I am on the "Course 1" "core_question > course question bank" page logged in as teacher
+    And I press "Create a new question ..."
+    And I set the field "item_qtype_recordrtc" to "1"
+    And I click on "Add" "button" in the "Choose a question type to add" "dialogue"
+    When I set the following fields to these values:
+      | Question name     | AV question                            |
+      | Type of recording | Customised audio/video                 |
+      | Question text     | What is your name? [[your name:audio]] |
+
+    And I press "Update the form"
+    Then I should see "‘your name’ is not a valid name. Names must be lower-case letters, without spaces. This has been fixed for you."
+    And I should see "The placeholder format is"
+    And I should not see "The form was updated. You can add per-input feedback below."
+
+    And I press "Update the form"
+    And I should not see "The placeholder format is"
+    And I should see "The form was updated. You can add per-input feedback below."
+
+    And I set the following fields to these values:
+      | Allow pausing            | Yes                                         |
+      | Feedback for 'your_name' | Well, that is hopefully something you know. |
+
+    And I press "id_submitbutton"
+    And "AV question" "table_row" should exist

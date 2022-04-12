@@ -105,120 +105,113 @@ class questiontype_test extends \question_testcase {
         $this->assertEquals($expected, $this->qtype->get_widget_placeholders($questiontext, $timelimitinseconds));
     }
 
-    public function test_validate_widget_placeholders_valid(): void {
-        $a = new \stdClass();
-        $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
-
-        // Valid question text.
-        $questiontext = 'Record the answers:
-        What is your name? [[name:audio]] Where do you live [[place:audio]]';
-        $expected = null;
-        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
-        $this->assertEquals($expected, $actual);
+    /**
+     * Data provider for {@link test_validate_widget_placeholders()}.
+     * @return array
+     */
+    public function validate_widget_placeholders_testcases(): array {
+        $formatmessage = get_string('err_placeholderformat', 'qtype_recordrtc');
+        return [
+            'valid' => [
+                'Record the answers:
+                What is your name? [[name:audio]] Where do you live [[place:audio]]',
+                '',
+            ],
+            'missing_open' => [
+                'Record the answers:
+                What is your name? [[name:audio]] Where do you live [place:audio]]',
+                get_string('err_opensquarebrackets', 'qtype_recordrtc', ['format' => $formatmessage]),
+            ],
+            'missing_close' => [
+                'Record the answers:
+                What is your name? [[name:audio] Where do you live [[place:audio]]',
+                get_string('err_closesquarebrackets', 'qtype_recordrtc', ['format' => $formatmessage]),
+            ],
+            'invalid' => [
+                'Record the answers:
+                What is your name? [[name;audio]] Where do you live [[place:audio]]',
+                get_string('err_placeholderincorrectformat', 'qtype_recordrtc', ['format' => $formatmessage]) .
+                '<br>' . $formatmessage,
+            ],
+            'missing_duration' => [
+                'Record the answers: What is your name? [[name:audio:]] Where do you live [[place:audio:02m10s]]',
+                get_string('err_placeholdermissingduration', 'qtype_recordrtc', '[[name:audio:]]') .
+                '<br>' . $formatmessage,
+                'Record the answers: What is your name? [[name:audio]] Where do you live [[place:audio:02m10s]]',
+            ],
+            'zero_duration' => [
+                'Record the answers: What is your name? [[name:audio:00m00s]] Where do you live [[place:audio:02m10s]]',
+                get_string('err_zeroornegativetimelimit', 'qtype_recordrtc', '00m00s') .
+                '<br>' . $formatmessage,
+            ],
+            'too_long' => [
+                'Say something: [[this-is-a-long-placeholder-title-more-than-32-chars:audio]]',
+                get_string('err_placeholdertitlelength', 'qtype_recordrtc',
+                        ['text' => 'this-is-a-long-placeholder-title-more-than-32-chars',
+                                'maxlength' => qtype_recordrtc::MAX_WIDGET_NAME_LENGTH]) .
+                '<br>' . $formatmessage,
+            ],
+            'unknown_media_type' => [
+                'Record the answers: What is your name? [[name:audiox]] Where do you live [[place:audio]]',
+                get_string('err_placeholdermediatype', 'qtype_recordrtc', ['text' => 'audiox']) .
+                '<br>' . $formatmessage,
+            ],
+            'upper_case' => [
+                'Where do you live? [[Place:audio]]',
+                get_string('err_placeholdertitlecase', 'qtype_recordrtc', ['text' => 'Place']) .
+                '<br>' . $formatmessage,
+                'Where do you live? [[place:audio]]',
+            ],
+            'whitespace' => [
+                'Where were you born? [[my birthplace:audio]]',
+                get_string('err_placeholdertitlecase', 'qtype_recordrtc', ['text' => 'my birthplace']) .
+                '<br>' . $formatmessage,
+                'Where were you born? [[my_birthplace:audio]]',
+            ],
+            'duplicate' => [
+                'Record the answers: Where do you live? [[place:audio:1m]], Where were you born? [[place:audio]]',
+                get_string('err_placeholdertitleduplicate', 'qtype_recordrtc', ['text' => 'place']) .
+                '<br>' . $formatmessage,
+            ],
+            'duplicate_with_correction' => [
+                'Record the answers: Where do you live? [[Place:audio:1m]], Where were you born? [[place:audio]]',
+                get_string('err_placeholdertitlecase', 'qtype_recordrtc', ['text' => 'Place']) .
+                '<br>' . get_string('err_placeholdertitleduplicate', 'qtype_recordrtc', ['text' => 'place']) .
+                '<br>' . $formatmessage,
+                'Record the answers: Where do you live? [[place:audio:1m]], Where were you born? [[place:audio]]',
+            ],
+            'needed' => [
+                'Record the answers: What is your name? Where do you live?',
+                get_string('err_placeholderneeded', 'qtype_recordrtc', get_string('customav', 'qtype_recordrtc')),
+            ],
+            'multiple_issues' => [
+                '<p>Who are you? [[Your name:audio:]]</p><p>What do you look like? [[Video:video:60m]]',
+                get_string('err_placeholdertitlecase', 'qtype_recordrtc', ['text' => 'Your name']) .
+                '<br>' . get_string('err_placeholdertitlecase', 'qtype_recordrtc', ['text' => 'Video']) .
+                '<br>' . get_string('err_placeholdermissingduration', 'qtype_recordrtc', '[[your_name:audio:]]') .
+                '<br>' . get_string('err_videotimelimit', 'qtype_recordrtc', '300') .
+                '<br>' . $formatmessage,
+                '<p>Who are you? [[your_name:audio]]</p><p>What do you look like? [[video:video:60m]]',
+            ],
+        ];
     }
 
-    public function test_validate_widget_placeholders_missing_open(): void {
-        $a = new \stdClass();
-        $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
+    /**
+     * Test validate_widget_placeholders.
+     *
+     * @dataProvider validate_widget_placeholders_testcases
+     *
+     * @param string $questiontext the question text to validate.
+     * @param string $expectederrors the expected error messages.
+     * @param string $expectedfixedquestiontext the expected fixed question text (default empty).
+     */
+    public function test_validate_widget_placeholders(string $questiontext, string $expectederrors,
+            string $expectedfixedquestiontext = ''): void {
 
-        // Missing [[.
-        $questiontext = 'Record the answers:
-        What is your name? [[name:audio]] Where do you live [place:audio]]';
-        $expected = get_string('err_opensquarebrackets', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'audio');
-        $this->assertEquals($expected, $actual);
-    }
+        [$errors, $fixedquestiontext] = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
 
-    public function test_validate_widget_placeholders_missing_close(): void {
-        $a = new \stdClass();
-        $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
-
-        // Missing ]].
-        $questiontext = 'Record the answers:
-        What is your name? [[name:audio] Where do you live [[place:audio]]';
-        $expected = get_string('err_closesquarebrackets', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'audio');
-        $this->assertEquals($expected, $actual);
-    }
-
-    public function test_validate_widget_placeholders_invalid(): void {
-        $a = new \stdClass();
-        $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
-
-        // Invalid placeholder.
-        $questiontext = 'Record the answers:
-        What is your name? [[name;audio]] Where do you live [[place:audio]]';
-        $expected = get_string('err_placeholderincorrectformat', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
-        $this->assertEquals($expected, $actual);
-    }
-
-    public function test_validate_widget_placeholders_missing_duration(): void {
-        $questiontext = 'Record the answers: What is your name? [[name:audio:]] Where do you live [[place:audio:02m10s]]';
-        $expected = get_string('err_placeholdermissingduration', 'qtype_recordrtc', '[[name:audio:]]');
-        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
-        $this->assertEquals($expected, $actual);
-    }
-
-    public function test_validate_widget_placeholders_zero_duration(): void {
-        $questiontext = 'Record the answers: What is your name? [[name:audio:00m00s]] Where do you live [[place:audio:02m10s]]';
-        $expected = get_string('err_zeroornegativetimelimit', 'qtype_recordrtc', '00m00s');
-        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
-        $this->assertEquals($expected, $actual);
-    }
-
-    public function test_validate_widget_placeholders_too_long(): void {
-        $a = new \stdClass();
-        $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
-
-        // Invalid placeholder title.
-        $questiontext = 'Record the answers:
-        What is your name? [[this-is-a-long-placeholder-title-more-than-32-chars:audio]] ' .
-                'Where do you live [[place:audio]]';
-        $a->text = 'this-is-a-long-placeholder-title-more-than-32-chars';
-        $a->maxlength = qtype_recordrtc::MAX_WIDGET_NAME_LENGTH;
-        $expected = get_string('err_placeholdertitlelength', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
-        $this->assertEquals($expected, $actual);
-    }
-
-    public function test_validate_widget_placeholders_unknown_media_type(): void {
-        $a = new \stdClass();
-        $a->format = get_string ('err_placeholderformat', 'qtype_recordrtc');
-
-        // Invalid placeholder media type.
-        $questiontext = 'Record the answers:
-        What is your name? [[name:audiox]] Where do you live [[place:audio]]';
-        $a->text = 'audiox';
-        $expected = get_string ('err_placeholdermediatype', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
-        $this->assertEquals($expected, $actual);
-    }
-
-    public function test_validate_widget_placeholders_upper_case(): void {
-        $a = new \stdClass();
-        $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
-
-        // Valid question text.
-        $questiontext = 'Record the answers:
-        Where do you live? [[Place:audio]]';
-        $a->text = 'Place';
-        $expected = get_string ('err_placeholdertitlecase', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
-        $this->assertEquals($expected, $actual);
-    }
-
-    public function test_validate_widget_placeholders_duplicate(): void {
-        $a = new \stdClass();
-        $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
-
-        // Valid question text.
-        $questiontext = 'Record the answers:
-        Where do you live? [[place:audio]], Where were you born? [[place:audio]]';
-        $a->text = 'place';
-        $expected = get_string('err_placeholdertitleduplicate', 'qtype_recordrtc', $a);
-        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals($expectederrors, $errors);
+        $this->assertEquals($expectedfixedquestiontext, $fixedquestiontext);
     }
 
     public function test_validate_widget_placeholders_not_allowed(): void {
@@ -227,18 +220,9 @@ class questiontype_test extends \question_testcase {
         $questiontext = 'Record the answers by saying your name [[name:audio]]';
         $expected = get_string('err_placeholdernotallowed', 'qtype_recordrtc',
             get_string('audio', 'qtype_recordrtc'));
-        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'audio');
-        $this->assertEquals($expected, $actual);
-    }
-
-    public function test_validate_widget_placeholders_needed(): void {
-        // No placeholder(s) provided within the question text with mediatype set to 'custonav'.
-        $questiontext = 'Record the answers:
-        What is your name? Where do you live?';
-        $expected = get_string('err_placeholderneeded', 'qtype_recordrtc',
-            get_string('customav', 'qtype_recordrtc'));
-        $actual = $this->qtype->validate_widget_placeholders($questiontext, 'customav');
-        $this->assertEquals($expected, $actual);
+        [$errors, $fixedquestiontext] = $this->qtype->validate_widget_placeholders($questiontext, 'audio');
+        $this->assertEquals($expected, $errors);
+        $this->assertEquals('', $fixedquestiontext);
     }
 
     public function test_question_saving(): void {

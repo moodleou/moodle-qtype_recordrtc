@@ -55,7 +55,7 @@ class qtype_recordrtc extends question_type {
     const MEDIA_TYPE_CUSTOM_AV = 'customav';
 
     /** @var string validate_widget_placeholders pattern. */
-    const VALIDATE_WIDGET_PLACEHOLDERS = "/(\[\[)([A-Za-z0-9_-]+):([a-z]+)(:?([0-9]+m)?([0-9]+s)?)?(\]\])/";
+    const VALIDATE_WIDGET_PLACEHOLDERS = "/\[\[([A-Za-z0-9 _-]+):([a-z]+)(:(?:[0-9]+m)?(?:[0-9]+s)?)?\]\]/";
 
     /** @var string get_widget_placeholders pattern. */
     const GET_WIDGET_PLACEHOLDERS = '/\[\[([a-z0-9_-]+):(audio|video):*([0-9]*m*[0-9]*s*)]]/i';
@@ -199,113 +199,134 @@ class qtype_recordrtc extends question_type {
     }
 
     /**
-     * When there are placeholders in the question text, valiadte them and
-     * return validation error and display the placeholders format to the question author.
+     * When there are placeholders in the question text, validate them.
      *
-     * @param string $qtext
-     * @param string $mediatype
-     * @return string|null
-     * @throws coding_exception
+     * @param string $qtext the question text in which to validate the placeholders.
+     * @param string $mediatype the overall media type of the question.
+     * @return string[] with two elements, a description of the errors (empty string if none) and a fixed question text, if possible.
      */
-    public function validate_widget_placeholders(string $qtext, string $mediatype): ?string {
+    public function validate_widget_placeholders(string $qtext, string $mediatype): array {
 
         // The placeholder format.
         $a = new stdClass();
-        $a->text = null;
         $a->format = get_string('err_placeholderformat', 'qtype_recordrtc');
 
         // Check correctness of open and close square brackets within the question text.
         $openingbrackets = substr_count($qtext, '[[');
         $closingbrackets = substr_count($qtext, ']]');
         if ($openingbrackets < $closingbrackets) {
-            return get_string('err_opensquarebrackets', 'qtype_recordrtc', $a);
+            return [get_string('err_opensquarebrackets', 'qtype_recordrtc', $a), ''];
         } else if ($openingbrackets > $closingbrackets) {
-            return get_string('err_closesquarebrackets', 'qtype_recordrtc', $a);
+            return [get_string('err_closesquarebrackets', 'qtype_recordrtc', $a), ''];
         }
         preg_match_all(self::VALIDATE_WIDGET_PLACEHOLDERS, $qtext, $matches);
+        [$placeholders, $widgetnames, $widgettypes, $durations] = $matches;
 
-        // If mediatype is audio or video, custom place-holder is not allowed.
-        if (($mediatype === self::MEDIA_TYPE_AUDIO || $mediatype === self::MEDIA_TYPE_VIDEO) && $matches[2]) {
-            return get_string('err_placeholdernotallowed', 'qtype_recordrtc',
-                get_string($mediatype, 'qtype_recordrtc'));
+        // If mediatype is audio or video, custom place-holder is not allowed, and that is the only check required.
+        if ($mediatype === self::MEDIA_TYPE_AUDIO || $mediatype === self::MEDIA_TYPE_VIDEO) {
+            if ($placeholders) {
+                return [get_string('err_placeholdernotallowed', 'qtype_recordrtc',
+                    get_string($mediatype, 'qtype_recordrtc')), ''];
+            } else {
+                return ['', ''];
+            }
         }
 
-        if ($matches) {
-            // Validate widget names.
-            $widgetnames = $matches[2];
-            $widgetnamesused = [];
-            foreach ($widgetnames as $widgetname) {
-                if ($widgetname === '' || $widgetname === '-' || $widgetname === '_') {
-                    $a->text = $widgetname;
-                    return get_string('err_placeholdertitle', 'qtype_recordrtc', $a);
-                }
-                // The widgetname string exceeds the max length.
-                if (strlen($widgetname) > self::MAX_WIDGET_NAME_LENGTH) {
-                    $a->text = $widgetname;
-                    $a->maxlength = self::MAX_WIDGET_NAME_LENGTH;
-                    return get_string('err_placeholdertitlelength', 'qtype_recordrtc', $a);
-                }
-                if (preg_match('/[A-Z]/', $widgetname)) {
-                    $a->text = $widgetname;
-                    return get_string('err_placeholdertitlecase', 'qtype_recordrtc', $a);
-                }
-                if (isset($widgetnamesused[$widgetname])) {
-                    $a->text = $widgetname;
-                    return get_string('err_placeholdertitleduplicate', 'qtype_recordrtc', $a);
-                }
-                $widgetnamesused[$widgetname] = 1;
-            }
-            // Validate media types.
-            $mediatypes = $matches[3];
-            foreach ($mediatypes as $mt) {
-                if ($mt !== self::MEDIA_TYPE_AUDIO && $mt !== self::MEDIA_TYPE_VIDEO) {
-                    $a->text = $mt;
-                    return get_string('err_placeholdermediatype', 'qtype_recordrtc', $a);
-                }
-            }
-            // A media placeholder is not in a correct format.
-            if (count($matches[0]) < $openingbrackets) {
-                return get_string('err_placeholderincorrectformat', 'qtype_recordrtc', $a);
-            }
-            // If medatype is customav and duration is specified check duration validity.
-            if ($mediatype === self::MEDIA_TYPE_CUSTOM_AV && $matches[4]) {
-                // Validate durations.
-                $audiotimelimit = get_config('qtype_recordrtc', 'audiotimelimit');
-                $videotimelimit = get_config('qtype_recordrtc', 'videotimelimit');
-                $durations = $matches[4];
-                foreach ($durations as $key => $d) {
-                    $placeholder = '[[' . $widgetnames[$key] . ':' . $mediatypes[$key] . $d . ']]';
-                    if (!$d) {
-                        continue;
-                    }
-                    $dur = trim($d, ':');
-                    if (!$dur) {
-                        return get_string('err_placeholdermissingduration', 'qtype_recordrtc', $placeholder);
-                    }
-                    $duration = widget_info::duration_to_seconds($dur);
+        // If mediatype is customav, there is need for custom placeholer(s).
+        if ($mediatype === self::MEDIA_TYPE_CUSTOM_AV && !$matches[2]) {
+            return [get_string('err_placeholderneeded', 'qtype_recordrtc'), ''];
+        }
 
-                    if ($duration <= 0) {
-                        return get_string('err_zeroornegativetimelimit', 'qtype_recordrtc', $dur);
-                    }
-                    if ($mediatypes[$key] === self::MEDIA_TYPE_AUDIO && $duration > $audiotimelimit) {
-                        return get_string('err_audiotimelimit', 'qtype_recordrtc', $audiotimelimit);
-                    }
-                    if ($mediatypes[$key] === self::MEDIA_TYPE_VIDEO && $duration > $videotimelimit) {
-                        return get_string('err_videotimelimit', 'qtype_recordrtc', $videotimelimit);
-                    }
-                }
+        // Check all properties of all widgets, and collect the results.
+        $allplacehodlerproblems = [];
+        $wasfixed = false;
+
+        // Validate widget names.
+        $widgetnamesused = [];
+        foreach ($widgetnames as $key => $widgetname) {
+            // Characters used.
+            if (preg_match('/[A-Z ]/', $widgetname)) {
+                $a->text = $widgetname;
+                $allplacehodlerproblems[] = get_string('err_placeholdertitlecase', 'qtype_recordrtc', $a);
+
+                $fixedwidgetname = str_replace(' ', '_', core_text::strtolower($widgetname));
+                $fixedplaceholder = substr($placeholders[$key], 0, 2) . $fixedwidgetname . substr($placeholders[$key], 2 + strlen($widgetname));
+
+                $qtext = str_replace($placeholders[$key], $fixedplaceholder, $qtext);
+                $widgetnames[$key] = $fixedwidgetname;
+                $widgetname = $fixedwidgetname;
+                $placeholders[$key] = $fixedplaceholder;
+                $wasfixed = true;
+
+            } else  if ($widgetname === '' || $widgetname === '-' || $widgetname === '_') {
+                $a->text = $widgetname;
+                $allplacehodlerproblems[] = get_string('err_placeholdertitle', 'qtype_recordrtc', $a);
             }
-            // A media placeholder is not in a correct format.
-            if (count($matches[0]) < $openingbrackets) {
-                return get_string('err_placeholderincorrectformat', 'qtype_recordrtc', $a);
+
+            // The widget name string exceeds the max length.
+            if (strlen($widgetname) > self::MAX_WIDGET_NAME_LENGTH) {
+                $a->text = $widgetname;
+                $a->maxlength = self::MAX_WIDGET_NAME_LENGTH;
+                $allplacehodlerproblems[] = get_string('err_placeholdertitlelength', 'qtype_recordrtc', $a);
             }
-            // If medatype is customav, there is need for custom placeholer(s).
-            if ($mediatype === self::MEDIA_TYPE_CUSTOM_AV && !$matches[2]) {
-                return get_string('err_placeholderneeded', 'qtype_recordrtc',
-                    get_string($mediatype, 'qtype_recordrtc'));
+
+            // Uniqueness.
+            if (isset($widgetnamesused[$widgetname])) {
+                $a->text = $widgetname;
+                $allplacehodlerproblems[] = get_string('err_placeholdertitleduplicate', 'qtype_recordrtc', $a);
+            }
+            $widgetnamesused[$widgetname] = 1;
+        }
+
+        // Validate media types.
+        foreach ($widgettypes as $mt) {
+            if ($mt !== self::MEDIA_TYPE_AUDIO && $mt !== self::MEDIA_TYPE_VIDEO) {
+                $a->text = $mt;
+                $allplacehodlerproblems[] = get_string('err_placeholdermediatype', 'qtype_recordrtc', $a);
             }
         }
-        return null;
+
+        // Validate durations.
+        $audiotimelimit = get_config('qtype_recordrtc', 'audiotimelimit');
+        $videotimelimit = get_config('qtype_recordrtc', 'videotimelimit');
+        foreach ($durations as $key => $d) {
+            if (!$d) {
+                continue;
+            }
+
+            $dur = trim($d, ':');
+            if (!$dur) {
+                $allplacehodlerproblems[] = get_string('err_placeholdermissingduration', 'qtype_recordrtc', $placeholders[$key]);
+                $fixedplaceholder = substr($placeholders[$key], 0, -3) . substr($placeholders[$key], -2);
+                $qtext = str_replace($placeholders[$key], $fixedplaceholder, $qtext);
+                $placeholders[$key] = $fixedplaceholder;
+                $wasfixed = true;
+                continue;
+            }
+
+            $duration = widget_info::duration_to_seconds($dur);
+            if ($duration <= 0) {
+                $allplacehodlerproblems[] = get_string('err_zeroornegativetimelimit', 'qtype_recordrtc', $dur);
+
+            } else if ($widgettypes[$key] === self::MEDIA_TYPE_AUDIO && $duration > $audiotimelimit) {
+                $allplacehodlerproblems[] = get_string('err_audiotimelimit', 'qtype_recordrtc', $audiotimelimit);
+
+            } else if ($widgettypes[$key] === self::MEDIA_TYPE_VIDEO && $duration > $videotimelimit) {
+                $allplacehodlerproblems[] = get_string('err_videotimelimit', 'qtype_recordrtc', $videotimelimit);
+            }
+        }
+
+        // A media placeholder is not in a correct format.
+        if (count($matches[0]) < $openingbrackets) {
+            $allplacehodlerproblems[] = get_string('err_placeholderincorrectformat', 'qtype_recordrtc', $a);
+        }
+
+        // If there are any problems, explain the correct format.
+        if ($allplacehodlerproblems) {
+            $allplacehodlerproblems[] = get_string('err_placeholderformat', 'qtype_recordrtc');
+        }
+
+        return [implode('<br>', $allplacehodlerproblems), $wasfixed ? $qtext : ''];
     }
 
     /**

@@ -101,6 +101,10 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $mform->addHelpButton('avplaceholdergroup', 'avplaceholder', 'qtype_recordrtc');
 
         // Add the update-form button.
+        // This is sort-of a no-submit button, but acutally, when it is clicked,
+        // we want to validate the question text. So, we make it a normal submit
+        // button, and then in the validation, we ensure that at least one 'error' is
+        // displayed.
         $verify = $mform->createElement('submit', 'updateform', get_string('updateform', 'qtype_recordrtc'));
         if ($currentmediatype !== qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV) {
             // If the question is currently using custom A/V, then the refresh form button must always be visible,
@@ -108,7 +112,6 @@ class qtype_recordrtc_edit_form extends question_edit_form {
             $mform->hideIf('updateform', 'mediatype', 'noteq', qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV);
         }
         $mform->insertElementBefore($verify, 'defaultmark');
-        $mform->registerNoSubmitButton('updateform');
 
         // Field for timelimitinseconds.
         $mform->addElement('duration', 'timelimitinseconds', get_string('timelimit', 'qtype_recordrtc'),
@@ -224,10 +227,22 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $errors = parent::validation($fromform, $files);
 
         // Validate placeholders in the question text.
-        $placeholdererrors = (new qtype_recordrtc())->validate_widget_placeholders(
+        [$placeholdererrors, $updatedqtext] = (new qtype_recordrtc())->validate_widget_placeholders(
                 $fromform['questiontext']['text'], $fromform['mediatype']);
         if ($placeholdererrors) {
             $errors['questiontext'] = $placeholdererrors;
+        }
+        if ($updatedqtext) {
+            /** @var MoodleQuickForm_editor $editor */
+            $editor = $this->_form->getElement('questiontext');
+            $editor->setValue(['text' => $updatedqtext]);
+        }
+
+        // If the Update form button was clicked, and there are no errors
+        // in the question text, then ensure the form does not submit
+        // by displaying a message.
+        if (!empty($fromform['updateform']) && !$placeholdererrors) {
+            $errors['updateform'] = get_string('updateformdone', 'qtype_recordrtc');
         }
 
         // Validate the time limit.
