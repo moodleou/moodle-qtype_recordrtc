@@ -289,6 +289,8 @@ class questiontype_test extends \question_testcase {
         $expectedq->mediatype = 'audio';
         $expectedq->timelimitinseconds = 30;
         $expectedq->allowpausing = 0;
+        $expectedq->canselfrate = 0;
+        $expectedq->canselfcomment = 0;
 
         $this->assert(new \question_check_specified_fields_expectation($expectedq), $q);
     }
@@ -314,6 +316,8 @@ class questiontype_test extends \question_testcase {
     <mediatype>customav</mediatype>
     <timelimitinseconds>30</timelimitinseconds>
     <allowpausing>1</allowpausing>
+    <canselfrate>1</canselfrate>
+    <canselfcomment>1</canselfcomment>
     <answer fraction="0" format="plain_text">
       <text>development</text>
       <feedback format="html">
@@ -354,6 +358,8 @@ class questiontype_test extends \question_testcase {
         $expectedq->mediatype = 'customav';
         $expectedq->timelimitinseconds = 30;
         $expectedq->allowpausing = 1;
+        $expectedq->canselfrate = 1;
+        $expectedq->canselfcomment = 1;
         $expectedq->feedbackfordevelopment = [
                 'text' => '<p>I hope you mentioned unit testing in your answer.</p>',
                 'format' => FORMAT_HTML,
@@ -511,6 +517,8 @@ class questiontype_test extends \question_testcase {
         $qdata->options->mediatype = 'customav';
         $qdata->options->timelimitinseconds = 30;
         $qdata->options->allowpausing = 1;
+        $qdata->options->canselfrate = 1;
+        $qdata->options->canselfcomment = 1;
         $qdata->options->answers = [
                 14 => (object) [
                         'id' => 14,
@@ -562,6 +570,8 @@ class questiontype_test extends \question_testcase {
     <mediatype>customav</mediatype>
     <timelimitinseconds>30</timelimitinseconds>
     <allowpausing>1</allowpausing>
+    <canselfrate>1</canselfrate>
+    <canselfcomment>1</canselfcomment>
     <answer fraction="0" format="plain_text">
       <text>development</text>
       <feedback format="html">

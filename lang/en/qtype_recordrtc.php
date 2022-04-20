@@ -35,6 +35,10 @@ $string['avplaceholder_help'] = 'Place one or more recording widgets anywhere in
 Each placeholder requires, in double square brackets, a unique name (e.g. \'recorder1\'), a type (\'audio\' or \'video\') and an optional duration, separated by colons. The duration should be expressed like \'30s\' or \'05m45s\'. When no duration is set, the widget will default to the maximum recording duration.
 
 You may be able to apply formatting to the widget, such as changing its alignment or placing it in a table.';
+$string['canselfcomment'] = 'Students can self-comment';
+$string['canselfcomment_help'] = 'If enabled, students will be able to comment on their own attempt at the question.';
+$string['canselfrate'] = 'Students can self-rate';
+$string['canselfrate_help'] = 'If enabled, students will be able to rate on their own attempt at the question on a five-point star rating scale (rather that waiting for someone else to assess their work, if grades are relevant).';
 $string['customav'] = 'Customised audio/video';
 $string['downloadrecording'] = 'Download {$a}';
 $string['err_audiotimelimit'] = 'Maximum audio recording duration cannot be greater than {$a} seconds.';
@@ -101,6 +105,8 @@ $string['pluginnameediting'] = 'Editing a record audio/video question';
 $string['pluginnamesummary'] = 'Students respond to the question text by recording audio or video (or a mix of both if you select the \'Customised audio/video\' option) directly into their browser. This can then be graded manually, or by self-assessment if you have installed The Open University\'s free optional behaviour plugin.';
 $string['privacy:metadata'] = 'Record audio/video question type plugin allows question authors to set default options as user preferences.';
 $string['privacy:preference:allowpausing'] = 'The \'Pause\' button is disabled/enabled for a given question.';
+$string['privacy:preference:canselfcomment'] = 'The \'self commenting\' functionality is disabled/enabled for a given question.';
+$string['privacy:preference:canselfrate'] = 'The \'self rating\' functionality is disabled/enabled for a given question.';
 $string['privacy:preference:defaultmark'] = 'The default mark set for a given question.';
 $string['privacy:preference:mediatype'] = 'Whether media type is set to \'Single audio\', \'Single video\' or \'Customised audio/video\'';
 $string['privacy:preference:timelimitinseconds'] = 'The \'Maximum recording duration\' set for a given question.';
@@ -108,6 +114,7 @@ $string['recordagain'] = 'Re-record';
 $string['recordagainx'] = 'Re-record {$a}';
 $string['recordingfailed'] = 'Recording failed';
 $string['resume'] = 'Resume';
+$string['selfassessmentheading'] = 'Settings for self-assessment';
 $string['startcamera'] = 'Start camera';
 $string['startcamerax'] = 'Start camera {$a}';
 $string['startrecording'] = 'Start recording';

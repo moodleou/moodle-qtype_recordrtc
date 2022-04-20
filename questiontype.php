@@ -69,14 +69,21 @@ class qtype_recordrtc extends question_type {
     }
 
     public function extra_question_fields(): array {
-        return ['qtype_recordrtc_options', 'mediatype', 'timelimitinseconds', 'allowpausing'];
+        return ['qtype_recordrtc_options', 'mediatype', 'timelimitinseconds', 'allowpausing', 'canselfrate', 'canselfcomment'];
     }
 
     public function save_defaults_for_new_questions(stdClass $fromform): void {
+        global $CFG;
+
         parent::save_defaults_for_new_questions($fromform);
         $this->set_default_value('mediatype', $fromform->mediatype);
         $this->set_default_value('timelimitinseconds', $fromform->timelimitinseconds);
         $this->set_default_value('allowpausing', $fromform->allowpausing);
+        if (is_readable($CFG->dirroot . '/question/behaviour/selfassess/behaviour.php')) {
+            // These settings are only relevant if the behaviour is installed.
+            $this->set_default_value('canselfrate', $fromform->canselfrate);
+            $this->set_default_value('canselfcomment', $fromform->canselfcomment);
+        }
     }
 
     public function save_question_options($fromform) {
@@ -168,6 +175,8 @@ class qtype_recordrtc extends question_type {
         $output .= '    <timelimitinseconds>' . $question->options->timelimitinseconds .
                 "</timelimitinseconds>\n";
         $output .= '    <allowpausing>' . $question->options->allowpausing . "</allowpausing>\n";
+        $output .= '    <canselfrate>' . $question->options->canselfrate . "</canselfrate>\n";
+        $output .= '    <canselfcomment>' . $question->options->canselfcomment . "</canselfcomment>\n";
         $output .= $format->write_answers($question->options->answers);
         return $output;
     }
@@ -185,6 +194,8 @@ class qtype_recordrtc extends question_type {
         $qo->timelimitinseconds = $format->getpath($data, ['#', 'timelimitinseconds', 0, '#'],
                 get_config('qtype_recordrtc', 'audiotimelimit'));
         $qo->allowpausing = $format->getpath($data, ['#', 'allowpausing', 0, '#'], 0);
+        $qo->canselfrate = $format->getpath($data, ['#', 'canselfrate', 0, '#'], 0);
+        $qo->canselfcomment = $format->getpath($data, ['#', 'canselfcomment', 0, '#'], 0);
 
         // Load any answers and simulate the corresponding form data.
         if (isset($data['#']['answer'])) {
@@ -203,7 +214,7 @@ class qtype_recordrtc extends question_type {
      *
      * @param string $qtext the question text in which to validate the placeholders.
      * @param string $mediatype the overall media type of the question.
-     * @return string[] with two elements, a description of the errors (empty string if none) and a fixed question text, if possible.
+     * @return string[] with two elements, a description of the errors ('' if none) and a fixed question text, if possible.
      */
     public function validate_widget_placeholders(string $qtext, string $mediatype): array {
 
@@ -250,7 +261,8 @@ class qtype_recordrtc extends question_type {
                 $allplacehodlerproblems[] = get_string('err_placeholdertitlecase', 'qtype_recordrtc', $a);
 
                 $fixedwidgetname = str_replace(' ', '_', core_text::strtolower($widgetname));
-                $fixedplaceholder = substr($placeholders[$key], 0, 2) . $fixedwidgetname . substr($placeholders[$key], 2 + strlen($widgetname));
+                $fixedplaceholder = substr($placeholders[$key], 0, 2) . $fixedwidgetname .
+                        substr($placeholders[$key], 2 + strlen($widgetname));
 
                 $qtext = str_replace($placeholders[$key], $fixedplaceholder, $qtext);
                 $widgetnames[$key] = $fixedwidgetname;
@@ -258,7 +270,7 @@ class qtype_recordrtc extends question_type {
                 $placeholders[$key] = $fixedplaceholder;
                 $wasfixed = true;
 
-            } else  if ($widgetname === '' || $widgetname === '-' || $widgetname === '_') {
+            } else if ($widgetname === '' || $widgetname === '-' || $widgetname === '_') {
                 $a->text = $widgetname;
                 $allplacehodlerproblems[] = get_string('err_placeholdertitle', 'qtype_recordrtc', $a);
             }

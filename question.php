@@ -22,6 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qtype_recordrtc_question extends question_with_responses {
+    use \qbehaviour_selfassess\question_with_self_assessment;
 
     /**
      * @var qtype_recordrtc\widget_info[] the widgets that appear in this question, indexed by the widget name.

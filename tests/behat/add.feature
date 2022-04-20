@@ -27,6 +27,8 @@ Feature: Test creating record audio and video questions
       | id_timelimitinseconds_number   | 15                                                  |
       | id_timelimitinseconds_timeunit | 1                                                   |
       | Allow pausing                  | Yes                                                 |
+      | Students can self-rate         | Yes                                                 |
+      | Students can self-comment      | Yes                                                 |
     Then "Record audio question" "table_row" should exist
 
     # Check that the next new question form displays user preferences settings.
@@ -39,6 +41,8 @@ Feature: Test creating record audio and video questions
       | id_timelimitinseconds_number   | 15    |
       | id_timelimitinseconds_timeunit | 1     |
       | Allow pausing                  | Yes   |
+      | Students can self-rate         | Yes   |
+      | Students can self-comment      | Yes   |
 
   @javascript
   Scenario: Validation and reload form workflow

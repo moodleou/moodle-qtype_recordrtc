@@ -34,14 +34,14 @@ Feature: Test editing record audio and video questions
       | id_timelimitinseconds_number   | 0       |
       | id_timelimitinseconds_timeunit | seconds |
     And I press "id_submitbutton"
-    Then I should see "Maximum recording duration must be greater than 0."
+    And I should see "Maximum recording duration must be greater than 0."
     And I set the following fields to these values:
       | id_timelimitinseconds_number   | -10     |
       | id_timelimitinseconds_timeunit | seconds |
     And I press "id_submitbutton"
-    Then I should see "Maximum recording duration must be greater than 0."
+    And I should see "Maximum recording duration must be greater than 0."
     And I set the following fields to these values:
       | id_timelimitinseconds_number   | 15      |
       | id_timelimitinseconds_timeunit | seconds |
     And I press "id_submitbutton"
-    Then I should see "Edited question name"
+    And I should see "Edited question name"

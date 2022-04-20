@@ -50,6 +50,8 @@ class provider implements
         $collection->add_user_preference('qtype_recordrtc_mediatype', 'privacy:preference:mediatype');
         $collection->add_user_preference('qtype_recordrtc_timelimitinseconds', 'privacy:preference:timelimitinseconds');
         $collection->add_user_preference('qtype_recordrtc_pausing', 'privacy:preference:allowpausing');
+        $collection->add_user_preference('qtype_recordrtc_canselfrate', 'privacy:preference:canselfrate');
+        $collection->add_user_preference('qtype_recordrtc_canselfcomment', 'privacy:preference:canselfcomment');
         return $collection;
     }
 
@@ -82,6 +84,18 @@ class provider implements
         if (null !== $preference) {
             $desc = get_string('privacy:preference:allowpausing', 'qtype_recordrtc');
             writer::export_user_preference('qtype_recordrtc', 'allowpausing',
+                    get_string($preference, 'qtype_recordrtc'), $desc);
+        }
+        $preference = get_user_preferences('qtype_recordrtc_canselfrate', null, $userid);
+        if (null !== $preference) {
+            $desc = get_string('privacy:preference:canselfrate', 'qtype_recordrtc');
+            writer::export_user_preference('qtype_recordrtc', 'canselfrate',
+                    get_string($preference, 'qtype_recordrtc'), $desc);
+        }
+        $preference = get_user_preferences('qtype_recordrtc_canselfcomment', null, $userid);
+        if (null !== $preference) {
+            $desc = get_string('privacy:preference:canselfcomment', 'qtype_recordrtc');
+            writer::export_user_preference('qtype_recordrtc', 'canselfcomment',
                     get_string($preference, 'qtype_recordrtc'), $desc);
         }
     }

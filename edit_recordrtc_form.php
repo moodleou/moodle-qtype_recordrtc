@@ -69,6 +69,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
     }
 
     protected function definition_inner($mform) {
+        global $CFG;
         $currentmediatype = $this->get_current_mediatype();
 
         // Field for mediatype.
@@ -123,6 +124,25 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $mform->addElement('selectyesno', 'allowpausing', get_string('allowpausing', 'qtype_recordrtc'), '');
         $mform->addHelpButton('allowpausing', 'allowpausing', 'qtype_recordrtc');
         $mform->setDefault('allowpausing', $this->get_default_value('allowpausing', 0));
+
+        // Settings for self-assessment - but only if the behaviour is installed.
+        if (is_readable($CFG->dirroot . '/question/behaviour/selfassess/behaviour.php')) {
+            $mform->addElement('header', 'selfassessmentheading', get_string('selfassessmentheading', 'qtype_recordrtc'));
+
+            $mform->addElement('selectyesno', 'canselfrate', get_string('canselfrate', 'qtype_recordrtc'), '');
+            $mform->addHelpButton('canselfrate', 'canselfrate', 'qtype_recordrtc');
+            $mform->setDefault('canselfrate', $this->get_default_value('canselfrate', 0));
+
+            $mform->addElement('selectyesno', 'canselfcomment', get_string('canselfcomment', 'qtype_recordrtc'), '');
+            $mform->addHelpButton('canselfcomment', 'canselfcomment', 'qtype_recordrtc');
+            $mform->setDefault('canselfcomment', $this->get_default_value('canselfcomment', 0));
+        } else {
+            $mform->addElement('hidden', 'canselfrate', 0);
+            $mform->setType('canselfrate', PARAM_BOOL);
+
+            $mform->addElement('hidden', 'canselfcomment', 0);
+            $mform->setType('canselfcomment', PARAM_BOOL);
+        }
 
         // Fields for widget feedback.
         if ($currentmediatype === qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV) {

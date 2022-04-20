@@ -193,6 +193,75 @@ function xmldb_qtype_recordrtc_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2022011200, 'qtype', 'recordrtc');
     }
 
+    if ($oldversion < 2022041400) {
+
+        // Define field canselfrate to be added to qtype_recordrtc_options.
+        $table = new xmldb_table('qtype_recordrtc_options');
+        $field = new xmldb_field('canselfrate', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '1', 'allowpausing');
+
+        // Conditionally launch add field canselfrate.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field canselfcomment to be added to qtype_recordrtc_options.
+        $table = new xmldb_table('qtype_recordrtc_options');
+        $field = new xmldb_field('canselfcomment', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '1', 'canselfrate');
+
+        // Conditionally launch add field canselfcomment.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Recordrtc savepoint reached.
+        upgrade_plugin_savepoint(true, 2022041400, 'qtype', 'recordrtc');
+    }
+
+    if ($oldversion < 2022041900) {
+
+        // Get rows with relevant question ids to update canselfrate column in qtype_recordrtc_options table.
+        // Upgrade in upgrade.php needs to match current behaviour:
+        // canselfrate gets set to 1 if question maxmark is non-zero, 0 if it is zero.
+        // canselfcomment defaults to true.
+        $toupdatecount = $DB->count_records_sql("
+                SELECT COUNT(1)
+                  FROM {question} q
+             LEFT JOIN {qtype_recordrtc_options} o ON o.questionid = q.id
+                 WHERE q.qtype = 'recordrtc'");
+        if ($toupdatecount > 0) {
+            $rs = $DB->get_recordset_sql("
+                SELECT o.id, q.defaultmark
+                  FROM {question} q
+             LEFT JOIN {qtype_recordrtc_options} o ON o.questionid = q.id
+                 WHERE q.qtype = 'recordrtc'");
+            $pbar = new progress_bar('updaterecordrtcselfrate', 500, true);
+
+            $done = 0;
+            foreach ($rs as $row) {
+                $pbar->update($done, $toupdatecount,
+                        "Setting default values of 'canselfrate' and 'canselfcomment' - " .
+                        "$done/$toupdatecount (id = $row->id).");
+
+                // If question defaultmark is non-zero set the default value of 'canselfrate' field to 1, otherwise set it to 0.
+                // The canselfcomment field defaults to 1 for existing questions.
+                $data = new stdClass();
+                $data->id = $row->id;
+                $data->canselfrate = $row->defaultmark > 0;
+                $data->canselfcomment = 1;
+                $DB->update_record('qtype_recordrtc_options', $data);
+
+                $done++;
+            }
+            $pbar->update($done, $toupdatecount,
+                    "Setting default values of 'canselfrate' and 'canselfcomment' - " .
+                    "$done/$toupdatecount.");
+            $rs->close();
+        }
+
+        // Recordrtc savepoint reached.
+        upgrade_plugin_savepoint(true, 2022041900, 'qtype', 'recordrtc');
+    }
+
     return true;
 }
 

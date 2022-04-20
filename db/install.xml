@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="question/type/recordrtc/db" VERSION="2020010600" COMMENT="XMLDB file for Moodle question/type/recordrtc">
+<XMLDB PATH="question/type/recordrtc/db" VERSION="20220419" COMMENT="XMLDB file for Moodle question/type/recordrtc"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
+>
   <TABLES>
     <TABLE NAME="qtype_recordrtc_options" COMMENT="Options for recordrtc questions">
       <FIELDS>
@@ -8,6 +11,8 @@
         <FIELD NAME="mediatype" TYPE="char" LENGTH="8" NOTNULL="true" DEFAULT="audio" SEQUENCE="false" COMMENT="'audio', 'video' or 'customav'."/>
         <FIELD NAME="timelimitinseconds" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="30" SEQUENCE="false"/>
         <FIELD NAME="allowpausing" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether allowing users to pause during audio/video recording."/>
+        <FIELD NAME="canselfrate" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether students can rate their own response"/>
+        <FIELD NAME="canselfcomment" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether students can comment on their own response"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for Moodle question/type/recordrtc"/>
