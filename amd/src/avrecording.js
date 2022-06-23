@@ -249,8 +249,23 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
                 mediaRecorder = new Mp3MediaRecorder(mediaStream,
                     {worker: new Worker(workerURL)});
             } else {
-                mediaRecorder = new MediaRecorder(mediaStream,
-                    getRecordingOptions());
+                const recordingOptions = getRecordingOptions();
+                try {
+                    mediaRecorder = new MediaRecorder(mediaStream, recordingOptions);
+                } catch (e) {
+                    Log.debug(e);
+                    if (recordingOptions.mimeType) {
+                        delete recordingOptions.mimeType;
+                        try {
+                            mediaRecorder = new MediaRecorder(mediaStream, recordingOptions);
+                        } catch (e) {
+                            Log.debug(e);
+                            new MediaRecorder(mediaStream);
+                        }
+                    } else {
+                        throw e;
+                    }
+                }
             }
 
             mediaRecorder.ondataavailable = handleDataAvailable;
@@ -722,7 +737,8 @@ function VideoSettings(bitRate, width, height) {
     this.mimeTypes = [
         'video/webm;codecs=vp9,opus',
         'video/webm;codecs=h264,opus',
-        'video/webm;codecs=vp8,opus'
+        'video/webm;codecs=vp8,opus',
+        'video/mp4'
     ];
 }
 
