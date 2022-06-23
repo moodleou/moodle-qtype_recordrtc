@@ -734,7 +734,8 @@ function VideoSettings(audioBitRate, videoBitRate, width, height) {
         audio: true,
         video: {
             width: {ideal: this.width},
-            height: {ideal: this.height}
+            height: {ideal: this.height},
+            frameRate: {ideal: 24},
         }
     };
     this.mimeTypes = [
