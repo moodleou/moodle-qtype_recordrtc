@@ -649,7 +649,8 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
             if (mediaSettings.name === 'audio') {
                 options.audioBitsPerSecond = mediaSettings.bitRate;
             } else if (mediaSettings.name === 'video') {
-                options.videoBitsPerSecond = mediaSettings.bitRate;
+                options.audioBitsPerSecond = mediaSettings.audioBitRate;
+                options.videoBitsPerSecond = mediaSettings.videoBitRate;
                 options.videoWidth = mediaSettings.width;
                 options.videoHeight = mediaSettings.height;
 
@@ -717,14 +718,16 @@ function AudioSettings(bitRate) {
 /**
  * Object that controls the settings for recording video.
  *
- * @param {string} bitRate desired video bitrate.
+ * @param {string} audioBitRate desired video bitrate.
+ * @param {string} videoBitRate desired video bitrate.
  * @param {string} width desired width.
  * @param {string} height desired height.
  * @constructor
  */
-function VideoSettings(bitRate, width, height) {
+function VideoSettings(audioBitRate, videoBitRate, width, height) {
     this.name = 'video';
-    this.bitRate = parseInt(bitRate, 10);
+    this.audioBitRate = parseInt(audioBitRate, 10);
+    this.videoBitRate = parseInt(videoBitRate, 10);
     this.width = parseInt(width, 10);
     this.height = parseInt(height, 10);
     this.mediaConstraints = {
@@ -775,7 +778,7 @@ function RecordRtcQuestion(questionId, settings) {
         if (widget.dataset.mediaType === 'audio') {
             typeInfo = new AudioSettings(settings.audioBitRate);
         } else {
-            typeInfo = new VideoSettings(settings.videoBitRate, settings.videoWidth, settings.videoHeight);
+            typeInfo = new VideoSettings(settings.audioBitRate, settings.videoBitRate, settings.videoWidth, settings.videoHeight);
         }
 
         // Create the recorder.

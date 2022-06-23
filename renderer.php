@@ -136,9 +136,12 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 throw new moodle_exception('errornouploadrepo', 'moodle');
             }
             $uploadrepository = reset($repositories); // Get the first (and only) upload repo.
+            [$videowidth, $videoheight] = explode(',', get_config('qtype_recordrtc', 'videosize'));
             $setting = [
                     'audioBitRate' => (int) get_config('qtype_recordrtc', 'audiobitrate'),
                     'videoBitRate' => (int) get_config('qtype_recordrtc', 'videobitrate'),
+                    'videoWidth' => (int) $videowidth,
+                    'videoHeight' => (int) $videoheight,
                     'maxUploadSize' => $question->get_upload_size_limit($options->context),
                     'uploadRepositoryId' => (int) $uploadrepository->id,
                     'contextId' => $options->context->id,
