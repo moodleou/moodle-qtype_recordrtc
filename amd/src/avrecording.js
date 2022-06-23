@@ -542,9 +542,16 @@ const RecorderPromise = import(M.cfg.wwwroot + '/question/type/recordrtc/js/mp3-
                 return; // Not finished yet. We will get more of these events when it is.
             }
 
-            const response = JSON.parse(uploadRequest.responseText);
+            let response = '';
+            try {
+                response = JSON.parse(uploadRequest.responseText);
+            } catch (e) {
+                handleUploadError();
+                return;
+            }
             if (response.errorcode) {
                 handleUploadError(); // Moodle sends back errors with a 200 status code for some reason!
+                return;
             }
 
             if (uploadRequest.status === 200) {
