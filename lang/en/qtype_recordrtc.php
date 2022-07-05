@@ -113,6 +113,7 @@ $string['privacy:preference:timelimitinseconds'] = 'The \'Maximum recording dura
 $string['recordagain'] = 'Re-record';
 $string['recordagainx'] = 'Re-record {$a}';
 $string['recordingfailed'] = 'Recording failed';
+$string['recordrtc:downloadrecordings'] = 'Download recordings';
 $string['resume'] = 'Resume';
 $string['selfassessmentheading'] = 'Settings for self-assessment';
 $string['startcamera'] = 'Start camera';

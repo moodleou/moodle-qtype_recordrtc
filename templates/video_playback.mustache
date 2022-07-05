@@ -25,6 +25,7 @@
     * recordingurl: The URL of the recording.
     * aspectratio: (only for video) '4x3' or '16x9'.
     * width: (only for video) width of the video in pixels.
+    * candownload: whether the current user should see options to download the recordings.
 
     Example context (json):
     {
@@ -32,20 +33,23 @@
         "filename": "recording.mp3",
         "recordingurl": "http://example.com/moodle/pluginfile.php?...",
         "aspectratio": "16x9",
-        "width": 640
+        "width": 640,
+        "candownload": true
     }
 }}
 <span class="qtype_recordrtc-video-widget qtype_recordrtc-ratio-{{aspectratio}} d-flex flex-column mw-100"
         style="width: {{width}}px">
     {{#hasrecording}}
         <span class="qtype_recordrtc-media-player">
-            <video controls class="w-100">
+            <video controls class="w-100"{{^candownload}} controlsList=" nodownload"{{/candownload}}>
                 <source src="{{recordingurl}}">
             </video>
         </span>
-        <a href="{{recordingurl}}" class="qtype_recordrtc-download-icon align-middle">
-            {{#pix}}f/video, core, {{#str}}downloadrecording, qtype_recordrtc, {{filename}}{{/str}}{{/pix}}
-        </a>
+        {{#candownload}}
+            <a href="{{recordingurl}}" class="qtype_recordrtc-download-icon align-middle">
+                {{#pix}}f/video, core, {{#str}}downloadrecording, qtype_recordrtc, {{filename}}{{/str}}{{/pix}}
+            </a>
+        {{/candownload}}
     {{/hasrecording}}
     {{^hasrecording}}
         <span class="qtype_recordrtc-no-recording-placeholder flex-grow-1 text-center">

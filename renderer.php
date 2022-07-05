@@ -41,6 +41,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
     public function formulation_and_controls(question_attempt $qa, question_display_options $options): string {
         /** @var qtype_recordrtc_question $question */
         $question = $qa->get_question();
+        $candownload = has_capability('qtype/recordrtc:downloadrecordings', $this->page->context);
         $output = '';
 
         $existingfiles = $qa->get_last_qt_files('recording', $options->context->id);
@@ -86,9 +87,9 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 }
 
                 if ($widget->type === 'audio') {
-                    $playback = new audio_playback($filename, $recordingurl);
+                    $playback = new audio_playback($filename, $recordingurl, $candownload);
                 } else {
-                    $playback = new video_playback($filename, $recordingurl);
+                    $playback = new video_playback($filename, $recordingurl, $candownload);
                 }
 
                 $thisitem = $this->render($playback);
@@ -114,9 +115,11 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 }
 
                 if ($widget->type === 'audio') {
-                    $recorder = new audio_recorder($filename, $widget->maxduration, $question->allowpausing, $recordingurl);
+                    $recorder = new audio_recorder($filename,
+                            $widget->maxduration, $question->allowpausing, $recordingurl, $candownload);
                 } else {
-                    $recorder = new video_recorder($filename, $widget->maxduration, $question->allowpausing, $recordingurl);
+                    $recorder = new video_recorder($filename,
+                            $widget->maxduration, $question->allowpausing, $recordingurl, $candownload);
                 }
 
                 // Recording UI.

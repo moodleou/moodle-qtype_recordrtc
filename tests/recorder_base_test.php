@@ -46,7 +46,7 @@ class recorder_base_test extends \advanced_testcase {
      * @param string $widgetname The expected widget name.
      */
     public function test_duration_to_seconds(string $filename, string $widgetname): void {
-        $recorder = new \qtype_recordrtc\output\audio_recorder($filename, 30, false, null);
+        $recorder = new \qtype_recordrtc\output\audio_recorder($filename, 30, false, null, true);
         $this->assertEquals($widgetname, $recorder->get_widget_name());
     }
 }

@@ -51,19 +51,26 @@ abstract class recorder_base implements renderable, templatable {
     protected $recordingurl;
 
     /**
+     * @var bool whether the current user should see options to download the recordings.
+     */
+    protected $candownload;
+
+    /**
      * Constructor.
      *
      * @param string $filename the file name this recorder saves as.
      * @param int $maxrecordingduration maximum allowed recording length, in seconds.
      * @param bool $allowpausing whether the user is allowed to pause, mid-recording.
      * @param moodle_url|null $recordingurl if we are re-displaying, after a recording was made, this is the audio file.
+     * @param bool $candownload whether the current user should see options to download the recordings.
      */
     public function __construct(string $filename, int $maxrecordingduration,
-            bool $allowpausing, ?moodle_url $recordingurl) {
+            bool $allowpausing, ?moodle_url $recordingurl, bool $candownload) {
         $this->filename = $filename;
         $this->maxrecordingduration = $maxrecordingduration;
         $this->allowpausing = $allowpausing;
         $this->recordingurl = $recordingurl;
+        $this->candownload = $candownload;
     }
 
     /**
@@ -83,6 +90,7 @@ abstract class recorder_base implements renderable, templatable {
             'allowpausing' => $this->allowpausing,
             'hasrecording' => $this->recordingurl !== null,
             'recordingurl' => $this->recordingurl ? $this->recordingurl->out(false) : '',
+            'candownload' => $this->candownload,
         ];
     }
 }

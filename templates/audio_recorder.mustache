@@ -24,6 +24,7 @@
     * allowpausing: whether this question allows the recording to be paused.
     * hasrecording: boolean - whether there is already a recording.
     * recordingurl: the URL of that recording (empty string if none).
+    * candownload: whether the current user should see options to download the recordings.
 
     Example context (json):
     {
@@ -32,7 +33,8 @@
         "maxrecordingduration": 30,
         "allowpausing": true,
         "hasrecording": false,
-        "recordingurl": "http://example.com/moodle/draftfile.php?..."
+        "recordingurl": "http://example.com/moodle/draftfile.php?...",
+        "candownload": true
     }
 }}
 <span class="qtype_recordrtc-audio-widget d-inline-flex mw-100 my-1"
@@ -42,7 +44,7 @@
     <span class="qtype_recordrtc-no-recording-placeholder flex-grow-1 text-center{{#hasrecording}} hide{{/hasrecording}}">{{#str}}norecording, qtype_recordrtc{{/str}}</span>
     <span class="qtype_recordrtc-time-left flex-grow-1 text-center hide"></span>
     <span class="qtype_recordrtc-media-player flex-grow-1{{^hasrecording}} hide{{/hasrecording}}">
-        <audio controls class="w-100, mw-100">
+        <audio controls class="w-100, mw-100"{{^candownload}} controlsList=" nodownload"{{/candownload}}>
             <source src="{{recordingurl}}">
         </audio>
     </span>

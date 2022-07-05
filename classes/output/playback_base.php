@@ -41,14 +41,21 @@ abstract class playback_base implements renderable, templatable {
     protected $recordingurl;
 
     /**
+     * @var bool whether the current user should see options to download the recordings.
+     */
+    protected $candownload;
+
+    /**
      * Constructor.
      *
      * @param string $filename the file name.
      * @param string|null $recordingurl if we are re-displaying, after a recording was made, this is the audio file.
+     * @param bool $candownload whether the current user should see options to download the recordings.
      */
-    public function __construct(string $filename, ?string $recordingurl) {
+    public function __construct(string $filename, ?string $recordingurl, bool $candownload) {
         $this->filename = $filename;
         $this->recordingurl = $recordingurl;
+        $this->candownload = $candownload;
     }
 
     public function export_for_template(renderer_base $output): array {
@@ -56,6 +63,7 @@ abstract class playback_base implements renderable, templatable {
             'hasrecording' => $this->recordingurl !== null,
             'filename' => $this->filename,
             'recordingurl' => $this->recordingurl,
+            'candownload' => $this->candownload,
         ];
     }
 }
