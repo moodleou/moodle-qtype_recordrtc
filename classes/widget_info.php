@@ -56,9 +56,24 @@ class widget_info {
         $this->name = $name;
         $this->type = $type;
         if ($maxduration !== null) {
-            $this->maxduration = $maxduration;
+            $this->maxduration = $this->limit_max_duration($maxduration);
         }
         $this->placeholder = self::make_placeholder($this->name, $this->type, $this->maxduration);
+    }
+
+    /**
+     * Helper, to ensure that the time limit for a widget is never more than the admin-set limit.
+     *
+     * @param int $maxduration the requested time limit.
+     * @return int actual time limit to use, which will be the smaller of the requested one and the admin limit.
+     */
+    protected function limit_max_duration(int $maxduration): int {
+        if ($this->type === \qtype_recordrtc::MEDIA_TYPE_AUDIO) {
+            $limit = get_config('qtype_recordrtc', 'audiotimelimit');
+        } else {
+            $limit = get_config('qtype_recordrtc', 'videotimelimit');
+        }
+        return min($maxduration, $limit);
     }
 
     /**
