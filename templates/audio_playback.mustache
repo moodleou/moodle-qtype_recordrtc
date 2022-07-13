@@ -36,7 +36,7 @@
 <span class="qtype_recordrtc-audio-widget d-inline-flex mw-100 my-1">
     {{#hasrecording}}
         <span class="qtype_recordrtc-media-player flex-grow-1">
-            <audio controls class="w-100, mw-100"{{^candownload}} controlsList=" nodownload"{{/candownload}}>
+            <audio controls class="w-100, mw-100"{{^candownload}} oncontextmenu="return false;" controlsList=" nodownload"{{/candownload}}>
                 <source src="{{recordingurl}}" >
             </audio>
         </span>
