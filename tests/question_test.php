@@ -56,7 +56,7 @@ class question_test extends \advanced_testcase {
 
         $q = $this->get_a_test_question();
         $response = ['recording' =>
-                qtype_recordrtc_test_helper::make_recording_saver('moodle-tim.ogg')];
+                qtype_recordrtc_test_helper::make_recordings_saver(['moodle-tim.ogg' => 'recording.ogg'])];
         return [$q, $response];
 
     }
@@ -69,7 +69,42 @@ class question_test extends \advanced_testcase {
 
     public function test_summarise_response_with_file() {
         list($q, $response) = $this->get_a_test_question_and_response();
-        $this->assertEquals('File recording.ogg', $q->summarise_response($response));
+        $this->assertEquals('recording.ogg', $q->summarise_response($response));
+    }
+
+    /**
+     * Get a question instance, with multiple responses.
+     *
+     * @return array get an audio question non-blank responses.
+     */
+    protected function get_a_test_question_and_responses(): array {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $q = \test_question_maker::make_question('recordrtc', 'customav');
+        $response = ['recording' =>
+                qtype_recordrtc_test_helper::make_recordings_saver(['moodle-tim.ogg' => 'development.ogg',
+                        'small.mp3' => 'installation.mp3',
+                        'moodle-sharon.ogg' => 'user_experience.ogg'])];
+        return [$q, $response];
+    }
+
+    /**
+     * Test summarise_response with blank responses for customav question.
+     */
+    public function test_summarise_responses_blank() {
+        $q = \test_question_maker::make_question('recordrtc', 'customav');
+        $this->assertEquals('No recording', $q->summarise_response([]));
+        $this->assertEquals('No recording', $q->summarise_response(['development' => '', 'installation' => '']));
+    }
+
+    /**
+     * Test summarise_response with multiple responses for customav question.
+     */
+    public function test_summarise_response_with_files() {
+        list($q, $responses) = $this->get_a_test_question_and_responses();
+        $this->assertEquals('development.ogg, installation.mp3, user_experience.ogg',
+                $q->summarise_response($responses));
     }
 
     public function test_is_complete_response_blank() {
@@ -111,7 +146,7 @@ class question_test extends \advanced_testcase {
     public function test_is_same_response_different_files() {
         list($q, $response) = $this->get_a_test_question_and_response();
         $otherresponse = ['recording' =>
-                qtype_recordrtc_test_helper::make_recording_saver('moodle-sharon.ogg')];
+                qtype_recordrtc_test_helper::make_recordings_saver(['moodle-sharon.ogg' => 'recording.ogg'])];
 
         $this->assertFalse($q->is_same_response($response, $otherresponse));
     }

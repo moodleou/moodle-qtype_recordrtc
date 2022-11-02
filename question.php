@@ -75,15 +75,19 @@ class qtype_recordrtc_question extends question_with_responses {
         if (!isset($response['recording']) || $response['recording'] === '') {
             return get_string('norecording', 'qtype_recordrtc');
         }
-
         $files = $response['recording']->get_files();
-        $file = reset($files);
-
-        if (!$file) {
+        $savedfiles = [];
+        foreach ($this->widgets as $widget) {
+            $filename = qtype_recordrtc::get_media_filename($widget->name, $widget->type);
+            $file = $this->get_file_from_response($filename, $files);
+            if ($file) {
+                $savedfiles[] = s($file->get_filename());
+            }
+        }
+        if (!$savedfiles) {
             return get_string('norecording', 'qtype_recordrtc');
         }
-
-        return get_string('filex', 'qtype_recordrtc', $file->get_filename());
+        return implode(', ', $savedfiles);
     }
 
     public function is_complete_response(array $response): bool {

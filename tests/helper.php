@@ -269,33 +269,30 @@ class qtype_recordrtc_test_helper extends question_test_helper {
     }
 
     /**
-     * Generates a draft file area that contains the given fixture file as a file called recording.ogg.
+     * Generates a draft file area that contains the given fixture files.
      * You should ensure that a user is logged in with setUser before you run this function.
      *
-     * @param string $fixturefile The name of the file in the fixtures folder to copy.
-     * @param string $filename To store the file under. Defaults to 'recording.ogg'.
+     * @param array $fixturefiles fixture file name => filename to save as.
      * @return int The itemid of the generated draft file area.
      */
-    public static function make_recording_in_draft_area(string $fixturefile, string $filename): int {
+    public static function make_recordings_in_draft_area(array $fixturefiles): int {
         $draftid = self::make_recording_draft_area();
         self::clear_draft_area($draftid);
-        self::add_recording_to_draft_area($draftid, $fixturefile, $filename);
+        foreach ($fixturefiles as $fixturefile => $filename) {
+            self::add_recording_to_draft_area($draftid, $fixturefile, $filename);
+        }
         return $draftid;
     }
 
     /**
-     * Generates a question_file_saver that contains the given fixture file
-     * as a file called recording.ogg. You should ensure that a user is logged
-     * in with setUser before you run this function.
+     * Generates a question_file_saver that contains the given fixture files
+     * You should ensure that a user is logged in with setUser before you run this function.
      *
-     * @param string $fixturefile The name of the file in the fixtures folder to copy.
-     * @param string $filename To store the file under. Defaults to 'recording.ogg'.
+     * @param array $fixturefiles fixture file name => filename to save as.
      * @return question_file_saver a question_file_saver that contains the given amount of dummy files, for use in testing.
      */
-    public static function make_recording_saver(
-            string $fixturefile,
-            string $filename = 'recording.ogg'): question_file_saver {
-        return new question_file_saver(self::make_recording_in_draft_area($fixturefile, $filename),
-                'question', 'response_recording');
+    public static function make_recordings_saver(array $fixturefiles): question_file_saver {
+        return new question_file_saver(self::make_recordings_in_draft_area($fixturefiles),
+            'question', 'response_recording');
     }
 }

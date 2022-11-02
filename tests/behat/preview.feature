@@ -67,6 +67,7 @@ Feature: Preview record audio and video questions
     And "Download development.mp3" "link" should exist
     And "Download installation.mp3" "link" should exist
     And "Download user_experience.mp3" "link" should exist
+    And I should see "Saved: development.mp3, installation.mp3, user_experience.mp3"
 
     Scenario: Download options can be hidden in record audio questions
     Given the following "permission overrides" exist:
