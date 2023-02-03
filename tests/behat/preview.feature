@@ -69,7 +69,7 @@ Feature: Preview record audio and video questions
     And "Download user_experience.ogg" "link" should exist
     And I should see "Saved: development.ogg, installation.ogg, user_experience.ogg"
 
-    Scenario: Download options can be hidden in record audio questions
+  Scenario: Download options can be hidden in record audio questions
     Given the following "permission overrides" exist:
       | capability                         | permission | role           | contextlevel | reference |
       | qtype/recordrtc:downloadrecordings | Prevent    | editingteacher | System       |           |
