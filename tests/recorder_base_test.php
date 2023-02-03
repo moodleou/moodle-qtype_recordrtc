@@ -33,6 +33,7 @@ class recorder_base_test extends \advanced_testcase {
     public function widget_name_from_filename_cases(): array {
         return [
             ['recording.mp3', 'recording'],
+            ['recording.ogg', 'recording'],
             ['my_introduction.webm', 'my introduction'],
         ];
     }

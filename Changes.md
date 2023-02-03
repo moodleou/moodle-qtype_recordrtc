@@ -1,5 +1,16 @@
 # Change log for the Record audio and video question type
 
+## Changes in 1.6
+
+* We are switching back from MP3 to OGG format. All signficant browser now support OGG,
+  and the MP3 conversions was sometime corrupting the recordings.
+* There is a capability to control whether users are allowed to download recordings.
+* The question text is now validated when the 'Update the form' button is clicked.
+* The form now has option to control what happens when used with the Self-assessment question behaviour.
+* Admin imposed time-limit now cannot be bypassed by a question setting.
+* Better display of what was recorded in the response history.
+
+
 ## Changes in 1.5
 
 * New feature to allow recording to be paused in the middle (if the teacher wants it).

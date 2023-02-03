@@ -72,9 +72,9 @@ class behat_qtype_recordrtc extends behat_base {
         $draftitemid = $draftitemidnode->getValue();
 
         $filename = (new qtype_recordrtc())->get_media_filename($inputname, $mediatype);
-        // To test the backwards compatibility, allow ogg files to be uploaded.
-        if (substr($fixturefile, -4) === '.ogg') {
-            $filename = substr($filename, 0, -4) . '.ogg';
+        // To test the backwards compatibility, allow mp3 files to be uploaded.
+        if (substr($fixturefile, -4) === '.mp3') {
+            $filename = substr($filename, 0, -4) . '.mp3';
         }
 
         $user = $DB->get_record('user', ['username' => $username]);

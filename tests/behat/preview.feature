@@ -31,25 +31,25 @@ Feature: Preview record audio and video questions
     And I should see "Not answered"
     And I should see "I hope you spoke clearly and coherently."
 
+  Scenario: Can still access the recording from an attempt made when the format was .mp3
+    Given the following config values are set as admin:
+      | behaviour | immediatefeedback | question_preview |
+      | history   | shown             | question_preview |
+    When I am on the "Record audio question" "core_question > preview" page logged in as teacher
+    And I should see "Please record yourself talking about Moodle."
+    And "teacher" has recorded "small.mp3" into the record RTC question
+    And I press "Submit and finish"
+    Then "Download recording.mp3" "link" should exist
+
   Scenario: Preview an audio question and try to submit a response
     Given the following config values are set as admin:
       | behaviour | immediatefeedback | question_preview |
       | history   | shown             | question_preview |
     When I am on the "Record audio question" "core_question > preview" page logged in as teacher
     And I should see "Please record yourself talking about Moodle."
-    When "teacher" has recorded "small.mp3" into the record RTC question
+    And "teacher" has recorded "moodle-tim.ogg" into the record RTC question
     And I press "Submit and finish"
-    And "Download recording.mp3" "link" should exist
-
-  Scenario: Can still access the recording from an attempt made when the format was .ogg
-    Given the following config values are set as admin:
-      | behaviour | immediatefeedback | question_preview |
-      | history   | shown             | question_preview |
-    When I am on the "Record audio question" "core_question > preview" page logged in as teacher
-    And I should see "Please record yourself talking about Moodle."
-    When "teacher" has recorded "moodle-tim.ogg" into the record RTC question
-    And I press "Submit and finish"
-    And "Download recording.ogg" "link" should exist
+    Then "Download recording.ogg" "link" should exist
 
   Scenario: Preview a Customised (customav) question with three audio inputs and try to submit three responses
     And the following config values are set as admin:
@@ -60,14 +60,14 @@ Feature: Preview record audio and video questions
     And I should see "Development"
     And I should see "Installation"
     And I should see "User experience"
-    When "teacher" has recorded "small.mp3" as "audio" into input "development" of the record RTC question
-    And "teacher" has recorded "small.mp3" as "audio" into input "installation" of the record RTC question
-    And "teacher" has recorded "small.mp3" as "audio" into input "user_experience" of the record RTC question
+    When "teacher" has recorded "development.ogg" as "audio" into input "development" of the record RTC question
+    And "teacher" has recorded "installation.ogg" as "audio" into input "installation" of the record RTC question
+    And "teacher" has recorded "user_experience.ogg" as "audio" into input "user_experience" of the record RTC question
     And I press "Submit and finish"
-    And "Download development.mp3" "link" should exist
-    And "Download installation.mp3" "link" should exist
-    And "Download user_experience.mp3" "link" should exist
-    And I should see "Saved: development.mp3, installation.mp3, user_experience.mp3"
+    And "Download development.ogg" "link" should exist
+    And "Download installation.ogg" "link" should exist
+    And "Download user_experience.ogg" "link" should exist
+    And I should see "Saved: development.ogg, installation.ogg, user_experience.ogg"
 
     Scenario: Download options can be hidden in record audio questions
     Given the following "permission overrides" exist:
@@ -78,6 +78,6 @@ Feature: Preview record audio and video questions
       | history   | shown             | question_preview |
     When I am on the "Record audio question" "core_question > preview" page logged in as teacher
     And I should see "Please record yourself talking about Moodle."
-    When "teacher" has recorded "small.mp3" into the record RTC question
+    When "teacher" has recorded "moodle-tim.ogg" into the record RTC question
     And I press "Submit and finish"
-    And "Download recording.mp3" "link" should not exist
+    And "Download recording.ogg" "link" should not exist

@@ -377,7 +377,7 @@ class qtype_recordrtc extends question_type {
      */
     public static function get_media_filename(string $filename, string $mediatype): string {
         if ($mediatype === self::MEDIA_TYPE_AUDIO) {
-            return $filename . '.mp3';
+            return $filename . '.ogg';
         } else if ($mediatype === self::MEDIA_TYPE_VIDEO) {
             return $filename . '.webm';
         }

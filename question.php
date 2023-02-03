@@ -119,8 +119,8 @@ class qtype_recordrtc_question extends question_with_responses {
     /**
      * Get a specific file from the array of files in a resonse (or null).
      *
-     * To support questions answered before we switched recording format from OGG to MP3,
-     * if you are looking for file.mp3, and file.ogg is found, then that is returned,
+     * To support questions answered with recording format OGG to MP3, before we swtiched back again,
+     * if you are looking for file.ogg, and file.mp3 is found, then that is returned,
      * and $filename (passed by reference) is updated.
      *
      * @param string $filename the file we want.
@@ -129,8 +129,8 @@ class qtype_recordrtc_question extends question_with_responses {
      */
     public function get_file_from_response(string &$filename, array $files): ?stored_file {
         $legacyfilename = null;
-        if (substr($filename, -4) === '.mp3') {
-            $legacyfilename = substr($filename, 0, -4) . '.ogg';
+        if (substr($filename, -4) === '.ogg') {
+            $legacyfilename = substr($filename, 0, -4) . '.mp3';
         }
         foreach ($files as $file) {
             if ($file->get_filename() === $filename) {
