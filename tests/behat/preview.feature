@@ -52,7 +52,7 @@ Feature: Preview record audio and video questions
     Then "Download recording.ogg" "link" should exist
 
   Scenario: Preview a Customised (customav) question with three audio inputs and try to submit three responses
-    And the following config values are set as admin:
+    Given the following config values are set as admin:
       | behaviour | immediatefeedback | question_preview |
       | history   | shown             | question_preview |
     When I am on the "Record customav question" "core_question > preview" page logged in as teacher
@@ -60,11 +60,11 @@ Feature: Preview record audio and video questions
     And I should see "Development"
     And I should see "Installation"
     And I should see "User experience"
-    When "teacher" has recorded "development.ogg" as "audio" into input "development" of the record RTC question
+    And "teacher" has recorded "development.ogg" as "audio" into input "development" of the record RTC question
     And "teacher" has recorded "installation.ogg" as "audio" into input "installation" of the record RTC question
     And "teacher" has recorded "user_experience.ogg" as "audio" into input "user_experience" of the record RTC question
     And I press "Submit and finish"
-    And "Download development.ogg" "link" should exist
+    Then "Download development.ogg" "link" should exist
     And "Download installation.ogg" "link" should exist
     And "Download user_experience.ogg" "link" should exist
     And I should see "Saved: development.ogg, installation.ogg, user_experience.ogg"
@@ -78,6 +78,6 @@ Feature: Preview record audio and video questions
       | history   | shown             | question_preview |
     When I am on the "Record audio question" "core_question > preview" page logged in as teacher
     And I should see "Please record yourself talking about Moodle."
-    When "teacher" has recorded "moodle-tim.ogg" into the record RTC question
+    And "teacher" has recorded "moodle-tim.ogg" into the record RTC question
     And I press "Submit and finish"
-    And "Download recording.ogg" "link" should not exist
+    Then "Download recording.ogg" "link" should not exist

@@ -663,7 +663,8 @@ function AudioSettings(bitRate) {
         audio: true
     };
     this.mimeTypes = [
-        'audio/mpeg',
+        'audio/webm;codecs=opus',
+        'audio/ogg;codecs=opus'
     ];
 }
 

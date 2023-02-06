@@ -119,7 +119,7 @@ class qtype_recordrtc_question extends question_with_responses {
     /**
      * Get a specific file from the array of files in a resonse (or null).
      *
-     * To support questions answered with recording format OGG to MP3, before we swtiched back again,
+     * To support questions answered with recording format OGG to MP3, before we switched back again,
      * if you are looking for file.ogg, and file.mp3 is found, then that is returned,
      * and $filename (passed by reference) is updated.
      *
