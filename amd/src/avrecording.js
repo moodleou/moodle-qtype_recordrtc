@@ -122,6 +122,11 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
     const mediaElement = widget.querySelector('.qtype_recordrtc-media-player ' + mediaSettings.name);
     const noMediaPlaceholder = widget.querySelector('.qtype_recordrtc-no-recording-placeholder');
     const timeDisplay = widget.querySelector('.qtype_recordrtc-time-left');
+    const progressBar = widget.querySelector('.qtype_recordrtc-time-left .qtype_recordrtc-timer-front');
+    const backTimeEnd = widget.querySelector('.qtype_recordrtc-time-left .qtype_recordrtc-timer-back span.timer-end');
+    const backtimeStart = widget.querySelector('.qtype_recordrtc-time-left .qtype_recordrtc-timer-back span.timer-start');
+    const frontTimeEnd = widget.querySelector('.qtype_recordrtc-time-left .qtype_recordrtc-timer-front span.timer-end');
+    const fronttimeStart = widget.querySelector('.qtype_recordrtc-time-left .qtype_recordrtc-timer-front span.timer-start');
 
     widget.addEventListener('click', handleButtonClick);
     this.uploadMediaToServer = uploadMediaToServer; // Make this method available.
@@ -166,6 +171,9 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      * Start recording (because the button was clicked).
      */
     function startRecording() {
+
+        // Reset timer label.
+        setLabelForTimer(0, parseInt(widget.dataset.maxRecordingDuration));
 
         if (mediaSettings.name === 'audio') {
             mediaElement.parentElement.classList.add('hide');
@@ -237,6 +245,9 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         mediaRecorder.start(1000); // Capture in one-second chunks. Firefox requires that.
 
         widget.dataset.state = 'recording';
+        // Set duration for progressbar and start animate.
+        progressBar.style.animationDuration = widget.dataset.maxRecordingDuration + 's';
+        progressBar.classList.add('animate');
         setButtonLabel('stoprecording');
         startCountdownTimer();
         if (mediaSettings.name === 'video') {
@@ -291,6 +302,8 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         setPauseButtonLabel('resume');
         mediaRecorder.pause();
         widget.dataset.state = 'paused';
+        // Pause animate.
+        toggleProgressbarState();
     }
 
     /**
@@ -302,6 +315,8 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         widget.dataset.state = 'recording';
         setPauseButtonLabel('pause');
         mediaRecorder.resume();
+        // Resume animate.
+        toggleProgressbarState();
     }
 
     /**
@@ -321,6 +336,11 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
             setPauseButtonLabel('pause');
             pauseButton.parentElement.classList.add('hide');
         }
+
+        // Reset animation state.
+        progressBar.style.animationPlayState = 'running';
+        // Stop animate.
+        progressBar.classList.remove('animate');
 
         // Ask the recording to stop.
         mediaRecorder.stop();
@@ -387,6 +407,8 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         button.classList.remove('btn-danger');
         button.classList.add('btn-outline-danger');
         widget.dataset.state = 'new';
+        // Hide time display.
+        timeDisplay.classList.add('hide');
 
         if (mediaRecorder) {
             mediaRecorder.stop();
@@ -435,15 +457,45 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
     function updateTimerDisplay() {
         const millisecondsRemaining = stopTime - Date.now();
         const secondsRemaining = Math.round(millisecondsRemaining / 1000);
-        const secs = secondsRemaining % 60;
-        const mins = Math.round((secondsRemaining - secs) / 60);
-
-        timeDisplay.innerText = M.util.get_string('timedisplay', 'qtype_recordrtc',
-                {mins: pad(mins), secs: pad(secs)});
-
+        const secondsStart = widget.dataset.maxRecordingDuration - secondsRemaining;
+        // Set time label for elements.
+        setLabelForTimer(secondsStart, secondsRemaining);
         if (millisecondsRemaining <= 0) {
             stopRecording();
         }
+    }
+
+    /**
+     * Get time label for timer.
+     *
+     * @param {number} seconds The time in seconds.
+     * @return {string} The label for timer. e.g. '00:00' or '10:00'.
+     */
+    function getTimeLabelForTimer(seconds) {
+        const secs = seconds % 60;
+        const mins = Math.round((seconds - secs) / 60);
+
+        return M.util.get_string('timedisplay', 'qtype_recordrtc',
+            {mins: pad(mins), secs: pad(secs)});
+    }
+
+    /**
+     * Set time label for timer.
+     * We need to update the labels for both the timer back(whose background color is white) and
+     * timer front (with blue background) to create a text effect that contrasts with the background color.
+     *
+     * @param {Number} secondsStart The second start. e.g: With duration 1 minute
+     * secondsStart will start from 0 and increase up to 60.
+     * @param {Number} secondsRemaining The second remaining. e.g: With duration 1 minute
+     * secondsRemaining will decrease from 60 to 0.
+     */
+    function setLabelForTimer(secondsStart, secondsRemaining) {
+        // Set time label for timer back.
+        backTimeEnd.innerText = getTimeLabelForTimer(secondsRemaining);
+        backtimeStart.innerText = getTimeLabelForTimer(secondsStart);
+        // Set time label for timer front.
+        frontTimeEnd.innerText = getTimeLabelForTimer(secondsRemaining);
+        fronttimeStart.innerText = getTimeLabelForTimer(secondsStart);
     }
 
     /**
@@ -647,6 +699,14 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
                 button.disabled = !enabled;
             }
         );
+    }
+
+    /**
+     * Pause/resume the progressbar state.
+     */
+    function toggleProgressbarState() {
+        const running = progressBar.style.animationPlayState || 'running';
+        progressBar.style.animationPlayState = running === 'running' ? 'paused' : 'running';
     }
 }
 
