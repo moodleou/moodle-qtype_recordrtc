@@ -68,7 +68,7 @@ class widget_info {
      * @return int actual time limit to use, which will be the smaller of the requested one and the admin limit.
      */
     protected function limit_max_duration(int $maxduration): int {
-        if ($this->type === \qtype_recordrtc::MEDIA_TYPE_AUDIO) {
+        if ($this->type === \qtype_recordrtc::MEDIA_TYPE_AUDIO || $this->type === \qtype_recordrtc::MEDIA_TYPE_HIDDEN_AUDIO) {
             $limit = get_config('qtype_recordrtc', 'audiotimelimit');
         } else {
             $limit = get_config('qtype_recordrtc', 'videotimelimit');
@@ -84,6 +84,61 @@ class widget_info {
      */
     public function get_protected_placeholder(): string {
         return \html_writer::span($this->placeholder, 'nolink');
+    }
+
+    /**
+     * Return true, if widget has audio type (video type otherwise)
+     *
+     * @return bool
+     */
+    public function is_audio_type(): bool {
+        return $this->type === \qtype_recordrtc::MEDIA_TYPE_AUDIO || $this->type === \qtype_recordrtc::MEDIA_TYPE_HIDDEN_AUDIO;
+    }
+
+    /**
+     * Return true, if widget has type with hidden question
+     *
+     * @return bool
+     */
+    public function is_hidden_type(): bool {
+        return $this->type === \qtype_recordrtc::MEDIA_TYPE_HIDDEN_AUDIO || $this->type === \qtype_recordrtc::MEDIA_TYPE_HIDDEN_VIDEO;
+    }
+
+    /**
+     * Get playback class based on widget type
+     *
+     * @param string      $filename     the file name.
+     * @param string|null $recordingurl if we are re-displaying, after a recording was made, this is the audio file.
+     * @param bool        $candownload  whether the current user should see options to download the recordings.
+     *
+     * @return \qtype_recordrtc\output\playback_base|\qtype_recordrtc\output\audio_playback|\qtype_recordrtc\output\video_playback
+     */
+    public function get_playback(string $filename, ?string $recordingurl=null, bool $candownload=false): object {
+        if ($this->is_audio_type()) {
+            return new \qtype_recordrtc\output\audio_playback($filename, $recordingurl, $candownload);
+        } else {
+            return new \qtype_recordrtc\output\video_playback($filename, $recordingurl, $candownload);
+        }
+    }
+
+    /**
+     * Get recorder class based on widget type
+     *
+     * @param string           $filename     - the file name this recorder saves as.
+     * @param bool             $allowpausing - whether the user is allowed to pause, mid-recording.
+     * @param \moodle_url|null $recordingurl - if we are re-displaying, after a recording was made, this is the audio file.
+     * @param bool             $candownload  - whether the current user should see options to download the recordings.
+     * @param bool             $denyrerecord - whether the current user can re-record his answer
+     *
+     * @return \qtype_recordrtc\output\recorder_base|\qtype_recordrtc\output\audio_recorder|\qtype_recordrtc\output\video_recorder
+     */
+    public function get_recorder(string $filename, bool $allowpausing=false, ?\moodle_url $recordingurl=null,
+        bool $candownload=false, bool $denyrerecord=false): object {
+        if ($this->is_audio_type()) {
+            return new \qtype_recordrtc\output\audio_recorder($this, $filename, $allowpausing, $recordingurl, $candownload, $denyrerecord);
+        } else {
+            return new \qtype_recordrtc\output\video_recorder($this, $filename, $allowpausing, $recordingurl, $candownload, $denyrerecord);
+        }
     }
 
     /**

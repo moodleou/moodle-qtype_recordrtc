@@ -315,11 +315,18 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         stopCountdownTimer();
 
         // Update the button.
-        button.classList.remove('btn-danger');
-        button.classList.add('btn-outline-danger');
-        if (pauseButton) {
-            setPauseButtonLabel('pause');
-            pauseButton.parentElement.classList.add('hide');
+        if (widget.dataset.denyRerecord){
+            button.remove();
+            if (pauseButton){
+                pauseButton.parentElement.remove();
+            }
+        } else {
+            button.classList.remove('btn-danger');
+            button.classList.add('btn-outline-danger');
+            if (pauseButton) {
+                setPauseButtonLabel('pause');
+                pauseButton.parentElement.classList.add('hide');
+            }
         }
 
         // Ask the recording to stop.
@@ -355,17 +362,19 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
 
         if (mediaSettings.name === 'audio') {
             timeDisplay.classList.add('hide');
-
         } else {
-            button.parentElement.classList.remove('hide');
+            button.parentElement?.classList.remove('hide');
             controlRow.classList.add('hide');
             controlRow.classList.remove('d-flex');
         }
 
         // Ensure the button while things change.
-        button.disabled = true;
-        button.classList.remove('btn-danger');
-        button.classList.add('btn-outline-danger');
+        if (button.parentElement){
+            button.disabled = true;
+            button.classList.remove('btn-danger');
+            button.classList.add('btn-outline-danger');
+        }
+
         widget.dataset.state = 'recorded';
 
         if (chunks.length > 0) {

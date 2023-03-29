@@ -32,7 +32,7 @@ require_once($CFG->dirroot . '/question/type/recordrtc/question.php');
 
 
 /**
- * The record audio and video question type question type.
+ * The record audio and video question type.
  *
  * @copyright 2019 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -54,6 +54,27 @@ class qtype_recordrtc extends question_type {
     /** @var string media type custom AV. */
     const MEDIA_TYPE_CUSTOM_AV = 'customav';
 
+    /** @var string media type audio. */
+    const MEDIA_TYPE_HIDDEN_AUDIO = 'haudio';
+
+    /** @var string media type video. */
+    const MEDIA_TYPE_HIDDEN_VIDEO = 'hvideo';
+
+    /** @var array all media types */
+    const MEDIA_TYPES = [
+        self::MEDIA_TYPE_AUDIO,
+        self::MEDIA_TYPE_VIDEO,
+        self::MEDIA_TYPE_CUSTOM_AV,
+        self::MEDIA_TYPE_HIDDEN_AUDIO,
+        self::MEDIA_TYPE_HIDDEN_VIDEO,
+    ];
+
+    const MEDIA_TYPES_WITHOUT_PREQUESTION = [
+        self::MEDIA_TYPE_AUDIO,
+        self::MEDIA_TYPE_VIDEO,
+        self::MEDIA_TYPE_CUSTOM_AV,
+    ];
+
     /** @var string validate_widget_placeholders pattern. */
     const VALIDATE_WIDGET_PLACEHOLDERS = "/\[\[([A-Za-z0-9 _-]+):([a-z]+)(:(?:[0-9]+m)?(?:[0-9]+s)?)?\]\]/";
 
@@ -68,8 +89,19 @@ class qtype_recordrtc extends question_type {
         return ['recording'];
     }
 
+    /**
+     * If your question type has a table that extends the question table, and
+     * you want the base class to automatically save, backup and restore the extra fields,
+     * override this method to return an array wherer the first element is the table name,
+     * and the subsequent entries are the column names (apart from id and questionid).
+     *
+     * @return mixed array as above, or null to tell the base class to do nothing.
+     */
     public function extra_question_fields(): array {
-        return ['qtype_recordrtc_options', 'mediatype', 'timelimitinseconds', 'allowpausing', 'canselfrate', 'canselfcomment'];
+        return [
+            'qtype_recordrtc_options',
+            'mediatype', 'prequestion', 'timelimitinseconds', 'allowpausing', 'canselfrate', 'canselfcomment', 'denyrerecord',
+        ];
     }
 
     public function save_defaults_for_new_questions(stdClass $fromform): void {
@@ -79,6 +111,7 @@ class qtype_recordrtc extends question_type {
         $this->set_default_value('mediatype', $fromform->mediatype);
         $this->set_default_value('timelimitinseconds', $fromform->timelimitinseconds);
         $this->set_default_value('allowpausing', $fromform->allowpausing);
+        $this->set_default_value('denyrerecord', $fromform->denyrerecord);
         if (is_readable($CFG->dirroot . '/question/behaviour/selfassess/behaviour.php')) {
             // These settings are only relevant if the behaviour is installed.
             $this->set_default_value('canselfrate', $fromform->canselfrate);
@@ -86,63 +119,50 @@ class qtype_recordrtc extends question_type {
         }
     }
 
-    public function save_question_options($fromform) {
-        global $DB;
+    /**
+     * Saves question-type specific options
+     * This is called by {@link save_question()} to save the question-type specific data
+     *
+     * You can process edit form here, before saving it in the DB
+     * Saved fields depends on {@see extra_question_fields()}
+     *
+     * @param object $question  This holds the information from the editing form,
+     *      it is not a standard question object.
+     *
+     * @return object|null $result->error or $result->notice
+     */
+    public function save_question_options($question) {
+        $fromform = $question;
 
-        parent::save_question_options($fromform);
-        if ($fromform->mediatype !== self::MEDIA_TYPE_CUSTOM_AV) {
-            return;
+        // Save custom fields
+        $prequestion_text = '';
+        if (isset($fromform->prequestion['text'])) {
+            /** For the preprocessing @see \qtype_recordrtc_edit_form::data_preprocessing_prequestion() */
+            $prequestion_text = trim($fromform->prequestion['text']);
+
+            if (!empty($prequestion_text) && !empty($fromform->prequestion['itemid'])) {
+                $prequestion_text = file_save_draft_area_files($fromform->prequestion['itemid'],
+                    $question->context->id, 'qtype_recordrtc', 'prequestion', (int)($question->id ?? null),
+                    $this->fileoptions, $prequestion_text);
+            }
+        }
+        $fromform->prequestion = $prequestion_text;
+
+        $response = parent::save_question_options($fromform);
+
+        // Update previous answers
+        if ($fromform->mediatype === static::MEDIA_TYPE_CUSTOM_AV) {
+            $this->update_custom_av_answers($fromform);
         }
 
-        $widgets = $this->get_widget_placeholders($fromform->questiontext);
-
-        $context = $fromform->context;
-        $oldanswers = $DB->get_records('question_answers',
-                ['question' => $fromform->id], 'id ASC');
-
-        // Insert all the new answers.
-        foreach ($widgets as $widget) {
-            $fieldname = 'feedbackfor' . $widget->name;
-
-            // Check for, and ignore, when answer(feedback) is not set on the form.
-            if (!isset($fromform->{$fieldname})) {
-                continue;
-            }
-            // Check for, and ignore, completely blank answer from the form.
-            if (html_is_blank($fromform->{$fieldname}['text'])) {
-                continue;
-            }
-
-            // Update an existing answer if possible.
-            $answer = array_shift($oldanswers);
-            if (!$answer) {
-                $answer = new stdClass();
-                $answer->question = $fromform->id;
-                $answer->answer = '';
-                $answer->feedback = '';
-                $answer->id = $DB->insert_record('question_answers', $answer);
-            }
-
-            $answer->answer = $widget->name;
-            $answer->feedback = $this->import_or_save_files($fromform->{$fieldname},
-                    $context, 'question', 'answerfeedback', $answer->id);
-            $answer->feedbackformat = $fromform->{$fieldname}['format'];
-            $DB->update_record('question_answers', $answer);
-        }
-
-        // Delete any left over old answer records.
-        $fs = get_file_storage();
-        foreach ($oldanswers as $oldanswer) {
-            $fs->delete_area_files($context->id, 'question', 'answerfeedback', $oldanswer->id);
-            $DB->delete_records('question_answers', ['id' => $oldanswer->id]);
-        }
+        return $response;
     }
 
     protected function initialise_question_instance(question_definition $question, $questiondata) {
         parent::initialise_question_instance($question, $questiondata);
 
         // Work out which widget placeholders we have.
-        if ($questiondata->options->mediatype == self::MEDIA_TYPE_CUSTOM_AV) {
+        if ($questiondata->options->mediatype === static::MEDIA_TYPE_CUSTOM_AV) {
             $question->widgets = $this->get_widget_placeholders(
                     $questiondata->questiontext, $questiondata->options->timelimitinseconds);
         } else {
@@ -152,7 +172,10 @@ class qtype_recordrtc extends question_type {
             // There was no recorder in the question text. Add a default one.
             $widget = new widget_info('recording', $questiondata->options->mediatype,
                     $questiondata->options->timelimitinseconds);
-            $question->questiontext .= html_writer::div($widget->placeholder);
+
+            if (!$widget->is_hidden_type()){
+                $question->questiontext .= html_writer::div($widget->placeholder);
+            }
             $question->widgets = [$widget->name => $widget];
         }
 
@@ -210,6 +233,61 @@ class qtype_recordrtc extends question_type {
     }
 
     /**
+     * @param object $fromform
+     *
+     * @return void
+     */
+    protected function update_custom_av_answers($fromform){
+        global $DB;
+        if (empty($fromform) || $fromform->mediatype !== static::MEDIA_TYPE_CUSTOM_AV) {
+            return;
+        }
+
+        $widgets = $this->get_widget_placeholders($fromform->questiontext);
+
+        $context = $fromform->context;
+        $oldanswers = $DB->get_records('question_answers',
+            ['question' => $fromform->id], 'id ASC');
+
+        // Insert all the new answers.
+        foreach ($widgets as $widget) {
+            $fieldname = 'feedbackfor' . $widget->name;
+
+            // Check for, and ignore, when answer(feedback) is not set on the form.
+            if (!isset($fromform->{$fieldname})) {
+                continue;
+            }
+            // Check for, and ignore, completely blank answer from the form.
+            if (html_is_blank($fromform->{$fieldname}['text'])) {
+                continue;
+            }
+
+            // Update an existing answer if possible.
+            $answer = array_shift($oldanswers);
+            if (!$answer) {
+                $answer = new stdClass();
+                $answer->question = $fromform->id;
+                $answer->answer = '';
+                $answer->feedback = '';
+                $answer->id = $DB->insert_record('question_answers', $answer);
+            }
+
+            $answer->answer = $widget->name;
+            $answer->feedback = $this->import_or_save_files($fromform->{$fieldname},
+                $context, 'question', 'answerfeedback', $answer->id);
+            $answer->feedbackformat = $fromform->{$fieldname}['format'];
+            $DB->update_record('question_answers', $answer);
+        }
+
+        // Delete any leftover old answer records.
+        $fs = get_file_storage();
+        foreach ($oldanswers as $oldanswer) {
+            $fs->delete_area_files($context->id, 'question', 'answerfeedback', $oldanswer->id);
+            $DB->delete_records('question_answers', ['id' => $oldanswer->id]);
+        }
+    }
+
+    /**
      * When there are placeholders in the question text, validate them.
      *
      * @param string $qtext the question text in which to validate the placeholders.
@@ -233,19 +311,19 @@ class qtype_recordrtc extends question_type {
         preg_match_all(self::VALIDATE_WIDGET_PLACEHOLDERS, $qtext, $matches);
         [$placeholders, $widgetnames, $widgettypes, $durations] = $matches;
 
-        // If mediatype is audio or video, custom place-holder is not allowed, and that is the only check required.
-        if ($mediatype === self::MEDIA_TYPE_AUDIO || $mediatype === self::MEDIA_TYPE_VIDEO) {
+        // If mediatype is customav, there is need for custom placeholer(s).
+        if ($mediatype === static::MEDIA_TYPE_CUSTOM_AV) {
+            if (!$matches[2]){
+                return [get_string('err_placeholderneeded', 'qtype_recordrtc'), ''];
+            }
+        } else {
+            // If media type is audio or video, custom place-holder is not allowed, and that is the only check required.
             if ($placeholders) {
                 return [get_string('err_placeholdernotallowed', 'qtype_recordrtc',
                     get_string($mediatype, 'qtype_recordrtc')), ''];
             } else {
                 return ['', ''];
             }
-        }
-
-        // If mediatype is customav, there is need for custom placeholer(s).
-        if ($mediatype === self::MEDIA_TYPE_CUSTOM_AV && !$matches[2]) {
-            return [get_string('err_placeholderneeded', 'qtype_recordrtc'), ''];
         }
 
         // Check all properties of all widgets, and collect the results.
@@ -317,13 +395,14 @@ class qtype_recordrtc extends question_type {
             }
 
             $duration = widget_info::duration_to_seconds($dur);
+            $type = $widgettypes[$key];
             if ($duration <= 0) {
                 $allplacehodlerproblems[] = get_string('err_zeroornegativetimelimit', 'qtype_recordrtc', $dur);
 
-            } else if ($widgettypes[$key] === self::MEDIA_TYPE_AUDIO && $duration > $audiotimelimit) {
+            } else if ($duration > $audiotimelimit && ($type === static::MEDIA_TYPE_AUDIO || $type === static::MEDIA_TYPE_HIDDEN_AUDIO)) {
                 $allplacehodlerproblems[] = get_string('err_audiotimelimit', 'qtype_recordrtc', $audiotimelimit);
 
-            } else if ($widgettypes[$key] === self::MEDIA_TYPE_VIDEO && $duration > $videotimelimit) {
+            } else if ($duration > $videotimelimit && ($type === static::MEDIA_TYPE_VIDEO || $type === static::MEDIA_TYPE_HIDDEN_VIDEO)) {
                 $allplacehodlerproblems[] = get_string('err_videotimelimit', 'qtype_recordrtc', $videotimelimit);
             }
         }
@@ -376,11 +455,25 @@ class qtype_recordrtc extends question_type {
      * @return string the file name that should be used.
      */
     public static function get_media_filename(string $filename, string $mediatype): string {
-        if ($mediatype === self::MEDIA_TYPE_AUDIO) {
+        if ($mediatype === static::MEDIA_TYPE_AUDIO || $mediatype === static::MEDIA_TYPE_HIDDEN_AUDIO) {
             return $filename . '.ogg';
-        } else if ($mediatype === self::MEDIA_TYPE_VIDEO) {
+        } else if ($mediatype === static::MEDIA_TYPE_VIDEO || $mediatype === static::MEDIA_TYPE_HIDDEN_VIDEO) {
             return $filename . '.webm';
         }
         throw new coding_exception('Unknown media type ' . $mediatype);
+    }
+
+    /**
+     * Return possible media type options with translated names
+     *
+     * @return array
+     */
+    public static function get_media_type_options(): array {
+        $options = [];
+        foreach (static::MEDIA_TYPES as $media_type){
+            $options[$media_type] = get_string($media_type, 'qtype_recordrtc');
+        }
+
+        return $options;
     }
 }

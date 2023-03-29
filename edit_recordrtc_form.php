@@ -68,20 +68,34 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         return $this->get_default_value('mediatype', qtype_recordrtc::MEDIA_TYPE_AUDIO);
     }
 
+    /**
+     * @param \MoodleQuickForm $mform
+     *
+     * @return void
+     */
     protected function definition_inner($mform) {
         global $CFG;
         $currentmediatype = $this->get_current_mediatype();
 
         // Field for mediatype.
-        $mediaoptions = [
-            qtype_recordrtc::MEDIA_TYPE_AUDIO => get_string('audio', 'qtype_recordrtc'),
-            qtype_recordrtc::MEDIA_TYPE_VIDEO => get_string('video', 'qtype_recordrtc'),
-            qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV => get_string('customav', 'qtype_recordrtc')
-        ];
+        $mediaoptions = qtype_recordrtc::get_media_type_options();
         $mediatype = $mform->createElement('select', 'mediatype', get_string('mediatype', 'qtype_recordrtc'), $mediaoptions);
         $mform->insertElementBefore($mediatype, 'questiontext');
         $mform->addHelpButton('mediatype', 'mediatype', 'qtype_recordrtc');
         $mform->setDefault('mediatype', $this->get_default_value('mediatype', qtype_recordrtc::MEDIA_TYPE_AUDIO));
+
+        // Pre-question
+        $prequestion = $mform->createElement('editor', 'prequestion', get_string('prequestion', 'qtype_recordrtc'),
+            array('rows' => 15), $this->editoroptions);
+        $mform->setType('prequestion', PARAM_RAW);
+        // hideIf doesn't work properly for the editor, so we need to wrap it by group
+        $prequestion_group = $mform->createElement('group', 'prequestion_group',
+            get_string('prequestion', 'qtype_recordrtc'), [$prequestion], '', false);
+
+        $mform->hideIf('prequestion_group', 'mediatype', 'in', qtype_recordrtc::MEDIA_TYPES_WITHOUT_PREQUESTION);
+
+        $mform->insertElementBefore($prequestion_group, 'questiontext');
+        $mform->addHelpButton('prequestion_group', 'prequestion', 'qtype_recordrtc');
 
         // Add instructions and widget placeholder templates for question authors to copy and paste into the question text.
         $placeholders = [
@@ -124,6 +138,10 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $mform->addElement('selectyesno', 'allowpausing', get_string('allowpausing', 'qtype_recordrtc'), '');
         $mform->addHelpButton('allowpausing', 'allowpausing', 'qtype_recordrtc');
         $mform->setDefault('allowpausing', $this->get_default_value('allowpausing', 0));
+
+        $mform->addElement('selectyesno', 'denyrerecord', get_string('denyrerecord', 'qtype_recordrtc'), '');
+        $mform->addHelpButton('denyrerecord', 'denyrerecord', 'qtype_recordrtc');
+        $mform->setDefault('denyrerecord', $this->get_default_value('denyrerecord', 0));
 
         // Settings for self-assessment - but only if the behaviour is installed.
         if (is_readable($CFG->dirroot . '/question/behaviour/selfassess/behaviour.php')) {
@@ -187,9 +205,44 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         return 'feedbackfor' . $widgetname;
     }
 
+    /**
+     * Perform a preprocessing needed on the data passed to {@link set_data()}
+     * before it is used to initialise the form.
+     * @param object $question the data being passed to the form.
+     * @return object $question the modified data.
+     */
     public function data_preprocessing($question): stdClass {
         $question = parent::data_preprocessing($question);
+        $question = $this->data_preprocessing_prequestion($question);
         $question = $this->data_preprocessing_per_input_feedbacks($question);
+        return $question;
+    }
+
+    /**
+     * Perform the necessary preprocessing for the prequestion
+     *
+     * @param object $question the data being passed to the form.
+     *
+     * @return object updated $question
+     */
+    public function data_preprocessing_prequestion(object $question): object {
+        $draftid = file_get_submitted_draft_itemid('prequestion');
+
+        /** For the processing @see \qtype_recordrtc::save_question_options() */
+        $prequestion_text = '';
+        if (isset($question->prequestion)) {
+            $prequestion_text = $question->prequestion;
+        }
+
+        $prequestion_text = file_prepare_draft_area($draftid, $this->context->id,
+            'qtype_recordrtc', 'prequestion', (int)($question->id ?? 0),
+            $this->fileoptions, $prequestion_text);
+
+        $question->prequestion = array();
+        $question->prequestion['text'] = $prequestion_text;
+        $question->prequestion['format'] = $question->questiontextformat ?? editors_get_preferred_format();
+        $question->prequestion['itemid'] = $draftid;
+
         return $question;
     }
 
@@ -197,7 +250,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
      * Perform the necessary preprocessing for the fields added by
      * {@see add_per_input_feedback_fields()}.
      *
-     * @param stdClass $question the data beig passed to the form.
+     * @param stdClass $question the data being passed to the form.
      * @return stdClass updated $question
      */
     public function data_preprocessing_per_input_feedbacks(stdClass $question): stdClass {
@@ -253,10 +306,12 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         // Validate the time limit.
         switch ($fromform['mediatype']) {
             case qtype_recordrtc::MEDIA_TYPE_AUDIO :
+            case qtype_recordrtc::MEDIA_TYPE_HIDDEN_AUDIO :
                 $maxtimelimit = get_config('qtype_recordrtc', 'audiotimelimit');
                 break;
 
             case qtype_recordrtc::MEDIA_TYPE_VIDEO :
+            case qtype_recordrtc::MEDIA_TYPE_HIDDEN_VIDEO :
             case qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV :
                 // We are using the 'Max video recording duration' for customav media type,
                 // because it is shorter than 'Max audio recording duration' and we need to

@@ -56,18 +56,32 @@ abstract class recorder_base implements renderable, templatable {
     protected $candownload;
 
     /**
+     * @var bool whether the current user can see question before recording starts
+     */
+    protected $hide_question = false;
+
+    /**
+     * @var bool whether the current user can re-record his answer
+     */
+    protected $deny_rerecord = false;
+
+    /**
      * Constructor.
      *
-     * @param string $filename the file name this recorder saves as.
-     * @param int $maxrecordingduration maximum allowed recording length, in seconds.
-     * @param bool $allowpausing whether the user is allowed to pause, mid-recording.
-     * @param moodle_url|null $recordingurl if we are re-displaying, after a recording was made, this is the audio file.
-     * @param bool $candownload whether the current user should see options to download the recordings.
+     * @param \qtype_recordrtc\widget_info $widget       widget_info to export some data
+     * @param string                       $filename     the file name this recorder saves as.
+     * @param bool                         $allowpausing whether the user is allowed to pause, mid-recording.
+     * @param moodle_url|null              $recordingurl if we are re-displaying, after a recording was made, this is the audio file.
+     * @param bool                         $candownload  whether the current user should see options to download the recordings.
+     * @param bool                         $denyrerecord whether the current user can re-record his answer
      */
-    public function __construct(string $filename, int $maxrecordingduration,
-            bool $allowpausing, ?moodle_url $recordingurl, bool $candownload) {
+    public function __construct(\qtype_recordrtc\widget_info $widget, string $filename,
+            bool $allowpausing, ?moodle_url $recordingurl, bool $candownload=false, bool $denyrerecord=false) {
+        $this->maxrecordingduration = $widget->maxduration;
+        $this->hide_question = $widget->is_hidden_type();
+        $this->deny_rerecord = $denyrerecord;
+
         $this->filename = $filename;
-        $this->maxrecordingduration = $maxrecordingduration;
         $this->allowpausing = $allowpausing;
         $this->recordingurl = $recordingurl;
         $this->candownload = $candownload;
@@ -91,6 +105,8 @@ abstract class recorder_base implements renderable, templatable {
             'hasrecording' => $this->recordingurl !== null,
             'recordingurl' => $this->recordingurl ? $this->recordingurl->out(false) : '',
             'candownload' => $this->candownload,
+            'hide_question' => $this->hide_question,
+            'deny_rerecord' => $this->deny_rerecord,
         ];
     }
 }

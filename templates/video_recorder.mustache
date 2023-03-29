@@ -38,13 +38,18 @@
         "recordingurl": "http://example.com/moodle/draftfile.php?...",
         "aspectratio": "16x9",
         "width": 640,
-        "candownload": true
+        "candownload": true,
+        "hide_question": true,
+        "deny_rerecord": true
     }
 }}
-<span class="qtype_recordrtc-video-widget qtype_recordrtc-ratio-{{aspectratio}} d-flex flex-column mw-100"
+<span class="qtype_recordrtc-video-widget qtype_recordrtc-widget qtype_recordrtc-ratio-{{aspectratio}} d-flex flex-column mw-100"
       style="width: {{width}}px" data-media-type="video" data-widget-name="{{widgetname}}"
       data-state="{{^hasrecording}}new{{/hasrecording}}{{#hasrecording}}recorded{{/hasrecording}}"
-      data-max-recording-duration="{{maxrecordingduration}}" data-recording-filename="{{filename}}">
+      data-max-recording-duration="{{maxrecordingduration}}" data-recording-filename="{{filename}}"
+      {{#hide_question}}data-hide-question="1"{{/hide_question}}
+      {{#deny_rerecord}}data-deny-rerecord="1"{{/deny_rerecord}}
+>
     <span class="qtype_recordrtc-no-recording-placeholder mb-1 text-center{{#hasrecording}} hide{{/hasrecording}}">{{#str}}norecording, qtype_recordrtc{{/str}}</span>
     <span class="qtype_recordrtc-media-player{{^hasrecording}} hide{{/hasrecording}}">
         <video controls class="w-100"{{^candownload}} oncontextmenu="return false;" controlsList=" nodownload"{{/candownload}}>

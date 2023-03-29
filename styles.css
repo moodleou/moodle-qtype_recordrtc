@@ -1,3 +1,7 @@
+/* General styles */
+.que.recordrtc .qtype_recordrtc-widget {
+    margin: 4px 0;
+}
 /* Styles for audio widgets. */
 .que.recordrtc .qtype_recordrtc-audio-widget {
     width: 20em;
@@ -9,6 +13,15 @@
 }
 .que.recordrtc .qtype_recordrtc-ratio-4x3 .qtype_recordrtc-no-recording-placeholder {
     padding: calc(37.5% - 10.5px) 0;
+}
+
+/* Hide question for specific types */
+.que.recordrtc .qtype_recordrtc-widget[data-hide-question] {
+    margin: 15px 0;
+}
+.que.recordrtc .qtype_recordrtc-widget[data-hide-question]:not([data-state="recording"]) + .qtext {
+    display: none;
+    visibility: hidden;
 }
 
 /* Other styles used while the question is being attempted. */

@@ -25,11 +25,6 @@
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/repository/lib.php');
 
-use qtype_recordrtc\output\audio_playback;
-use qtype_recordrtc\output\audio_recorder;
-use qtype_recordrtc\output\video_playback;
-use qtype_recordrtc\output\video_recorder;
-
 /**
  * Generates output for record audio and video questions.
  *
@@ -67,14 +62,22 @@ class qtype_recordrtc_renderer extends qtype_renderer {
         // <span class="nolink">...</span> tags.
         $questiontext = $question->questiontext;
         foreach ($question->widgets as $widget) {
-            $questiontext = str_replace($widget->placeholder, $widget->get_protected_placeholder(),
-                    $questiontext);
+            if (!$widget->is_hidden_type()){
+                $questiontext = str_replace($widget->placeholder, $widget->get_protected_placeholder(), $questiontext);
+            }
         }
         $questiontext = $question->format_text($questiontext, $question->questiontextformat,
                 $qa, 'question', 'questiontext', $question->id);
 
         // Replace all the placeholders with the corresponding recording or player widget.
+        $hidden_item = '';
         foreach ($question->widgets as $widget) {
+            if (!empty($hidden_item) && $widget->is_hidden_type()){
+                // we can have only one hidden item
+                continue;
+            }
+
+            $recordingurl = null;
             $filename = qtype_recordrtc::get_media_filename($widget->name, $widget->type);
             $existingfile = $question->get_file_from_response($filename, $existingfiles);
 
@@ -82,17 +85,9 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 // Review.
                 if ($existingfile) {
                     $recordingurl = $qa->get_response_file_url($existingfile);
-                } else {
-                    $recordingurl = null;
                 }
 
-                if ($widget->type === 'audio') {
-                    $playback = new audio_playback($filename, $recordingurl, $candownload);
-                } else {
-                    $playback = new video_playback($filename, $recordingurl, $candownload);
-                }
-
-                $thisitem = $this->render($playback);
+                $thisitem = $this->render($widget->get_playback($filename, $recordingurl, $candownload));
                 if ($existingfile) {
                     // The next line should logically just check ->feedback, but for some reason,
                     // manual graded behaviour always sets that to false, so check general feedback
@@ -110,26 +105,27 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 // Being attempted.
                 if ($existingfile) {
                     $recordingurl = moodle_url::make_draftfile_url($draftitemid, '/', $filename);
-                } else {
-                    $recordingurl = null;
-                }
-
-                if ($widget->type === 'audio') {
-                    $recorder = new audio_recorder($filename,
-                            $widget->maxduration, $question->allowpausing, $recordingurl, $candownload);
-                } else {
-                    $recorder = new video_recorder($filename,
-                            $widget->maxduration, $question->allowpausing, $recordingurl, $candownload);
                 }
 
                 // Recording UI.
-                $thisitem = $this->render($recorder);
+                $thisitem = $this->render($widget->get_recorder($filename, $question->allowpausing, $recordingurl, $candownload, $question->denyrerecord));
             }
 
-            $questiontext = str_replace($widget->get_protected_placeholder(), $thisitem, $questiontext);
+            if ($widget->is_hidden_type()){
+                $hidden_item = $thisitem;
+            } else {
+                $questiontext = str_replace($widget->get_protected_placeholder(), $thisitem, $questiontext);
+            }
         }
 
-        $output .= html_writer::tag('div', $questiontext, ['class' => 'qtext']);
+        if (!empty($hidden_item)){
+            if (!empty($question->prequestion)){
+                $output .= html_writer::div($question->format_prequestion($qa), 'prequestion-text');
+            }
+            $output .= $hidden_item;
+        }
+
+        $output .= html_writer::div($questiontext, 'qtext');
 
         if (!$options->readonly) {
             // Initialise the JavaScript.

@@ -34,6 +34,16 @@ class qtype_recordrtc_question extends question_with_responses {
      */
     public $allowpausing;
 
+    /**
+     * @var string pre-question text
+     */
+    public $prequestion;
+
+    /**
+     * @var bool whether the user can re-record
+     */
+    public $denyrerecord;
+
     public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
         global $CFG;
         if (is_readable($CFG->dirroot . '/question/behaviour/selfassess/behaviour.php') &&
@@ -161,25 +171,53 @@ class qtype_recordrtc_question extends question_with_responses {
         return null;
     }
 
-    public function check_file_access($qa, $options, $component, $filearea,
-            $args, $forcedownload): bool {
-        if ($component == 'question' && $filearea == 'response_recording') {
-            // Response recording always accessible.
-            return true;
-        }
-
-        if ($component == 'question' && $filearea == 'answerfeedback') {
-            $answerid = reset($args);
-            foreach ($this->widgets as $widget) {
-                if ($answerid == $widget->answerid) {
-                    // See comment in the renderer about why we check both.
-                    return $options->feedback || $options->generalfeedback;
-                }
+    /**
+     * Checks whether the users are allowed to be served a particular file.
+     *
+     * @param question_attempt         $qa            the question attempt being displayed.
+     * @param question_display_options $options       the options that control display of the question.
+     * @param string                   $component     the name of the component we are serving files for.
+     * @param string                   $filearea      the name of the file area.
+     * @param array                    $args          the remaining bits of the file path.
+     * @param bool                     $forcedownload whether the user must be forced to download the file.
+     *
+     * @return bool true if the user can access this file.
+     */
+    public function check_file_access($qa, $options, $component, $filearea, $args, $forcedownload): bool {
+        if ($component == 'question'){
+            switch ($filearea){
+                case 'response_recording':
+                    // Response recording always accessible.
+                    return true;
+                case 'answerfeedback':
+                    $answerid = reset($args);
+                    foreach ($this->widgets as $widget) {
+                        if ($answerid == $widget->answerid) {
+                            // See comment in the renderer about why we check both.
+                            return $options->feedback || $options->generalfeedback;
+                        }
+                    }
+                    return false; // Not one of ours.
             }
-            return false; // Not one of ours.
+        } elseif ($component == 'qtype_recordrtc'){
+            switch ($filearea){
+                case 'prequestion':
+                    // Pre-question text always visible, but check it is the right question id.
+                    return $args[0] == $this->id;
+            }
         }
 
         return parent::check_file_access($qa, $options, $component, $filearea,
                 $args, $forcedownload);
+    }
+
+    /**
+     * @param question_attempt $qa the question attempt.
+     *
+     * @return string - result of applying {@link format_text()} to the pre-question text.
+     */
+    public function format_prequestion($qa) {
+        return $this->format_text($this->prequestion, $this->questiontextformat,
+            $qa, 'qtype_recordrtc', 'prequestion', $this->id);
     }
 }

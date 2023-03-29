@@ -141,3 +141,12 @@ $string['videotimelimit'] = 'Max video recording duration';
 $string['videotimelimit_desc'] = 'Maximum time that a question author can set for the video recording length.';
 $string['xminutes'] = '{$a} minutes';
 $string['xseconds'] = '{$a} seconds';
+
+$string['haudio'] = 'Single audio with hidden question';
+$string['hvideo'] = 'Single video with hidden question';
+$string['prequestion'] = 'Pre-question text';
+$string['prequestion_help'] = 'Pre-question text that will be visible to the user before the recording starts.';
+$string['privacy:preference:prequestion'] = 'Pre-question text for the hidden question';
+$string['denyrerecord'] = 'Deny re-record';
+$string['denyrerecord_help'] = 'Deny user to re-record his answer after stop recording';
+$string['privacy:preference:denyrerecord'] = 'The re-record functionality is disabled/enabled for a given question.';

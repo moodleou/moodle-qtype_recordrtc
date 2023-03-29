@@ -9,10 +9,12 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="mediatype" TYPE="char" LENGTH="8" NOTNULL="true" DEFAULT="audio" SEQUENCE="false" COMMENT="'audio', 'video' or 'customav'."/>
+        <FIELD NAME="prequestion" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Pre-question text for hidden questions"/>
         <FIELD NAME="timelimitinseconds" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="30" SEQUENCE="false"/>
         <FIELD NAME="allowpausing" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether allowing users to pause during audio/video recording."/>
         <FIELD NAME="canselfrate" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether students can rate their own response"/>
         <FIELD NAME="canselfcomment" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether students can comment on their own response"/>
+        <FIELD NAME="denyrerecord" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether students can re-record own answer"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for Moodle question/type/recordrtc"/>

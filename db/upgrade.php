@@ -262,6 +262,22 @@ function xmldb_qtype_recordrtc_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2022041900, 'qtype', 'recordrtc');
     }
 
+    if ($oldversion < 2023032800) {
+        $table = new xmldb_table('qtype_recordrtc_options');
+        $new_fields = [];
+        $new_fields[] = new xmldb_field('prequestion', XMLDB_TYPE_TEXT, null, null, null, null, null, 'mediatype');
+        $new_fields[] = new xmldb_field('denyrerecord', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'canselfcomment');
+
+        foreach ($new_fields as $field){
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        // Recordrtc savepoint reached.
+        upgrade_plugin_savepoint(true, 2023032800, 'qtype', 'recordrtc');
+    }
+
     return true;
 }
 
