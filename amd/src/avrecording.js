@@ -42,15 +42,18 @@ import ModalFactory from 'core/modal_factory';
  * @return {string} 'ok' if it looks OK, else 'nowebrtc' or 'nothttps' if there is a problem.
  */
 function checkCanWork() {
+    // Check APIs are known.
     if (!(navigator.mediaDevices && window.MediaRecorder)) {
         return 'nowebrtc';
     }
 
-    if (!(location.protocol === 'https:' || location.host.indexOf('localhost') !== -1)) {
+    // Check protocol (localhost).
+    if (location.protocol === 'https:' ||
+            location.host === 'localhost' || location.host === '127.0.0.1') {
+        return 'ok';
+    } else {
         return 'nothttps';
     }
-
-    return 'ok';
 }
 
 /**
