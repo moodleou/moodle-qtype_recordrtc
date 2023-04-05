@@ -583,6 +583,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         if (uploadRequest.status === 200) {
             // When request finished and successful.
             setButtonLabel('recordagainx');
+            button.classList.remove('btn-outline-danger');
             enableAllButtons();
         } else if (uploadRequest.status === 404) {
             setPlaceholderMessage('uploadfailed404');
