@@ -37,10 +37,10 @@ class behat_qtype_recordrtc extends behat_base {
      *
      * At the moment, this only works if there is only one recording question on the screen.
      *
-     * It should not be necesssary to pass the username, but we could not find a good way to work it out.
+     * It should not be necessary to pass the username, but we could not find a good way to work it out.
      *
-     * @param string $username the text of the item to drag.
-     * @param int $fixturefile the number of the gap to drop into.
+     * @param string $username the username to be used for getting the conterxt.
+     * @param string $fixturefile the full name (filename.extension) of the fixturefile.
      *
      * @When :username has recorded :fixturefile into the record RTC question
      */

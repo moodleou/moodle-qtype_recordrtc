@@ -15,8 +15,8 @@ Feature: Preview record audio and video questions
       | user    | course | role           |
       | teacher | C1     | editingteacher |
     And the following "question categories" exist:
-        | contextlevel | reference | name           |
-        | Course       | C1        | Test questions |
+      | contextlevel | reference | name           |
+      | Course       | C1        | Test questions |
     And the following "questions" exist:
       | questioncategory | qtype     | name                     | template |
       | Test questions   | recordrtc | Record audio question    | audio    |

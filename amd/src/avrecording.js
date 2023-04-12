@@ -122,7 +122,8 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
     const button = widget.querySelector('button.qtype_recordrtc-main-button');
     const pauseButton = widget.querySelector('.qtype_recordrtc-pause-button button');
     const controlRow = widget.querySelector('.qtype_recordrtc-control-row');
-    const mediaElement = widget.querySelector('.qtype_recordrtc-media-player ' + mediaSettings.name);
+    const mediaElement = widget.querySelector('.qtype_recordrtc-media-player ' +
+        (mediaSettings.name === 'screen' ? 'video' : mediaSettings.name));
     const noMediaPlaceholder = widget.querySelector('.qtype_recordrtc-no-recording-placeholder');
     const timeDisplay = widget.querySelector('.qtype_recordrtc-time-left');
     const progressBar = widget.querySelector('.qtype_recordrtc-time-left .qtype_recordrtc-timer-front');
@@ -151,7 +152,11 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
                 startRecording();
                 break;
             case 'starting':
-                startSaving();
+                if (mediaSettings.name === 'screen') {
+                    startScreenSaving();
+                } else {
+                    startSaving();
+                }
                 break;
             case 'recording':
                 if (clickedButton === pauseButton) {
@@ -168,6 +173,69 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
                 }
                 break;
         }
+    }
+
+    /**
+     * Get list media device supported.
+     *
+     * @param {Function} A callback function to handle next step.
+     */
+    function getMediaDevices(callback) {
+        navigator.mediaDevices.enumerateDevices().then(callback).catch(handleScreenSharingError);
+    }
+
+    /**
+     * Get audio mic stream.
+     *
+     * @param {Function} A callback function to handle next step.
+     */
+    function getAudioMedia(callback) {
+        navigator.mediaDevices.getUserMedia({audio: true}).then(callback).catch(handleScreenSharingError);
+    }
+
+    /**
+     * To handle every time the audio mic has a problem.
+     * For now, we will allow video to be saved without sound when there is an error with the microphone.
+     *
+     * @param {Object} A error object.
+     */
+    function handleScreenSharingError(error) {
+        Log.debug(error);
+        startSaving();
+    }
+
+    /**
+     * When recorder type is screen, we need add audio mic stream into mediaStream
+     * before saving.
+     */
+    function startScreenSaving() {
+        // We need to combine 2 audio and screen-sharing streams to create a recording with audio from the mic.
+        getMediaDevices(devices => {
+            let composedStream = new MediaStream();
+            // Get audio stream from microphone.
+            getAudioMedia(micStream => {
+                // When the user shares their screen, we need to merge the video track from the media stream with
+                // the audio track from the microphone stream and stop any unnecessary tracks to ensure
+                // that the recorded video has microphone sound.
+                mediaStream.getTracks().forEach(function(track) {
+                    if (track.kind === 'video') {
+                        // Add video track into stream.
+                        composedStream.addTrack(track);
+                    } else {
+                        // Stop any audio track.
+                        track.stop();
+                    }
+                });
+
+                // Add mic audio track from mic stream into composedStream to track audio.
+                // This will make sure the recorded video will have mic sound.
+                micStream.getAudioTracks().forEach(function(micTrack) {
+                    composedStream.addTrack(micTrack);
+                });
+                mediaStream = composedStream;
+                startSaving();
+            });
+        });
     }
 
     /**
@@ -199,9 +267,15 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         // Empty the array containing the previously recorded chunks.
         chunks = [];
         bytesRecordedSoFar = 0;
-        navigator.mediaDevices.getUserMedia(mediaSettings.mediaConstraints)
-            .then(handleCaptureStarting)
-            .catch(handleCaptureFailed);
+        if (mediaSettings.name === 'screen') {
+            navigator.mediaDevices.getDisplayMedia(mediaSettings.mediaConstraints)
+                .then(handleCaptureStarting)
+                .catch(handleCaptureFailed);
+        } else {
+            navigator.mediaDevices.getUserMedia(mediaSettings.mediaConstraints)
+                .then(handleCaptureStarting)
+                .catch(handleCaptureFailed);
+        }
     }
 
     /**
@@ -218,6 +292,10 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         if (mediaSettings.name === 'audio') {
             startSaving();
         } else {
+            // Cover when user clicks Browser's "Stop Sharing Screen" button.
+            if (mediaSettings.name === 'screen') {
+                mediaStream.getVideoTracks()[0].addEventListener('ended', handleStopSharing);
+            }
             mediaElement.play();
             mediaElement.controls = false;
 
@@ -253,11 +331,31 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         progressBar.classList.add('animate');
         setButtonLabel('stoprecording');
         startCountdownTimer();
-        if (mediaSettings.name === 'video') {
+        if (mediaSettings.name === 'video' || mediaSettings.name === 'screen') {
             button.parentElement.classList.add('hide');
             controlRow.classList.remove('hide');
             controlRow.classList.add('d-flex');
+            timeDisplay.classList.remove('hide');
         }
+    }
+
+    /**
+     * Callback that is called by the user clicking Stop screen sharing on the browser.
+     */
+    function handleStopSharing() {
+        if (widget.dataset.state === 'starting') {
+            widget.dataset.state = 'new';
+            mediaElement.parentElement.classList.add('hide');
+            noMediaPlaceholder.classList.remove('hide');
+            setButtonLabel('startsharescreen');
+            button.blur();
+        } else {
+            const controlEl = widget.querySelector('.qtype_recordrtc-control-row');
+            if (!controlEl.classList.contains('hide')) {
+                controlEl.querySelector('.qtype_recordrtc-stop-button').click();
+            }
+        }
+        enableAllButtons();
     }
 
     /**
@@ -402,7 +500,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      * @param {DOMException} error
      */
     function handleCaptureFailed(error) {
-        Log.debug('Audio/video question: error received');
+        Log.debug('Audio/video/screen question: error received');
         Log.debug(error);
 
         setPlaceholderMessage('recordingfailed');
@@ -413,7 +511,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         // Hide time display.
         timeDisplay.classList.add('hide');
 
-        if (mediaRecorder) {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
             mediaRecorder.stop();
         }
 
@@ -660,7 +758,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         // Get the relevant bit rates from settings.
         if (mediaSettings.name === 'audio') {
             options.audioBitsPerSecond = mediaSettings.bitRate;
-        } else if (mediaSettings.name === 'video') {
+        } else if (mediaSettings.name === 'video' || mediaSettings.name === 'screen') {
             options.videoBitsPerSecond = mediaSettings.bitRate;
             options.videoWidth = mediaSettings.width;
             options.videoHeight = mediaSettings.height;
@@ -760,6 +858,40 @@ function VideoSettings(bitRate, width, height) {
 }
 
 /**
+ * Object that controls the settings for recording screen.
+ *
+ * @param {string} bitRate desired screen bitrate.
+ * @param {string} width desired width.
+ * @param {string} height desired height.
+ * @constructor
+ */
+function ScreenSettings(bitRate, width, height) {
+    this.name = 'screen';
+    this.bitRate = parseInt(bitRate, 10);
+    this.width = parseInt(width, 10);
+    this.height = parseInt(height, 10);
+    this.mediaConstraints = {
+        audio: true,
+        systemAudio: 'exclude',
+        video: {
+            displaySurface: 'monitor',
+            frameRate: {ideal: 24},
+            // Currently, Safari does not support ideal constraints for width and height with screen sharing feature.
+            // It may be supported in version 16.4.
+            width: {max: this.width},
+            height: {max: this.height},
+        }
+    };
+
+    // We use vp8 as the default codec. If it is not supported, we will switch to another codec.
+    this.mimeTypes = [
+        'video/webm;codecs=vp8,opus',
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=h264,opus',
+    ];
+}
+
+/**
  * Represents one record audio or video question.
  *
  * @param {string} questionId id of the outer question div.
@@ -786,19 +918,26 @@ function RecordRtcQuestion(questionId, settings) {
     const thisQuestion = this;
 
     // We may have more than one widget in a question.
-    questionDiv.querySelectorAll('.qtype_recordrtc-audio-widget, .qtype_recordrtc-video-widget').forEach(function(widget) {
-        // Get the appropriate options.
-        let typeInfo;
-        if (widget.dataset.mediaType === 'audio') {
-            typeInfo = new AudioSettings(settings.audioBitRate);
-        } else {
-            typeInfo = new VideoSettings(settings.videoBitRate, settings.videoWidth, settings.videoHeight);
-        }
+    questionDiv.querySelectorAll('.qtype_recordrtc-audio-widget, .qtype_recordrtc-video-widget, .qtype_recordrtc-screen-widget')
+        .forEach(function(widget) {
+            // Get the appropriate options.
+            let typeInfo;
+            switch (widget.dataset.mediaType) {
+                case 'audio':
+                    typeInfo = new AudioSettings(settings.audioBitRate);
+                    break;
+                case 'screen':
+                    typeInfo = new ScreenSettings(settings.screenBitRate, settings.screenWidth, settings.screenHeight);
+                    break;
+                default:
+                    typeInfo = new VideoSettings(settings.videoBitRate, settings.videoWidth, settings.videoHeight);
+                    break;
+            }
 
-        // Create the recorder.
-        new Recorder(widget, typeInfo, thisQuestion, settings);
-        return 'Not used';
-    });
+            // Create the recorder.
+            new Recorder(widget, typeInfo, thisQuestion, settings);
+            return 'Not used';
+        });
     setSubmitButtonState();
 
     /**
@@ -809,11 +948,12 @@ function RecordRtcQuestion(questionId, settings) {
      */
     function setSubmitButtonState() {
         let anyRecorded = false;
-        questionDiv.querySelectorAll('.qtype_recordrtc-audio-widget, .qtype_recordrtc-video-widget').forEach(function(widget) {
-            if (widget.dataset.state === 'recorded') {
-                anyRecorded = true;
-            }
-        });
+        questionDiv.querySelectorAll('.qtype_recordrtc-audio-widget, .qtype_recordrtc-video-widget, .qtype_recordrtc-screen-widget')
+            .forEach(function(widget) {
+                if (widget.dataset.state === 'recorded') {
+                    anyRecorded = true;
+                }
+            });
         const submitButton = questionDiv.querySelector('input.submit[type=submit]');
         if (submitButton) {
             submitButton.disabled = !anyRecorded;
