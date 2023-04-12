@@ -86,6 +86,7 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
                 'default mark 2' => ['defaultmark', '1.5', '1.5'],
                 'mediatype audio' => ['mediatype', 'audio', get_string('audio', 'qtype_recordrtc')],
                 'mediatype video' => ['mediatype', 'video', get_string('video', 'qtype_recordrtc')],
+                'mediatype screen' => ['mediatype', 'screen', get_string('screen', 'qtype_recordrtc')],
                 'mediatype customav' => ['mediatype', 'customav', get_string('customav', 'qtype_recordrtc')],
                 'Max recording duration 1' => ['timelimitinseconds', '15', '15 seconds'],
                 'Max recording duration 2' => ['timelimitinseconds', '60', '1 minutes'],

@@ -28,7 +28,7 @@ Feature: Test importing record audio and video questions
     And I should see "Record audio question"
 
   @javascript @_file_upload
-  Scenario: import a recordrtc question with Customised audio/video without feedback.
+  Scenario: import a recordrtc question with Multiple widgets without feedback.
     When I am on the "Course 1" "core_question > course question import" page logged in as teacher
     And I set the field "id_format_xml" to "1"
     And I upload "question/type/recordrtc/tests/fixtures/customav-question.xml" file to "Import" filemanager

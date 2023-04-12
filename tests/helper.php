@@ -25,11 +25,11 @@ use qtype_recordrtc\widget_info;
 
 
 /**
- * Test helper class for the record audio and video question type.
+ * Test helper class for the record audio, video and screen question type.
  */
 class qtype_recordrtc_test_helper extends question_test_helper {
     public function get_test_questions(): array {
-        return ['audio', 'customav'];
+        return ['audio', 'customav', 'screen'];
     }
 
     /**
@@ -74,6 +74,47 @@ class qtype_recordrtc_test_helper extends question_test_helper {
     }
 
     /**
+     * Makes an screen question instance.
+     *
+     * @return qtype_recordrtc_question
+     */
+    public function make_recordrtc_question_screen(): qtype_recordrtc_question {
+        question_bank::load_question_definition_classes('recordrtc');
+        $q = new qtype_recordrtc_question();
+        test_question_maker::initialise_a_question($q);
+        $q->name = 'Record screen question';
+        $q->questiontext = '<p>Please record your screen.</p>';
+        $q->generalfeedback = '<p>I hope you have shown it clearly.</p>';
+        $q->qtype = question_bank::get_qtype('recordrtc');
+        $q->widgets = ['recording' => new widget_info('recording', 'screen')];
+        return $q;
+    }
+
+    /**
+     * Make the data what would be received from the editing form for an screen question.
+     *
+     * @return stdClass the data that would be returned by $form->get_gata();
+     */
+    public function get_recordrtc_question_form_data_screen(): stdClass {
+        $fromform = new stdClass();
+
+        $fromform->name = 'Record screen question';
+        $fromform->questiontext = [
+            'text' => '<p>Please record your screen.</p>',
+            'format' => FORMAT_HTML,
+        ];
+        $fromform->mediatype = 'screen';
+        $fromform->timelimitinseconds = 30;
+        $fromform->defaultmark = 1.0;
+        $fromform->generalfeedback = [
+            'text' => '<p>I hope you have shown it clearly.</p>',
+            'format' => FORMAT_HTML,
+        ];
+
+        return $fromform;
+    }
+
+    /**
      * Make the data what would be received from the editing form for an audio question.
      *
      * @return stdClass the data that would be returned by $form->get_gata();
@@ -109,22 +150,26 @@ class qtype_recordrtc_test_helper extends question_test_helper {
         $q->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
                             <p>Development: [[development:audio]]</p>
                             <p>Installation: [[installation:audio]]</p>
-                            <p>User experience: [[user_experience:audio]]</p>';
+                            <p>User experience: [[user_experience:audio]]</p>
+                            <p>Share your action: [[action:screen]]</p>';
         $q->mediatype = 'customav';
         $q->timelimitinseconds = 30;
         $q->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
         $q->qtype = question_bank::get_qtype('recordrtc');
         $q->widgets = [
-                'development' => new widget_info('development', 'audio', $q->timelimitinseconds),
-                'installation' => new widget_info('installation', 'audio', $q->timelimitinseconds),
-                'user_experience' => new widget_info('user_experience', 'audio', $q->timelimitinseconds),
-            ];
+            'development' => new widget_info('development', 'audio', $q->timelimitinseconds),
+            'installation' => new widget_info('installation', 'audio', $q->timelimitinseconds),
+            'user_experience' => new widget_info('user_experience', 'audio', $q->timelimitinseconds),
+            'action' => new widget_info('action', 'screen', $q->timelimitinseconds),
+        ];
         $q->widgets['development']->placeholder = '[[development:audio]]';
         $q->widgets['development']->feedback = '<p>I hope you mentioned unit testing in your answer.</p>';
         $q->widgets['installation']->placeholder = '[[installation:audio]]';
         $q->widgets['installation']->feedback = '<p>Did you consider <i>Windows</i> servers as well as <i>Linux</i>?</p>';
         $q->widgets['user_experience']->placeholder = '[[user_experience:audio]]';
         $q->widgets['user_experience']->feedback = '<p>Least said about this the better!</p>';
+        $q->widgets['action']->placeholder = '[[action:screen]]';
+        $q->widgets['action']->feedback = '<p>Share your action</p>';
 
         return $q;
     }
@@ -142,7 +187,8 @@ class qtype_recordrtc_test_helper extends question_test_helper {
                 'text' => '<p>Please record yourself talking about following aspects of Moodle.</p>
                         <p>Development: [[development:audio]]</p>
                         <p>Installation: [[installation:audio]]</p>
-                        <p>User experience: [[user_experience:audio]]</p>',
+                        <p>User experience: [[user_experience:audio]]</p>
+                        <p>Share your action: [[action:screen]]</p>',
                 'format' => FORMAT_HTML,
             ];
         $fromform->mediatype = 'customav';
@@ -164,6 +210,10 @@ class qtype_recordrtc_test_helper extends question_test_helper {
                 'text' => '<p>Least said about this the better!</p>',
                 'format' => FORMAT_HTML,
             ];
+        $fromform->feedbackforaction = [
+                'text' => '<p>Share your action</p>',
+                'format' => FORMAT_HTML,
+            ];
         return $fromform;
     }
 
@@ -181,7 +231,8 @@ class qtype_recordrtc_test_helper extends question_test_helper {
         $questiondata->questiontext = '<p>Please record yourself talking about following aspects of Moodle.</p>
                     <p>Development: [[development:audio]]</p>
                     <p>Installation: [[installation:audio]]</p>
-                    <p>User experience: [[user_experience:audio]]</p>';
+                    <p>User experience: [[user_experience:audio]]</p>
+                    <p>Share your action: [[action:screen]]</p>';
         $questiondata->generalfeedback = '<p>I hope you spoke clearly and coherently.</p>';
         $questiondata->defaultmark = 1.0;
 
@@ -211,6 +262,14 @@ class qtype_recordrtc_test_helper extends question_test_helper {
                         'answerformat' => FORMAT_PLAIN,
                         'fraction' => 0,
                         'feedback' => '<p>Least said about this the better!</p>',
+                        'feedbackformat' => FORMAT_HTML,
+                    ],
+                17 => (object) [
+                        'id' => 17,
+                        'answer' => 'action',
+                        'answerformat' => FORMAT_PLAIN,
+                        'fraction' => 0,
+                        'feedback' => '<p>Share your action</p>',
                         'feedbackformat' => FORMAT_HTML,
                     ],
             ];

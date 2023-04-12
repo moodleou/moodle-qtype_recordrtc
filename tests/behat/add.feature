@@ -52,7 +52,7 @@ Feature: Test creating record audio and video questions
     And I click on "Add" "button" in the "Choose a question type to add" "dialogue"
     When I set the following fields to these values:
       | Question name     | AV question                            |
-      | Type of recording | Customised audio/video                 |
+      | Type of recording | Multiple widgets                       |
       | Question text     | What is your name? [[your name:audio]] |
 
     And I press "Update the form"

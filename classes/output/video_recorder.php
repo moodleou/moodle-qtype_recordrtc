@@ -33,7 +33,7 @@ class video_recorder extends recorder_base {
      * @return array augmented context.
      */
     public static function add_width_and_aspect(array $context): array {
-        [$videowidth, $videoheight] = explode(',', get_config('qtype_recordrtc', 'videosize'));
+        [$videowidth, $videoheight] = explode(',', static::get_video_size());
         $context['width'] = $videowidth;
         if ($videowidth / $videoheight > 1.5) {
             $context['aspectratio'] = '16x9';
@@ -47,5 +47,14 @@ class video_recorder extends recorder_base {
     public function export_for_template(renderer_base $output): array {
         $context = parent::export_for_template($output);
         return self::add_width_and_aspect($context);
+    }
+
+    /**
+     * Helper get video size config.
+     *
+     * @return string Video size config.
+     */
+    public static function get_video_size(): string {
+        return get_config('qtype_recordrtc', 'videosize');
     }
 }

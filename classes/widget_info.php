@@ -66,12 +66,21 @@ class widget_info {
      *
      * @param int $maxduration the requested time limit.
      * @return int actual time limit to use, which will be the smaller of the requested one and the admin limit.
+     * @throws \coding_exception When the type not in audio|video|screen, the exception will be threw.
      */
     protected function limit_max_duration(int $maxduration): int {
-        if ($this->type === \qtype_recordrtc::MEDIA_TYPE_AUDIO) {
-            $limit = get_config('qtype_recordrtc', 'audiotimelimit');
-        } else {
-            $limit = get_config('qtype_recordrtc', 'videotimelimit');
+        switch ($this->type) {
+            case \qtype_recordrtc::MEDIA_TYPE_AUDIO:
+                $limit = get_config('qtype_recordrtc', 'audiotimelimit');
+                break;
+            case \qtype_recordrtc::MEDIA_TYPE_SCREEN:
+                $limit = get_config('qtype_recordrtc', 'screentimelimit');
+                break;
+            case \qtype_recordrtc::MEDIA_TYPE_VIDEO:
+                $limit = get_config('qtype_recordrtc', 'videotimelimit');
+                break;
+            default:
+                throw new \coding_exception('Unrecognised media type ' . $this->type);
         }
         return min($maxduration, $limit);
     }

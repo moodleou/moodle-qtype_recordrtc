@@ -80,4 +80,28 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('qtype_recordrtc/videosize',
         get_string('videosize', 'qtype_recordrtc'),
         get_string('videosize_desc', 'qtype_recordrtc'), '320,180', $options));
+
+    // Default settings for screen record output.
+    $settings->add(new admin_setting_heading('screenoptionsheading',
+        get_string('optionsforscreen', 'qtype_recordrtc'), ''));
+
+    // Recording time limit for screen.
+    $settings->add(new admin_setting_configduration('qtype_recordrtc/screentimelimit',
+        get_string('screentimelimit', 'qtype_recordrtc'), get_string('screentimelimit_desc', 'qtype_recordrtc'),
+        300, 60));
+
+    // Screen output bitrate.
+    $settings->add(new admin_setting_configtext('qtype_recordrtc/screenbitrate',
+        get_string('screenbitrate', 'qtype_recordrtc'), get_string('screenbitrate_desc', 'qtype_recordrtc'),
+        2500000, PARAM_INT, 8));
+
+    // Screen output settings.
+    // Number of items to display in a box.
+    $options = [
+        '1280,720' => '1280 x 720 (16:9)',
+        '1920,1080' => '1920 x 1080 (16:9)',
+    ];
+    $settings->add(new admin_setting_configselect('qtype_recordrtc/screensize',
+        get_string('screensize', 'qtype_recordrtc'),
+        get_string('screensize_desc', 'qtype_recordrtc'), '1280,720', $options));
 }

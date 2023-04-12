@@ -1,0 +1,59 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template qtype_recordrtc/screen_playback
+
+    Display the media for playback when the question is being reviewed.
+
+    Context variables required for this template:
+    * hasrecording: true if there is a recording.
+    * filename: The filename to use for downloading the screen video.
+    * recordingurl: The URL of the recording.
+    * aspectratio: '4x3' or '16x9'.
+    * width: width of the video in pixels.
+    * candownload: whether the current user should see options to download the recordings.
+
+    Example context (json):
+    {
+        "hasrecording": true,
+        "filename": "recording.webp",
+        "recordingurl": "http://example.com/moodle/pluginfile.php?...",
+        "aspectratio": "16x9",
+        "width": 640,
+        "candownload": true
+    }
+}}
+<span class="qtype_recordrtc-video-widget qtype_recordrtc-ratio-{{aspectratio}} d-flex flex-column mw-100"
+        style="width: {{width}}px">
+    {{#hasrecording}}
+        <span class="qtype_recordrtc-media-player">
+            <video controls class="w-100"{{^candownload}} oncontextmenu="return false;" controlsList=" nodownload"{{/candownload}}>
+                <source src="{{recordingurl}}">
+            </video>
+        </span>
+        {{#candownload}}
+            <a href="{{recordingurl}}" class="qtype_recordrtc-download-icon align-middle">
+                {{#pix}}f/video, core, {{#str}}downloadrecording, qtype_recordrtc, {{filename}}{{/str}}{{/pix}}
+            </a>
+        {{/candownload}}
+    {{/hasrecording}}
+    {{^hasrecording}}
+        <span class="qtype_recordrtc-no-recording-placeholder flex-grow-1 text-center">
+            {{#str}}norecording, qtype_recordrtc{{/str}}
+        </span>
+    {{/hasrecording}}
+</span>

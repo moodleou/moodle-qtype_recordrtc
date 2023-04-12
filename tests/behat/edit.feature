@@ -18,11 +18,11 @@ Feature: Test editing record audio and video questions
       | contextlevel | reference | name           |
       | Course       | C1        | Test questions |
     And the following "questions" exist:
-      | questioncategory | qtype     | name                  | template |
-      | Test questions   | recordrtc | Record audio question | audio    |
+      | questioncategory | qtype     | name                   | template |
+      | Test questions   | recordrtc | Record audio question  | audio    |
 
   @javascript
-  Scenario: Edit record audio and video question
+  Scenario: Requested time limit is validated
     When I am on the "Record audio question" "core_question > edit" page logged in as teacher
     And I set the following fields to these values:
       | Question name                  | Edited question name |

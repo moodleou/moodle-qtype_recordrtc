@@ -14,24 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace qtype_recordrtc\output;
+
+use renderer_base;
+
 /**
- * Record audio and video question type version information.
+ * Represents the playback/download UI for a screen recording.
  *
  * @package   qtype_recordrtc
- * @copyright 2019 The Open University
+ * @copyright 2023 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version   = 2023030300;
-$plugin->requires  = 2021051700;
-$plugin->component = 'qtype_recordrtc';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.5+ for Moodle 3.11+';
-
-$plugin->dependencies = [
-    'qbehaviour_selfassess' => 2023020300,
-];
-
-$plugin->outestssufficient = true;
+class screen_playback extends video_playback {
+}

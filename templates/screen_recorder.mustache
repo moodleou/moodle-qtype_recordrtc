@@ -1,0 +1,76 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template qtype_recordrtc/screen_recorder
+
+    Video screen recorder widget.
+
+    Context variables required for this template:
+    * maxrecordingduration: Length limit (in seconds) for the recording.
+    * allowpausing: whether this question allows the recording to be paused.
+    * hasrecording: boolean - whether there is already a recording.
+    * recordingurl: the URL of that recording (empty string if none).
+    * aspectratio: '4x3' or '16x9'.
+    * width: width of the video in pixels.
+    * candownload: whether the current user should see options to download the recordings.
+
+    Example context (json):
+    {
+        "filename": "recording.webm",
+        "widgetname": "recording",
+        "maxrecordingduration": 30,
+        "allowpausing": true,
+        "hasrecording": false,
+        "recordingurl": "http://example.com/moodle/draftfile.php?...",
+        "aspectratio": "16x9",
+        "width": 640,
+        "candownload": true
+    }
+}}
+<span class="qtype_recordrtc-screen-widget qtype_recordrtc-ratio-{{aspectratio}} d-flex flex-column mw-100"
+      style="width: {{width}}px" data-media-type="screen" data-widget-name="{{widgetname}}"
+      data-state="{{^hasrecording}}new{{/hasrecording}}{{#hasrecording}}recorded{{/hasrecording}}"
+      data-max-recording-duration="{{maxrecordingduration}}" data-recording-filename="{{filename}}">
+    <span class="qtype_recordrtc-no-recording-placeholder mb-1 text-center{{#hasrecording}} hide{{/hasrecording}}">{{#str}}norecording, qtype_recordrtc{{/str}}</span>
+    <span class="qtype_recordrtc-media-player{{^hasrecording}} hide{{/hasrecording}}">
+        <video controls class="w-100"{{^candownload}} oncontextmenu="return false;" controlsList=" nodownload"{{/candownload}}>
+            <source src="{{recordingurl}}">
+        </video>
+    </span>
+    <span>
+        <button type="button" class="qtype_recordrtc-main-button btn osep-smallbutton m-0 w-100">
+            {{! Seemingly unnecessary space inside the span is needed for screen-readers, and it must be a non-breaking space. }}
+            {{^hasrecording}}{{#str}}startsharescreenx, qtype_recordrtc, <span class="sr-only">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
+            {{#hasrecording}}{{#str}}recordagainx, qtype_recordrtc, <span class="sr-only">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
+        </button>
+    </span>
+    <span class="qtype_recordrtc-control-row w-100 hide">
+        <span class="qtype_recordrtc-time-left flex-grow-1 text-center position-relative">
+            {{> qtype_recordrtc/progress_bar }}
+        </span>
+        {{#allowpausing}}
+            <span class="qtype_recordrtc-pause-button hide">
+                <button type="button" data-pause="1" class="btn osep-smallbutton ml-1 mr-0">
+                    {{#str}}pause, qtype_recordrtc{{/str}}
+                </button>
+            </span>
+        {{/allowpausing}}
+        <button type="button" class="qtype_recordrtc-stop-button btn osep-smallbutton ml-1 mr-0">
+            {{#str}}stoprecording, qtype_recordrtc{{/str}}
+        </button>
+    </span>
+</span>

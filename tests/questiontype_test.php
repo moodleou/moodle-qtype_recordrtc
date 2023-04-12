@@ -87,6 +87,10 @@ class questiontype_test extends \question_testcase {
         $this->assertEquals('name.webm', $this->qtype->get_media_filename('name', 'video'));
     }
 
+    public function test_get_screen_filename(): void {
+        $this->assertEquals('name.webm', $this->qtype->get_media_filename('name', 'screen'));
+    }
+
     public function test_get_widget_placeholders_no_placeholder(): void {
         $questiontext = 'Record your answer about your experience doing this Module.';
         $this->assertEquals([], $this->qtype->get_widget_placeholders($questiontext));
@@ -217,7 +221,7 @@ class questiontype_test extends \question_testcase {
     public function test_validate_widget_placeholders_not_allowed(): void {
 
         // Placeholder(s) provided within the question text with mediatype set to 'audio'.
-        $questiontext = 'Record the answers by saying your name [[name:audio]]';
+        $questiontext = 'Record the answers by saying your name [[name:audio]], share screen [[name2:screen]]';
         $expected = get_string('err_placeholdernotallowed', 'qtype_recordrtc',
             get_string('audio', 'qtype_recordrtc'));
         [$errors, $fixedquestiontext] = $this->qtype->validate_widget_placeholders($questiontext, 'audio');

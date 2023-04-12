@@ -29,6 +29,8 @@ use qtype_recordrtc\output\audio_playback;
 use qtype_recordrtc\output\audio_recorder;
 use qtype_recordrtc\output\video_playback;
 use qtype_recordrtc\output\video_recorder;
+use qtype_recordrtc\output\screen_playback;
+use qtype_recordrtc\output\screen_recorder;
 
 /**
  * Generates output for record audio and video questions.
@@ -86,10 +88,16 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                     $recordingurl = null;
                 }
 
-                if ($widget->type === 'audio') {
-                    $playback = new audio_playback($filename, $recordingurl, $candownload);
-                } else {
-                    $playback = new video_playback($filename, $recordingurl, $candownload);
+                switch ($widget->type) {
+                    case 'audio':
+                        $playback = new audio_playback($filename, $recordingurl, $candownload);
+                        break;
+                    case 'screen':
+                        $playback = new screen_playback($filename, $recordingurl, $candownload);
+                        break;
+                    default:
+                        $playback = new video_playback($filename, $recordingurl, $candownload);
+                        break;
                 }
 
                 $thisitem = $this->render($playback);
@@ -114,12 +122,19 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                     $recordingurl = null;
                 }
 
-                if ($widget->type === 'audio') {
-                    $recorder = new audio_recorder($filename,
+                switch ($widget->type) {
+                    case 'audio':
+                        $recorder = new audio_recorder($filename,
                             $widget->maxduration, $question->allowpausing, $recordingurl, $candownload);
-                } else {
-                    $recorder = new video_recorder($filename,
+                        break;
+                    case 'screen':
+                        $recorder = new screen_recorder($filename,
                             $widget->maxduration, $question->allowpausing, $recordingurl, $candownload);
+                        break;
+                    default:
+                        $recorder = new video_recorder($filename,
+                            $widget->maxduration, $question->allowpausing, $recordingurl, $candownload);
+                        break;
                 }
 
                 // Recording UI.
@@ -139,13 +154,20 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 throw new moodle_exception('errornouploadrepo', 'moodle');
             }
             $uploadrepository = reset($repositories); // Get the first (and only) upload repo.
+            [$videowidth, $videoheight] = explode(',', get_config('qtype_recordrtc', 'videosize'));
+            [$videoscreenwidth, $videoscreenheight] = explode(',', get_config('qtype_recordrtc', 'screensize'));
             $setting = [
-                    'audioBitRate' => (int) get_config('qtype_recordrtc', 'audiobitrate'),
-                    'videoBitRate' => (int) get_config('qtype_recordrtc', 'videobitrate'),
-                    'maxUploadSize' => $question->get_upload_size_limit($options->context),
-                    'uploadRepositoryId' => (int) $uploadrepository->id,
-                    'contextId' => $options->context->id,
-                    'draftItemId' => $draftitemid,
+                'audioBitRate' => (int) get_config('qtype_recordrtc', 'audiobitrate'),
+                'videoBitRate' => (int) get_config('qtype_recordrtc', 'videobitrate'),
+                'screenBitRate' => (int) get_config('qtype_recordrtc', 'screenbitrate'),
+                'maxUploadSize' => $question->get_upload_size_limit($options->context),
+                'uploadRepositoryId' => (int) $uploadrepository->id,
+                'contextId' => $options->context->id,
+                'draftItemId' => $draftitemid,
+                'videoWidth' => (int) $videowidth,
+                'videoHeight' => (int) $videoheight,
+                'screenWidth' => (int) $videoscreenwidth,
+                'screenHeight' => (int) $videoscreenheight,
             ];
             $this->page->requires->strings_for_js($this->strings_for_js(), 'qtype_recordrtc');
             $this->page->requires->js_call_amd('qtype_recordrtc/avrecording', 'init',
@@ -194,6 +216,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             'resume',
             'startrecording',
             'stoprecording',
+            'startsharescreen',
             'timedisplay',
             'uploadaborted',
             'uploadcomplete',

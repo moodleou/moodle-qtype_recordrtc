@@ -51,6 +51,9 @@ class qtype_recordrtc extends question_type {
     /** @var string media type video. */
     const MEDIA_TYPE_VIDEO = 'video';
 
+    /** @var string media type screen record. */
+    const MEDIA_TYPE_SCREEN = 'screen';
+
     /** @var string media type custom AV. */
     const MEDIA_TYPE_CUSTOM_AV = 'customav';
 
@@ -58,7 +61,7 @@ class qtype_recordrtc extends question_type {
     const VALIDATE_WIDGET_PLACEHOLDERS = "/\[\[([A-Za-z0-9 _-]+):([a-z]+)(:(?:[0-9]+m)?(?:[0-9]+s)?)?\]\]/";
 
     /** @var string get_widget_placeholders pattern. */
-    const GET_WIDGET_PLACEHOLDERS = '/\[\[([a-z0-9_-]+):(audio|video):*([0-9]*m*[0-9]*s*)]]/i';
+    const GET_WIDGET_PLACEHOLDERS = '/\[\[([a-z0-9_-]+):(audio|video|screen):*([0-9]*m*[0-9]*s*)]]/i';
 
     public function is_manual_graded(): bool {
         return true;
@@ -233,8 +236,9 @@ class qtype_recordrtc extends question_type {
         preg_match_all(self::VALIDATE_WIDGET_PLACEHOLDERS, $qtext, $matches);
         [$placeholders, $widgetnames, $widgettypes, $durations] = $matches;
 
-        // If mediatype is audio or video, custom place-holder is not allowed, and that is the only check required.
-        if ($mediatype === self::MEDIA_TYPE_AUDIO || $mediatype === self::MEDIA_TYPE_VIDEO) {
+        // If mediatype is audio or video or screen, custom place-holder is not allowed, and that is the only check required.
+        if ($mediatype === self::MEDIA_TYPE_AUDIO || $mediatype === self::MEDIA_TYPE_VIDEO ||
+                $mediatype === self::MEDIA_TYPE_SCREEN) {
             if ($placeholders) {
                 return [get_string('err_placeholdernotallowed', 'qtype_recordrtc',
                     get_string($mediatype, 'qtype_recordrtc')), ''];
@@ -292,7 +296,7 @@ class qtype_recordrtc extends question_type {
 
         // Validate media types.
         foreach ($widgettypes as $mt) {
-            if ($mt !== self::MEDIA_TYPE_AUDIO && $mt !== self::MEDIA_TYPE_VIDEO) {
+            if (!in_array($mt, [self::MEDIA_TYPE_AUDIO, self::MEDIA_TYPE_VIDEO, self::MEDIA_TYPE_SCREEN])) {
                 $a->text = $mt;
                 $allplacehodlerproblems[] = get_string('err_placeholdermediatype', 'qtype_recordrtc', $a);
             }
@@ -301,6 +305,7 @@ class qtype_recordrtc extends question_type {
         // Validate durations.
         $audiotimelimit = get_config('qtype_recordrtc', 'audiotimelimit');
         $videotimelimit = get_config('qtype_recordrtc', 'videotimelimit');
+        $screentimelimit = get_config('qtype_recordrtc', 'screentimelimit');
         foreach ($durations as $key => $d) {
             if (!$d) {
                 continue;
@@ -325,6 +330,8 @@ class qtype_recordrtc extends question_type {
 
             } else if ($widgettypes[$key] === self::MEDIA_TYPE_VIDEO && $duration > $videotimelimit) {
                 $allplacehodlerproblems[] = get_string('err_videotimelimit', 'qtype_recordrtc', $videotimelimit);
+            } else if ($widgettypes[$key] === self::MEDIA_TYPE_SCREEN && $duration > $screentimelimit) {
+                $allplacehodlerproblems[] = get_string('err_screentimelimit', 'qtype_recordrtc', $screentimelimit);
             }
         }
 
@@ -378,7 +385,7 @@ class qtype_recordrtc extends question_type {
     public static function get_media_filename(string $filename, string $mediatype): string {
         if ($mediatype === self::MEDIA_TYPE_AUDIO) {
             return $filename . '.ogg';
-        } else if ($mediatype === self::MEDIA_TYPE_VIDEO) {
+        } else if ($mediatype === self::MEDIA_TYPE_VIDEO || $mediatype === self::MEDIA_TYPE_SCREEN) {
             return $filename . '.webm';
         }
         throw new coding_exception('Unknown media type ' . $mediatype);

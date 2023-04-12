@@ -25,7 +25,7 @@ global $CFG;
 require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 
 /**
- * Unit tests for what happens when a record audio and video question is attempted.
+ * Unit tests for what happens when a record audio, video and screen question is attempted.
  *
  * @package    qtype_recordrtc
  * @copyright  2019 The Open University
@@ -194,9 +194,10 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
 
         // Process a response and check the expected result.
         $this->process_submission_of_files([
-                'development.ogg' => 'moodle-tim.ogg',
-                'user_experience.ogg' => 'moodle-sharon.ogg',
-            ]);
+            'development.ogg' => 'moodle-tim.ogg',
+            'user_experience.ogg' => 'moodle-sharon.ogg',
+            'action.webm' => 'moodle-screen.webm',
+        ]);
 
         $this->check_current_state(\question_state::$invalid);
         $this->check_current_mark(null);
@@ -206,9 +207,10 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
         // Save the same response again, and verify no new step is created.
         $this->load_quba();
         $this->process_submission_of_files([
-                'development.ogg' => 'moodle-tim.ogg',
-                'user_experience.ogg' => 'moodle-sharon.ogg',
-            ]);
+            'development.ogg' => 'moodle-tim.ogg',
+            'user_experience.ogg' => 'moodle-sharon.ogg',
+            'action.webm' => 'moodle-screen.webm',
+        ]);
         // Feedback should not be visible during the attempt.
         $this->render();
         $this->assertStringNotContainsString($q->widgets['development']->feedback, $this->currentoutput);
@@ -228,6 +230,7 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
         $this->assertStringContainsString($q->widgets['development']->feedback, $this->currentoutput);
         $this->assertStringNotContainsString($q->widgets['installation']->feedback, $this->currentoutput);
         $this->assertStringContainsString($q->widgets['user_experience']->feedback, $this->currentoutput);
+        $this->assertStringContainsString($q->widgets['action']->feedback, $this->currentoutput);
 
         // Feedback display should respect the display options.
         $this->displayoptions->generalfeedback = false; // See comment in the renderer.
@@ -235,6 +238,7 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
         $this->assertStringNotContainsString($q->widgets['development']->feedback, $this->currentoutput);
         $this->assertStringNotContainsString($q->widgets['installation']->feedback, $this->currentoutput);
         $this->assertStringNotContainsString($q->widgets['user_experience']->feedback, $this->currentoutput);
+        $this->assertStringNotContainsString($q->widgets['action']->feedback, $this->currentoutput);
     }
 
     public function test_custom_av_rendering_with_glossary_filter() {

@@ -76,6 +76,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $mediaoptions = [
             qtype_recordrtc::MEDIA_TYPE_AUDIO => get_string('audio', 'qtype_recordrtc'),
             qtype_recordrtc::MEDIA_TYPE_VIDEO => get_string('video', 'qtype_recordrtc'),
+            qtype_recordrtc::MEDIA_TYPE_SCREEN => get_string('screen', 'qtype_recordrtc'),
             qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV => get_string('customav', 'qtype_recordrtc')
         ];
         $mediatype = $mform->createElement('select', 'mediatype', get_string('mediatype', 'qtype_recordrtc'), $mediaoptions);
@@ -87,6 +88,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         $placeholders = [
             widget_info::make_placeholder('recorder1', 'audio', 120),
             widget_info::make_placeholder('recorder2', 'video', 90),
+            widget_info::make_placeholder('recorder3', 'screen', 90),
         ];
         $placeholders = array_map(
             function($placehodler) {
@@ -265,6 +267,9 @@ class qtype_recordrtc_edit_form extends question_edit_form {
                 $maxtimelimit = get_config('qtype_recordrtc', 'videotimelimit');
                 break;
 
+            case qtype_recordrtc::MEDIA_TYPE_SCREEN :
+                $maxtimelimit = get_config('qtype_recordrtc', 'screentimelimit');
+                break;
             default: // Should not get here.
                 $maxtimelimit = qtype_recordrtc::DEFAULT_TIMELIMIT;
                 break;
