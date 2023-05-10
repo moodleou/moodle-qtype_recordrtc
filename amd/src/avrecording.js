@@ -176,24 +176,6 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
     }
 
     /**
-     * Get list media device supported.
-     *
-     * @param {Function} callback A callback function to handle next step.
-     */
-    function getMediaDevices(callback) {
-        navigator.mediaDevices.enumerateDevices().then(callback).catch(handleScreenSharingError);
-    }
-
-    /**
-     * Get audio mic stream.
-     *
-     * @param {Function} callback A callback function to handle next step.
-     */
-    function getAudioMedia(callback) {
-        navigator.mediaDevices.getUserMedia({audio: true}).then(callback).catch(handleScreenSharingError);
-    }
-
-    /**
      * To handle every time the audio mic has a problem.
      * For now, we will allow video to be saved without sound when there is an error with the microphone.
      *
@@ -210,32 +192,33 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      */
     function startScreenSaving() {
         // We need to combine 2 audio and screen-sharing streams to create a recording with audio from the mic.
-        getMediaDevices(() => {
-            let composedStream = new MediaStream();
+        navigator.mediaDevices.enumerateDevices().then(() => {
             // Get audio stream from microphone.
-            getAudioMedia(micStream => {
-                // When the user shares their screen, we need to merge the video track from the media stream with
-                // the audio track from the microphone stream and stop any unnecessary tracks to ensure
-                // that the recorded video has microphone sound.
-                mediaStream.getTracks().forEach(function(track) {
-                    if (track.kind === 'video') {
-                        // Add video track into stream.
-                        composedStream.addTrack(track);
-                    } else {
-                        // Stop any audio track.
-                        track.stop();
-                    }
-                });
-
-                // Add mic audio track from mic stream into composedStream to track audio.
-                // This will make sure the recorded video will have mic sound.
-                micStream.getAudioTracks().forEach(function(micTrack) {
-                    composedStream.addTrack(micTrack);
-                });
-                mediaStream = composedStream;
-                startSaving();
+            return navigator.mediaDevices.getUserMedia({audio: true});
+        }).then(micStream => {
+            let composedStream = new MediaStream();
+            // When the user shares their screen, we need to merge the video track from the media stream with
+            // the audio track from the microphone stream and stop any unnecessary tracks to ensure
+            // that the recorded video has microphone sound.
+            mediaStream.getTracks().forEach(function(track) {
+                if (track.kind === 'video') {
+                    // Add video track into stream.
+                    composedStream.addTrack(track);
+                } else {
+                    // Stop any audio track.
+                    track.stop();
+                }
             });
-        });
+
+            // Add mic audio track from mic stream into composedStream to track audio.
+            // This will make sure the recorded video will have mic sound.
+            micStream.getAudioTracks().forEach(function(micTrack) {
+                composedStream.addTrack(micTrack);
+            });
+            mediaStream = composedStream;
+            startSaving();
+            return true;
+        }).catch(handleScreenSharingError);
     }
 
     /**
