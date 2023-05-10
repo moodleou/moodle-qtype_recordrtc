@@ -38,9 +38,13 @@
     }
 }}
 <span class="qtype_recordrtc-audio-widget d-inline-flex mw-100 my-1"
-      data-media-type="audio" data-widget-name="{{widgetname}}"
+      data-media-type="audio"
+      data-widget-name="{{widgetname}}"
       data-state="{{^hasrecording}}new{{/hasrecording}}{{#hasrecording}}recorded{{/hasrecording}}"
-      data-max-recording-duration="{{maxrecordingduration}}" data-recording-filename="{{filename}}">
+      data-max-recording-duration="{{maxrecordingduration}}"
+      data-recording-filename="{{filename}}"
+      data-convert-to-mp3="1"
+    >
     <span class="qtype_recordrtc-no-recording-placeholder flex-grow-1 text-center{{#hasrecording}} hide{{/hasrecording}}">{{#str}}norecording, qtype_recordrtc{{/str}}</span>
     <span class="qtype_recordrtc-time-left flex-grow-1 text-center hide position-relative">
         {{> qtype_recordrtc/progress_bar }}

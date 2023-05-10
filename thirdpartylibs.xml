@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<libraries>
+  <library>
+    <location>js/lamejs@1.2.1a-7-g582bbba</location>
+    <name>lamejs</name>
+    <description>
+      Fast mp3 encoder written in JavaScript.
+      Modified to wrap the original contents of lamejs.min.js and lamejs.all.js in
+
+      define(function () {
+      // Original code here.
+      return lamejs;
+      });
+
+    </description>
+    <version>1.2.1a+</version>
+    <license>LGPL</license>
+    <licenseversion>3+</licenseversion>
+    <repository>https://github.com/zhuker/lamejs</repository>
+  </library>
+</libraries>

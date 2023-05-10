@@ -67,7 +67,7 @@ function checkCanWork() {
  *  - recording: Media is being recorded. Pause button visible if allowed. Main button shows 'Stop'. Countdown displayed.
  *  - paused:    If pause was pressed. Media recording paused, but resumable. Pause button changed to say 'resume'.
  *  - saving:    Media being uploaded. Progress indication shown. Pause button hidden if was visible.
- *  - recorded:  Recording and upload complete. Buttons shows 'Record again'.
+ *  - recorded:  Recording and upload complete. The button then shows 'Record again'.
  *
  * @param {HTMLElement} widget the DOM node that is the top level of the whole recorder.
  * @param {(AudioSettings|VideoSettings)} mediaSettings information about the media type.
@@ -178,7 +178,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
     /**
      * Get list media device supported.
      *
-     * @param {Function} A callback function to handle next step.
+     * @param {Function} callback A callback function to handle next step.
      */
     function getMediaDevices(callback) {
         navigator.mediaDevices.enumerateDevices().then(callback).catch(handleScreenSharingError);
@@ -187,7 +187,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
     /**
      * Get audio mic stream.
      *
-     * @param {Function} A callback function to handle next step.
+     * @param {Function} callback A callback function to handle next step.
      */
     function getAudioMedia(callback) {
         navigator.mediaDevices.getUserMedia({audio: true}).then(callback).catch(handleScreenSharingError);
@@ -197,7 +197,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      * To handle every time the audio mic has a problem.
      * For now, we will allow video to be saved without sound when there is an error with the microphone.
      *
-     * @param {Object} A error object.
+     * @param {Object} error A error object.
      */
     function handleScreenSharingError(error) {
         Log.debug(error);
@@ -210,7 +210,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      */
     function startScreenSaving() {
         // We need to combine 2 audio and screen-sharing streams to create a recording with audio from the mic.
-        getMediaDevices(devices => {
+        getMediaDevices(() => {
             let composedStream = new MediaStream();
             // Get audio stream from microphone.
             getAudioMedia(micStream => {
@@ -618,35 +618,135 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
     /**
      * Trigger the upload of the recorded media back to Moodle.
      */
-    function uploadMediaToServer() {
+    async function uploadMediaToServer() {
         setButtonLabel('uploadpreparing');
 
-        // First we need to get the media data from the media element.
-        const fetchRequest = new XMLHttpRequest();
-        fetchRequest.open('GET', mediaElement.src);
-        fetchRequest.responseType = 'blob';
-        fetchRequest.addEventListener('load', handleRecordingFetched);
-        fetchRequest.send();
+        if (widget.dataset.convertToMp3) {
+            const mp3DataBlob = await convertOggToMp3(mediaElement.src);
+            mediaElement.src = URL.createObjectURL(mp3DataBlob);
+            uploadBlobToRepository(mp3DataBlob, widget.dataset.recordingFilename.replace(/\.ogg$/, '.mp3'));
+        } else {
+            // First we need to get the media data from the media element.
+            const oggDataBlob = await fetchOggData(mediaElement.src, 'blob');
+            uploadBlobToRepository(oggDataBlob, widget.dataset.recordingFilename);
+        }
     }
 
     /**
-     * Callback called once we have the data from the media element, ready to upload to Moodle.
+     * Convert audio data to MP3.
      *
-     * @param {ProgressEvent} e
+     * @param {string} sourceUrl URL from which to fetch the Ogg audio file to convert.
+     * @returns {Promise<Blob>}
      */
-    function handleRecordingFetched(e) {
-        const fetchRequest = e.target;
-        if (fetchRequest.status !== 200) {
-            // No data.
-            return;
+    async function convertOggToMp3(sourceUrl) {
+        const lamejs = await getLameJs();
+        const oggData = await fetchOggData(sourceUrl, 'arraybuffer');
+        const audioBuffer = await (new AudioContext()).decodeAudioData(oggData);
+        const [left, right] = getRawAudioDataFromBuffer(audioBuffer);
+        return createMp3(lamejs, audioBuffer.numberOfChannels, audioBuffer.sampleRate, left, right);
+    }
+
+    /**
+     * Helper to wrap loading the lamejs library.
+     *
+     * @returns {Promise<*>} access to the lamejs library.
+     */
+    async function getLameJs() {
+        return await import(M.cfg.wwwroot + '/question/type/recordrtc/js/lamejs@1.2.1a-7-g582bbba/lame.min.js');
+    }
+
+    /**
+     * Load Ogg data from a URL and return as an ArrayBuffer or a Blob.
+     *
+     * @param {string} sourceUrl URL from which to fetch the Ogg audio data.
+     * @param {XMLHttpRequestResponseType} responseType 'arraybuffer' or 'blob'.
+     * @returns {Promise<ArrayBuffer|Blob>} the audio data in the requested structure.
+     */
+    function fetchOggData(sourceUrl, responseType) {
+        return new Promise((resolve) => {
+            const fetchRequest = new XMLHttpRequest();
+            fetchRequest.open('GET', sourceUrl);
+            fetchRequest.responseType = responseType;
+            fetchRequest.addEventListener('load', () => {
+                resolve(fetchRequest.response);
+            });
+            fetchRequest.send();
+        });
+    }
+
+    /**
+     * Extract the raw sample data from an AudioBuffer.
+     *
+     * @param {AudioBuffer} audioIn an audio buffer, e.g. from a call to decodeAudioData.
+     * @returns {Int16Array[]} for each audio channel, a Int16Array of the samples.
+     */
+    function getRawAudioDataFromBuffer(audioIn) {
+        const channelData = [];
+
+        for (let channel = 0; channel < audioIn.numberOfChannels; channel++) {
+            const rawChannelData = audioIn.getChannelData(channel);
+            channelData[channel] = new Int16Array(audioIn.length);
+            for (let i = 0; i < audioIn.length; i++) {
+                // Limit to -1 .. 1, then scale to 16-bit signed int.
+                const sample = Math.max(-1, Math.min(1, rawChannelData[i]));
+                // eslint-disable-next-line no-bitwise
+                channelData[channel][i] = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+            }
         }
 
-        // Blob is now the media that the audio/video tag's src pointed to.
-        const blob = fetchRequest.response;
+        return channelData;
+    }
+
+    /**
+     * Convert some audio data to MP3.
+     *
+     * @param {*} lamejs lamejs library from getLameJs().
+     * @param {int} channels number of audio channels (1 or 2 supported).
+     * @param {int} sampleRate sample rate of the audio to encode.
+     * @param {Int16Array} left audio data for the left or only channel.
+     * @param {Int16Array|null} right audio data for the right channel, if any.
+     * @returns {Blob} representing an MP3 file.
+     */
+    function createMp3(lamejs, channels, sampleRate, left, right = null) {
+        const buffer = [];
+        const mp3enc = new lamejs.Mp3Encoder(channels, sampleRate, 128);
+        let remaining = left.length;
+        const samplesPerFrame = 1152;
+        let mp3buf;
+
+        for (let i = 0; remaining >= samplesPerFrame; i += samplesPerFrame) {
+            if (channels === 1) {
+                const mono = left.subarray(i, i + samplesPerFrame);
+                mp3buf = mp3enc.encodeBuffer(mono);
+            } else {
+                const leftChunk = left.subarray(i, i + samplesPerFrame);
+                const rightChunk = right.subarray(i, i + samplesPerFrame);
+                mp3buf = mp3enc.encodeBuffer(leftChunk, rightChunk);
+            }
+            if (mp3buf.length > 0) {
+                buffer.push(mp3buf);
+            }
+            remaining -= samplesPerFrame;
+        }
+        const d = mp3enc.flush();
+        if (d.length > 0) {
+            buffer.push(new Int8Array(d));
+        }
+
+        return new Blob(buffer, {type: "audio/mp3"});
+    }
+
+    /**
+     * Upload the audio file to the Moodle draft file repository.
+     *
+     * @param {Blob} blob data to upload.
+     * @param {string} recordingFilename the filename to use for the uplaod.
+     */
+    function uploadBlobToRepository(blob, recordingFilename) {
 
         // Create FormData to send to PHP filepicker-upload script.
         const formData = new FormData();
-        formData.append('repo_upload_file', blob, widget.dataset.recordingFilename);
+        formData.append('repo_upload_file', blob, recordingFilename);
         formData.append('sesskey', M.cfg.sesskey);
         formData.append('repo_id', uploadInfo.uploadRepositoryId);
         formData.append('itemid', uploadInfo.draftItemId);
