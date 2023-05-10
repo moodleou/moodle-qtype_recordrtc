@@ -29,8 +29,9 @@ require_once($CFG->dirroot . '/question/type/recordrtc/question.php');
  * Unit tests for the widget_info class.
  *
  * @package   qtype_recordrtc
- * @copyright  2021 The Open University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2021 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers    \qtype_recordrtc\widget_info
  */
 class widget_info_test extends \advanced_testcase {
 

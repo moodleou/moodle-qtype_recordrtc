@@ -34,6 +34,7 @@ require_once($CFG->dirroot . '/question/format/xml/format.php');
  * @package   qtype_recordrtc
  * @copyright 2019 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers    \qtype_recordrtc
  */
 class questiontype_test extends \question_testcase {
 

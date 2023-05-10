@@ -27,9 +27,10 @@ require_once($CFG->dirroot . '/question/type/recordrtc/classes/privacy/provider.
 /**
  * Privacy provider tests class.
  *
- * @package    qtype_recordrtc
- * @copyright  2021 The Open university
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   qtype_recordrtc
+ * @copyright 2021 The Open university
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers    \qtype_recordrtc\privacy\provider
  */
 class privacy_provider_test extends \core_privacy\tests\provider_testcase {
     // Include the privacy helper which has assertions on it.

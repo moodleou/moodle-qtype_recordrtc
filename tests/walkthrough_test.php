@@ -27,9 +27,10 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
 /**
  * Unit tests for what happens when a record audio, video and screen question is attempted.
  *
- * @package    qtype_recordrtc
- * @copyright  2019 The Open University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   qtype_recordrtc
+ * @copyright 2019 The Open University
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers    \qtype_recordrtc_question
  */
 class walkthrough_test extends \qbehaviour_walkthrough_test_base {
 
