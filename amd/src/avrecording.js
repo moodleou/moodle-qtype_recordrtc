@@ -625,8 +625,8 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         const lamejs = await getLameJs();
         const oggData = await fetchOggData(sourceUrl, 'arraybuffer');
         const audioBuffer = await (new AudioContext()).decodeAudioData(oggData);
-        const [left, right] = getRawAudioDataFromBuffer(audioBuffer);
-        return createMp3(lamejs, audioBuffer.numberOfChannels, audioBuffer.sampleRate, left, right);
+        const [left, right] = await getRawAudioDataFromBuffer(audioBuffer);
+        return await createMp3(lamejs, audioBuffer.numberOfChannels, audioBuffer.sampleRate, left, right);
     }
 
     /**
@@ -663,18 +663,23 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      * @param {AudioBuffer} audioIn an audio buffer, e.g. from a call to decodeAudioData.
      * @returns {Int16Array[]} for each audio channel, a Int16Array of the samples.
      */
-    function getRawAudioDataFromBuffer(audioIn) {
+    async function getRawAudioDataFromBuffer(audioIn) {
         const channelData = [];
 
         for (let channel = 0; channel < audioIn.numberOfChannels; channel++) {
+            await setPreparingPercent(0, audioIn.length, channel / 3, 1 / 3);
             const rawChannelData = audioIn.getChannelData(channel);
             channelData[channel] = new Int16Array(audioIn.length);
             for (let i = 0; i < audioIn.length; i++) {
+                if (i % 10000 === 0) {
+                    await setPreparingPercent(i, audioIn.length, channel / 3, 1 / 3);
+                }
                 // Limit to -1 .. 1, then scale to 16-bit signed int.
                 const sample = Math.max(-1, Math.min(1, rawChannelData[i]));
                 // eslint-disable-next-line no-bitwise
                 channelData[channel][i] = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
             }
+            await setPreparingPercent(audioIn.length, audioIn.length, channel / 3, 1 / 3);
         }
 
         return channelData;
@@ -690,13 +695,14 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      * @param {Int16Array|null} right audio data for the right channel, if any.
      * @returns {Blob} representing an MP3 file.
      */
-    function createMp3(lamejs, channels, sampleRate, left, right = null) {
+    async function createMp3(lamejs, channels, sampleRate, left, right = null) {
         const buffer = [];
         const mp3enc = new lamejs.Mp3Encoder(channels, sampleRate, 128);
         let remaining = left.length;
         const samplesPerFrame = 1152;
         let mp3buf;
 
+        await setPreparingPercent(0, left.length, 2 / 3, 1 / 3);
         for (let i = 0; remaining >= samplesPerFrame; i += samplesPerFrame) {
             if (channels === 1) {
                 const mono = left.subarray(i, i + samplesPerFrame);
@@ -710,13 +716,31 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
                 buffer.push(mp3buf);
             }
             remaining -= samplesPerFrame;
+            if (i % (10 * samplesPerFrame) === 0) {
+                await setPreparingPercent(i, left.length, 2 / 3, 1 / 3);
+            }
         }
         const d = mp3enc.flush();
         if (d.length > 0) {
             buffer.push(new Int8Array(d));
         }
+        await setPreparingPercent(left.length, left.length, 2 / 3, 1 / 3);
 
         return new Blob(buffer, {type: "audio/mp3"});
+    }
+
+    /**
+     * Set the label on the upload button to a progress message including a percentage.
+     *
+     * @param {number} current number done so far.
+     * @param {number} total number to do in total.
+     * @param {number} start percentage to start from (on a scale of 0 .. 1).
+     * @param {number} span amount of percent range to cover (on a scale of 0 .. 1).
+     */
+    async function setPreparingPercent(current, total, start, span) {
+        setButtonLabel('uploadpreparingpercent', Math.round(100 * (start + span * current / total)));
+        // Next like is a hack to ensure the screen acutally updates.
+        await new Promise(resolve => requestAnimationFrame(resolve));
     }
 
     /**
@@ -797,13 +821,13 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
     }
 
     /**
-     * Display a progress message in the upload progress area.
+     * Change the label on the start/stop button.
      *
      * @param {string} langString
      * @param {string|null} [a] optional variable to populate placeholder with
      */
     function setButtonLabel(langString, a) {
-        if (!a) {
+        if (a === undefined) {
             // Seemingly unnecessary space inside the span is needed for screen-readers, and it must be a non-breaking space.
             a = '<span class="sr-only">&nbsp;' + widget.dataset.widgetName + '</span>';
         }
@@ -811,7 +835,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
     }
 
     /**
-     * Display a progress message in the upload progress area.
+     * Change the label on the pause button.
      *
      * @param {string} langString
      */

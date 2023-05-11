@@ -144,6 +144,7 @@ $string['uploadcomplete'] = 'Recording uploaded';
 $string['uploadfailed'] = 'Upload failed';
 $string['uploadfailed404'] = 'Upload failed (file too big?)';
 $string['uploadpreparing'] = 'Preparing upload ...';
+$string['uploadpreparingpercent'] = 'Preparing upload ({$a}%)';
 $string['uploadprogress'] = 'Uploading ({$a})';
 $string['video'] = 'Single video';
 $string['videobitrate'] = 'Video bitrate';

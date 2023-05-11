@@ -223,6 +223,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
             'uploadfailed',
             'uploadfailed404',
             'uploadpreparing',
+            'uploadpreparingpercent',
             'uploadprogress',
         ];
     }
