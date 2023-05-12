@@ -697,7 +697,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      */
     async function createMp3(lamejs, channels, sampleRate, left, right = null) {
         const buffer = [];
-        const mp3enc = new lamejs.Mp3Encoder(channels, sampleRate, 128);
+        const mp3enc = new lamejs.Mp3Encoder(channels, sampleRate, mediaSettings.bitRate / 1000);
         let remaining = left.length;
         const samplesPerFrame = 1152;
         let mp3buf;
