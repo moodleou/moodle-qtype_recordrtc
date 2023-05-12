@@ -2,7 +2,8 @@
 
 This question type is like the standard essay question type, but instead
 of writing some text, students have one or more recording widgets where
-they can record some audio or video. Like the standard essay question type,
+they can record some audio or video. The video can be from a webcam, or screen recording,
+depending on what the question author has set up. Like the standard essay question type,
 it is not automatically graded.
 
 

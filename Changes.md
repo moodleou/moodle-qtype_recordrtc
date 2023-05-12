@@ -2,8 +2,13 @@
 
 ## Changes in 1.6
 
-* We are switching back from MP3 to OGG format. All signficant browser now support OGG,
-  and the MP3 conversions was sometime corrupting the recordings.
+* The question type can now be used to make screen recordings, in addition to audio and video.
+* During recording, we now show both the length of the recording so far, and the time left
+  before reaching the limit, with a progress-bar-like display.
+* The way audio recordings are converted to MP3 has been changed. This now happens as a
+  separate stage after the recording has been made. This is more reliable, but adds a short delay.
+  (Why are we using MP3 format? Because that is what the OU needs. When we get the time,
+  we are planning add an option to select which format to use.)
 * There is a capability to control whether users are allowed to download recordings.
 * The question text is now validated when the 'Update the form' button is clicked.
 * The form now has option to control what happens when used with the Self-assessment question behaviour.

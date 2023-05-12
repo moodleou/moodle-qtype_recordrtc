@@ -28,7 +28,7 @@ $plugin->version   = 2023030300;
 $plugin->requires  = 2021051700;
 $plugin->component = 'qtype_recordrtc';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.5+ for Moodle 3.11+';
+$plugin->release   = '1.6 for Moodle 3.11+';
 
 $plugin->dependencies = [
     'qbehaviour_selfassess' => 2023020300,
