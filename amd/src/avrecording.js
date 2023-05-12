@@ -625,7 +625,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         const lamejs = await getLameJs();
         const oggData = await fetchOggData(sourceUrl, 'arraybuffer');
         const audioBuffer = await (new AudioContext()).decodeAudioData(oggData);
-        const [left, right] = await getRawAudioDataFromBuffer(audioBuffer);
+        const [left, right] = getRawAudioDataFromBuffer(audioBuffer);
         return await createMp3(lamejs, audioBuffer.numberOfChannels, audioBuffer.sampleRate, left, right);
     }
 
@@ -663,23 +663,17 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      * @param {AudioBuffer} audioIn an audio buffer, e.g. from a call to decodeAudioData.
      * @returns {Int16Array[]} for each audio channel, a Int16Array of the samples.
      */
-    async function getRawAudioDataFromBuffer(audioIn) {
+    function getRawAudioDataFromBuffer(audioIn) {
         const channelData = [];
 
         for (let channel = 0; channel < audioIn.numberOfChannels; channel++) {
-            await setPreparingPercent(0, audioIn.length, channel / 3, 1 / 3);
             const rawChannelData = audioIn.getChannelData(channel);
             channelData[channel] = new Int16Array(audioIn.length);
             for (let i = 0; i < audioIn.length; i++) {
-                if (i % 10000 === 0) {
-                    await setPreparingPercent(i, audioIn.length, channel / 3, 1 / 3);
-                }
-                // Limit to -1 .. 1, then scale to 16-bit signed int.
-                const sample = Math.max(-1, Math.min(1, rawChannelData[i]));
-                // eslint-disable-next-line no-bitwise
-                channelData[channel][i] = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+                // This is not the normal code given for this conversion (which can be
+                // found in git history) but this is 10x faster, and surely good enough.
+                channelData[channel][i] = rawChannelData[i] * 0x7FFF;
             }
-            await setPreparingPercent(audioIn.length, audioIn.length, channel / 3, 1 / 3);
         }
 
         return channelData;
@@ -702,7 +696,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         const samplesPerFrame = 1152;
         let mp3buf;
 
-        await setPreparingPercent(0, left.length, 2 / 3, 1 / 3);
+        await setPreparingPercent(0, left.length);
         for (let i = 0; remaining >= samplesPerFrame; i += samplesPerFrame) {
             if (channels === 1) {
                 const mono = left.subarray(i, i + samplesPerFrame);
@@ -717,14 +711,14 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
             }
             remaining -= samplesPerFrame;
             if (i % (10 * samplesPerFrame) === 0) {
-                await setPreparingPercent(i, left.length, 2 / 3, 1 / 3);
+                await setPreparingPercent(i, left.length);
             }
         }
         const d = mp3enc.flush();
         if (d.length > 0) {
             buffer.push(new Int8Array(d));
         }
-        await setPreparingPercent(left.length, left.length, 2 / 3, 1 / 3);
+        await setPreparingPercent(left.length, left.length);
 
         return new Blob(buffer, {type: "audio/mp3"});
     }
@@ -734,11 +728,9 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      *
      * @param {number} current number done so far.
      * @param {number} total number to do in total.
-     * @param {number} start percentage to start from (on a scale of 0 .. 1).
-     * @param {number} span amount of percent range to cover (on a scale of 0 .. 1).
      */
-    async function setPreparingPercent(current, total, start, span) {
-        setButtonLabel('uploadpreparingpercent', Math.round(100 * (start + span * current / total)));
+    async function setPreparingPercent(current, total) {
+        setButtonLabel('uploadpreparingpercent', Math.round(100 * current / total));
         // Next like is a hack to ensure the screen acutally updates.
         await new Promise(resolve => requestAnimationFrame(resolve));
     }
