@@ -227,13 +227,15 @@ function xmldb_qtype_recordrtc_upgrade(int $oldversion): bool {
                 SELECT COUNT(1)
                   FROM {question} q
              LEFT JOIN {qtype_recordrtc_options} o ON o.questionid = q.id
-                 WHERE q.qtype = 'recordrtc'");
+                 WHERE q.qtype = 'recordrtc'
+                 AND o.id IS NOT NULL");
         if ($toupdatecount > 0) {
             $rs = $DB->get_recordset_sql("
                 SELECT o.id, q.defaultmark
                   FROM {question} q
              LEFT JOIN {qtype_recordrtc_options} o ON o.questionid = q.id
-                 WHERE q.qtype = 'recordrtc'");
+                 WHERE q.qtype = 'recordrtc'
+                 AND o.id IS NOT NULL");
             $pbar = new progress_bar('updaterecordrtcselfrate', 500, true);
 
             $done = 0;
