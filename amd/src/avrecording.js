@@ -895,11 +895,11 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      * @param {boolean} enabled true if the button should be enabled.
      */
     function disableOrEnableButtons(enabled = false) {
-        widget.closest('.que').querySelectorAll('button, input[type=submit], input[type=button]').forEach(
-            function(button) {
+        document.querySelectorAll('.que.recordrtc').forEach(record => {
+            record.querySelectorAll('button, input[type=submit], input[type=button]').forEach(button => {
                 button.disabled = !enabled;
-            }
-        );
+            });
+        });
     }
 
     /**
