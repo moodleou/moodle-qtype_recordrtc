@@ -230,7 +230,7 @@ function xmldb_qtype_recordrtc_upgrade(int $oldversion): bool {
                  WHERE q.qtype = 'recordrtc'");
         if ($toupdatecount > 0) {
             $rs = $DB->get_recordset_sql("
-                SELECT o.id, q.defaultmark
+                SELECT o.id, q.defaultmark, q.id AS questionid
                   FROM {question} q
              LEFT JOIN {qtype_recordrtc_options} o ON o.questionid = q.id
                  WHERE q.qtype = 'recordrtc'");
@@ -241,6 +241,17 @@ function xmldb_qtype_recordrtc_upgrade(int $oldversion): bool {
                 $pbar->update($done, $toupdatecount,
                         "Setting default values of 'canselfrate' and 'canselfcomment' - " .
                         "$done/$toupdatecount (id = $row->id).");
+
+                // Some people reported they had questions with the qtype_recordrtc_options row missing.
+                // If we detect that, add the missing row.
+                if (!$row->id) {
+                    $newoptions = new stdClass();
+                    $newoptions->questionid = $row->questionid;
+                    $newoptions->mediatype = 'audio';
+                    $newoptions->timelimitinseconds = 30;
+                    $newoptions->allowpausing = 0;
+                    $row->id = $DB->insert_record('qtype_recordrtc_options', $newoptions);
+                }
 
                 // If question defaultmark is non-zero set the default value of 'canselfrate' field to 1, otherwise set it to 0.
                 // The canselfcomment field defaults to 1 for existing questions.
