@@ -1,5 +1,12 @@
 # Change log for the Record audio and video question type
 
+## Changes in 1.7
+
+* Now, if you have multiple recording questions on one page, students are prevented from
+  starting recording in two questions simultaneously.
+* The upgrade code was improved, to be more robust in the face of bad data in the database.
+
+
 ## Changes in 1.6
 
 * The question type can now be used to make screen recordings, in addition to audio and video.
