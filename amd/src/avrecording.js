@@ -119,6 +119,11 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      */
     let countdownTicker = 0;
 
+    /**
+     * @type {object} The progress bar animation object.
+     */
+    let progressBarAnimation;
+
     const button = widget.querySelector('button.qtype_recordrtc-main-button');
     const pauseButton = widget.querySelector('.qtype_recordrtc-pause-button button');
     const controlRow = widget.querySelector('.qtype_recordrtc-control-row');
@@ -152,11 +157,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
                 startRecording();
                 break;
             case 'starting':
-                if (mediaSettings.name === 'screen') {
-                    startScreenSaving();
-                } else {
-                    startSaving();
-                }
+                startSaving();
                 break;
             case 'recording':
                 if (clickedButton === pauseButton) {
@@ -173,52 +174,6 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
                 }
                 break;
         }
-    }
-
-    /**
-     * To handle every time the audio mic has a problem.
-     * For now, we will allow video to be saved without sound when there is an error with the microphone.
-     *
-     * @param {Object} error A error object.
-     */
-    function handleScreenSharingError(error) {
-        Log.debug(error);
-        startSaving();
-    }
-
-    /**
-     * When recorder type is screen, we need add audio mic stream into mediaStream
-     * before saving.
-     */
-    function startScreenSaving() {
-        // We need to combine 2 audio and screen-sharing streams to create a recording with audio from the mic.
-        navigator.mediaDevices.enumerateDevices().then(() => {
-            // Get audio stream from microphone.
-            return navigator.mediaDevices.getUserMedia({audio: true});
-        }).then(micStream => {
-            let composedStream = new MediaStream();
-            // When the user shares their screen, we need to merge the video track from the media stream with
-            // the audio track from the microphone stream and stop any unnecessary tracks to ensure
-            // that the recorded video has microphone sound.
-            mediaStream.getTracks().forEach(function(track) {
-                if (track.kind === 'video') {
-                    // Add video track into stream.
-                    composedStream.addTrack(track);
-                } else {
-                    // Stop any audio track.
-                    track.stop();
-                }
-            });
-
-            // Add mic audio track from mic stream into composedStream to track audio.
-            // This will make sure the recorded video will have mic sound.
-            micStream.getAudioTracks().forEach(function(micTrack) {
-                composedStream.addTrack(micTrack);
-            });
-            mediaStream = composedStream;
-            startSaving();
-            return true;
-        }).catch(handleScreenSharingError);
     }
 
     /**
@@ -250,15 +205,66 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         // Empty the array containing the previously recorded chunks.
         chunks = [];
         bytesRecordedSoFar = 0;
-        if (mediaSettings.name === 'screen') {
-            navigator.mediaDevices.getDisplayMedia(mediaSettings.mediaConstraints)
-                .then(handleCaptureStarting)
-                .catch(handleCaptureFailed);
-        } else {
+
+        // Normal case.
+        if (mediaSettings.name !== 'screen') {
             navigator.mediaDevices.getUserMedia(mediaSettings.mediaConstraints)
                 .then(handleCaptureStarting)
                 .catch(handleCaptureFailed);
+            return;
         }
+
+        // Screen recording requires both audio and the screen, and we need to get them both together.
+        const audioPromise = navigator.mediaDevices.getUserMedia({audio: true});
+        const screenPromise = navigator.mediaDevices.getDisplayMedia(mediaSettings.mediaConstraints);
+
+        // If the audioPromise is "rejected" (indicating that the user does not want to share their voice),
+        // we will proceed to record their screen without audio.
+        // Therefore, we will use Promise.allSettled instead of Promise.all.
+        Promise.allSettled([audioPromise, screenPromise]).then(combineAudioAndScreenRecording);
+    }
+
+    /**
+     * For starting screen recording, once we have both audio and video, combine them.
+     *
+     * @param {Object[]} results from the above Promise.allSettled call.
+     */
+    function combineAudioAndScreenRecording(results) {
+        const [audioData, screenData] = results;
+
+        if (screenData.status !== 'fulfilled') {
+            // If the user does not grant screen permission show warning popup.
+            handleCaptureFailed(screenData.reason);
+        }
+        const screenStream = screenData.value;
+
+        // Prepare to handle if the user clicks the browser's "Stop Sharing Screen" button.
+        screenStream.getVideoTracks()[0].addEventListener('ended', handleStopSharing);
+
+        // Handle microphone.
+        if (audioData.status !== 'fulfilled') {
+            // We could not get audio. In this case, we just continue without audio,
+            // but put the message in the console in case we need to debug.
+            Log.debug("Could not capture audio. Continuing without. Reason: " + audioData.reason);
+            handleCaptureStarting(screenStream);
+        }
+        const audioStream = audioData.value;
+
+        // Merge the video track from the media stream with the audio track from the microphone stream
+        // and stop any unnecessary tracks to ensure that the recorded video has microphone sound.
+        const composedStream = new MediaStream();
+        screenStream.getTracks().forEach(function(track) {
+            if (track.kind === 'video') {
+                composedStream.addTrack(track);
+            } else {
+                track.stop();
+            }
+        });
+        audioStream.getAudioTracks().forEach(function(micTrack) {
+            composedStream.addTrack(micTrack);
+        });
+
+        handleCaptureStarting(composedStream);
     }
 
     /**
@@ -272,27 +278,34 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         // Setup the UI for during recording.
         mediaElement.srcObject = stream;
         mediaElement.muted = true;
-        if (mediaSettings.name === 'audio') {
-            startSaving();
-        } else {
-            // Cover when user clicks Browser's "Stop Sharing Screen" button.
-            if (mediaSettings.name === 'screen') {
-                mediaStream.getVideoTracks()[0].addEventListener('ended', handleStopSharing);
-            }
-            mediaElement.play();
-            mediaElement.controls = false;
+        switch (mediaSettings.name) {
+            case 'audio':
+                startSaving();
+                button.disabled = false;
+                button.focus();
+                break;
 
-            widget.dataset.state = 'starting';
-            setButtonLabel('startrecording');
-            widget.querySelector('.qtype_recordrtc-stop-button').disabled = false;
+            case 'video':
+                mediaElement.play();
+                mediaElement.controls = false;
+
+                widget.dataset.state = 'starting';
+                setButtonLabel('startrecording');
+                button.disabled = false;
+                button.focus();
+                widget.querySelector('.qtype_recordrtc-stop-button').disabled = false;
+                break;
+
+            case 'screen':
+                startSaving();
+                widget.querySelector('.qtype_recordrtc-stop-button').disabled = false;
+                break;
         }
 
         // Make button clickable again, to allow starting/stopping recording.
         if (pauseButton) {
             pauseButton.disabled = false;
         }
-        button.disabled = false;
-        button.focus();
     }
 
     /**
@@ -309,9 +322,9 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         mediaRecorder.start(1000); // Capture in one-second chunks. Firefox requires that.
 
         widget.dataset.state = 'recording';
-        // Set duration for progressbar and start animate.
-        progressBar.style.animationDuration = widget.dataset.maxRecordingDuration + 's';
-        progressBar.classList.add('animate');
+        // Initialize and start the animation.
+        initProgressBarAnimation();
+        progressBarAnimation.play();
         setButtonLabel('stoprecording');
         startCountdownTimer();
         if (mediaSettings.name === 'video' || mediaSettings.name === 'screen') {
@@ -339,6 +352,20 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
             }
         }
         enableAllButtons();
+    }
+
+    /**
+     * Function to initialise progress bar animation.
+     */
+    function initProgressBarAnimation() {
+        progressBarAnimation = progressBar.animate([
+            {clipPath: 'inset(0 0 0 0%)'},
+            {clipPath: 'inset(0 0 0 100%)'},
+        ], {
+            duration: widget.dataset.maxRecordingDuration * 1000,
+            fill: 'forwards',
+            delay: 0,
+        });
     }
 
     /**
@@ -421,10 +448,8 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
             pauseButton.parentElement.classList.add('hide');
         }
 
-        // Reset animation state.
-        progressBar.style.animationPlayState = 'running';
         // Stop animate.
-        progressBar.classList.remove('animate');
+        progressBarAnimation.cancel();
 
         // Ask the recording to stop.
         mediaRecorder.stop();
@@ -906,8 +931,12 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      * Pause/resume the progressbar state.
      */
     function toggleProgressbarState() {
-        const running = progressBar.style.animationPlayState || 'running';
-        progressBar.style.animationPlayState = running === 'running' ? 'paused' : 'running';
+        const animationState = progressBarAnimation.playState || 'running';
+        if (animationState === 'running') {
+            progressBarAnimation.pause();
+        } else {
+            progressBarAnimation.play();
+        }
     }
 }
 
