@@ -52,7 +52,7 @@
         </video>
     </span>
     <span>
-        <button type="button" class="qtype_recordrtc-main-button btn osep-smallbutton m-0 w-100">
+        <button type="button" class="qtype_recordrtc-main-button btn btn-secondary osep-smallbutton m-0 w-100">
             {{! Seemingly unnecessary space inside the span is needed for screen-readers, and it must be a non-breaking space. }}
             {{^hasrecording}}{{#str}}startsharescreenx, qtype_recordrtc, <span class="sr-only">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
             {{#hasrecording}}{{#str}}recordagainx, qtype_recordrtc, <span class="sr-only">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
@@ -64,12 +64,12 @@
         </span>
         {{#allowpausing}}
             <span class="qtype_recordrtc-pause-button hide">
-                <button type="button" data-pause="1" class="btn osep-smallbutton ml-1 mr-0">
+                <button type="button" data-pause="1" class="btn btn-secondary osep-smallbutton ml-1 mr-0">
                     {{#str}}pause, qtype_recordrtc{{/str}}
                 </button>
             </span>
         {{/allowpausing}}
-        <button type="button" class="qtype_recordrtc-stop-button btn osep-smallbutton ml-1 mr-0">
+        <button type="button" class="qtype_recordrtc-stop-button btn btn-secondary osep-smallbutton ml-1 mr-0">
             {{#str}}stoprecording, qtype_recordrtc{{/str}}
         </button>
     </span>

@@ -54,24 +54,3 @@ body#page-question-type-recordrtc.path-question-type .form-group[data-groupname=
     color: #000;
     z-index: 1;
 }
-
-.que.recordrtc .qtype_recordrtc-progressbar.animate {
-    animation: qtype_recordrtc-progressbar 0s linear 0s forwards;
-}
-
-/*
-    Explaining the animation:
-    The HTML DOM will contain two elements:
-    • Element 1: has a blue background (#0b55a8) and white text color.
-    • Element 2: has a white background and black text color.
-    Element 2 will be above element 1. The animation does only one thing:
-    • Create an inset rectangle into element 2 and then clip it to show element 2.
-*/
-@keyframes qtype_recordrtc-progressbar {
-    0% {
-        clip-path: inset(0 0 0 0%);
-    }
-    100% {
-        clip-path: inset(0 0 0 100%);
-    }
-}
