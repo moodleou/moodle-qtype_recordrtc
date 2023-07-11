@@ -235,6 +235,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         if (screenData.status !== 'fulfilled') {
             // If the user does not grant screen permission show warning popup.
             handleCaptureFailed(screenData.reason);
+            return;
         }
         const screenStream = screenData.value;
 
@@ -247,6 +248,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
             // but put the message in the console in case we need to debug.
             Log.debug("Could not capture audio. Continuing without. Reason: " + audioData.reason);
             handleCaptureStarting(screenStream);
+            return;
         }
         const audioStream = audioData.value;
 
@@ -297,6 +299,8 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
                 break;
 
             case 'screen':
+                mediaElement.play();
+                mediaElement.controls = false;
                 startSaving();
                 widget.querySelector('.qtype_recordrtc-stop-button').disabled = false;
                 break;
