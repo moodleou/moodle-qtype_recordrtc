@@ -43,6 +43,7 @@ $string['customav'] = 'Multiple widgets';
 $string['downloadrecording'] = 'Download {$a}';
 $string['err_audiotimelimit'] = 'Maximum audio recording duration cannot be greater than {$a} seconds.';
 $string['err_closesquarebrackets'] = 'Missing close square bracket(s). {$a->format}';
+$string['err_compatibility'] = 'While iOS/iPadOS devices can record video files in open formats, they cannot currently play them back. Until Apple fix this, you will have to use another device to view this video.';
 $string['err_opensquarebrackets'] = 'Missing open square bracket(s). {$a->format}';
 $string['err_placeholderformat'] = 'The placeholder format is either [[name:audio:duration]] or [[name:video:duration]], where name can only contain lower-case letters, numbers, hyphens and underscores, and must be no more than 32 characters long. The duration is optional and should be like \'01m20s\', \'02m\' or \'45s\'.';
 $string['err_placeholderincorrectformat'] = 'A placeholder in the question text is not in the correct format.';

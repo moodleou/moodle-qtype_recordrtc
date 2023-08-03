@@ -37,12 +37,12 @@
         "candownload": true
     }
 }}
-<span class="qtype_recordrtc-video-widget qtype_recordrtc-ratio-{{aspectratio}} d-flex flex-column mw-100"
-        style="width: {{width}}px">
+<span class="qtype_recordrtc-screen-widget qtype_recordrtc-ratio-{{aspectratio}} d-flex flex-column mw-100"
+        style="width: {{width}}px" data-error-message="{{#str}}err_compatibility, qtype_recordrtc{{/str}}">
     {{#hasrecording}}
         <span class="qtype_recordrtc-media-player">
-            <video controls class="w-100"{{^candownload}} oncontextmenu="return false;" controlsList=" nodownload"{{/candownload}}>
-                <source src="{{recordingurl}}">
+            <video controls class="w-100 d-none"{{^candownload}} oncontextmenu="return false;" controlsList=" nodownload"{{/candownload}}
+                   data-source="{{recordingurl}}">
             </video>
         </span>
         {{#candownload}}

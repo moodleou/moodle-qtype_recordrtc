@@ -47,12 +47,11 @@
       data-max-recording-duration="{{maxrecordingduration}}" data-recording-filename="{{filename}}">
     <span class="qtype_recordrtc-no-recording-placeholder mb-1 text-center{{#hasrecording}} hide{{/hasrecording}}">{{#str}}norecording, qtype_recordrtc{{/str}}</span>
     <span class="qtype_recordrtc-media-player{{^hasrecording}} hide{{/hasrecording}}">
-        <video controls class="w-100"{{^candownload}} oncontextmenu="return false;" controlsList=" nodownload"{{/candownload}}>
-            <source src="{{recordingurl}}">
+        <video controls class="w-100 d-none"{{^candownload}} oncontextmenu="return false;" controlsList=" nodownload"{{/candownload}} data-source="{{recordingurl}}">
         </video>
     </span>
     <span>
-        <button type="button" class="qtype_recordrtc-main-button btn btn-secondary osep-smallbutton m-0 w-100">
+        <button {{#hasrecording}}disabled {{/hasrecording}} type="button" class="qtype_recordrtc-main-button btn btn-secondary osep-smallbutton m-0 w-100">
             {{! Seemingly unnecessary space inside the span is needed for screen-readers, and it must be a non-breaking space. }}
             {{^hasrecording}}{{#str}}startsharescreenx, qtype_recordrtc, <span class="sr-only">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
             {{#hasrecording}}{{#str}}recordagainx, qtype_recordrtc, <span class="sr-only">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
