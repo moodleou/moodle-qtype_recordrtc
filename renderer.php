@@ -146,6 +146,7 @@ class qtype_recordrtc_renderer extends qtype_renderer {
 
         $output .= html_writer::tag('div', $questiontext, ['class' => 'qtext']);
 
+        $setting = [];
         if (!$options->readonly) {
             // Initialise the JavaScript.
             $repositories = repository::get_instances(
@@ -170,9 +171,10 @@ class qtype_recordrtc_renderer extends qtype_renderer {
                 'screenHeight' => (int) $videoscreenheight,
             ];
             $this->page->requires->strings_for_js($this->strings_for_js(), 'qtype_recordrtc');
-            $this->page->requires->js_call_amd('qtype_recordrtc/avrecording', 'init',
-                    [$qa->get_outer_question_div_unique_id(), $setting]);
         }
+        $this->page->requires->js_call_amd('qtype_recordrtc/avrecording', 'init',
+            [$qa->get_outer_question_div_unique_id(), $setting]);
+
         return $output;
     }
 

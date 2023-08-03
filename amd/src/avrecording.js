@@ -35,6 +35,7 @@
 
 import Log from 'core/log';
 import ModalFactory from 'core/modal_factory';
+import Templates from 'core/templates';
 
 /**
  * Verify that the question type can work. If not, show a warning.
@@ -147,8 +148,8 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      */
     function handleButtonClick(e) {
         const clickedButton = e.target.closest('button');
-        if (!clickedButton) {
-            return; // Not actually a button click.
+        if (!clickedButton || clickedButton.classList.contains('close')) {
+            return; // It's not actually a button click or clicking a button to close the alert message.
         }
         e.preventDefault();
         switch (widget.dataset.state) {
@@ -180,6 +181,17 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
      * Start recording (because the button was clicked).
      */
     function startRecording() {
+
+        // Hide error message.
+        const errorMessage = widget.querySelector('.alert.alert-block');
+        if (errorMessage) {
+            errorMessage.remove();
+        }
+
+        const videoElement = widget.querySelector('video');
+        if (videoElement && videoElement.classList.contains('d-none')) {
+            videoElement.classList.remove('d-none');
+        }
 
         // Reset timer label.
         setLabelForTimer(0, parseInt(widget.dataset.maxRecordingDuration));
@@ -1043,6 +1055,8 @@ function RecordRtcQuestion(questionId, settings) {
         return;
     }
 
+    addPlaybackErrorHandlingToVideoElements();
+
     // Make the callback functions available.
     this.showAlert = showAlert;
     this.notifyRecordingComplete = notifyRecordingComplete;
@@ -1071,6 +1085,63 @@ function RecordRtcQuestion(questionId, settings) {
             return 'Not used';
         });
     setSubmitButtonState();
+
+    /**
+     * Setup video playback, catching errors if the device can't playback this format.
+     */
+    function addPlaybackErrorHandlingToVideoElements() {
+        // Retrieve all video and screen widgets.
+        const mediaElements = questionDiv.querySelectorAll('.qtype_recordrtc-screen-widget, .qtype_recordrtc-video-widget');
+
+        // We only need to do some if any have a recording.
+        if (!Array.prototype.some.call(mediaElements, media => (media.querySelector('video:not([data-source=""])') !== null))) {
+            return;
+        }
+
+        // Load the template once, before we use the hTML.
+        Templates.renderForPromise('core/notification_error', {
+                closebutton: true,
+                announce: true,
+                message: questionDiv.querySelector(
+                        '.qtype_recordrtc-video-widget, .qtype_recordrtc-screen-widget').dataset.errorMessage,
+            }
+        ).then(({html}) => {
+            // Loop through the mediaElements list.
+            mediaElements.forEach(widget => {
+                const videoElement = widget.querySelector('video');
+
+                // Just handle the case when the video has been recorded.
+                if (videoElement.dataset.source === '') {
+                    return;
+                }
+
+                const buttonElement =  videoElement.querySelector('button.qtype_recordrtc-main-button[disabled]');
+
+                const sourceElement = document.createElement('source');
+                sourceElement.addEventListener('error', () => {
+                    // Append error template into element.
+                    videoElement.after(html);
+                    if (buttonElement) {
+                        buttonElement.disabled = false;
+                    }
+                });
+
+                videoElement.addEventListener('loadeddata', () => {
+                    // Show video element.
+                    videoElement.classList.remove('d-none');
+                    if (buttonElement) {
+                        buttonElement.disabled = false;
+                    }
+                });
+
+                sourceElement.setAttribute('src', videoElement.dataset.source);
+                videoElement.appendChild(sourceElement);
+            });
+        }).catch((error) => {
+            Log.debug("Could not load error template");
+            Log.debug(error);
+        });
+    }
 
     /**
      * Set the state of the question's submit button.
