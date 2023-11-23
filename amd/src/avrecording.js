@@ -1115,12 +1115,12 @@ function RecordRtcQuestion(questionId, settings) {
                     return;
                 }
 
-                const buttonElement =  videoElement.querySelector('button.qtype_recordrtc-main-button[disabled]');
+                const buttonElement =  widget.querySelector('button.qtype_recordrtc-main-button[disabled]');
 
                 const sourceElement = document.createElement('source');
                 sourceElement.addEventListener('error', () => {
                     // Append error template into element.
-                    videoElement.after(html);
+                    Templates.appendNodeContents(widget.querySelector('.qtype_recordrtc-media-player'), html);
                     if (buttonElement) {
                         buttonElement.disabled = false;
                     }
@@ -1157,7 +1157,11 @@ function RecordRtcQuestion(questionId, settings) {
                     anyRecorded = true;
                 }
             });
-        const submitButton = questionDiv.querySelector('input.submit[type=submit]');
+
+        // Before 4.2, the submitButton is a input tag.
+        // After 4.2, the submitButton is a button tag.
+        // So we are using class and submit attribute as a selector.
+        const submitButton = questionDiv.querySelector('.im-controls .submit[type=submit]');
         if (submitButton) {
             submitButton.disabled = !anyRecorded;
         }
