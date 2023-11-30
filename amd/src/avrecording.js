@@ -1055,8 +1055,6 @@ function RecordRtcQuestion(questionId, settings) {
         return;
     }
 
-    addPlaybackErrorHandlingToVideoElements();
-
     // Make the callback functions available.
     this.showAlert = showAlert;
     this.notifyRecordingComplete = notifyRecordingComplete;
@@ -1085,63 +1083,6 @@ function RecordRtcQuestion(questionId, settings) {
             return 'Not used';
         });
     setSubmitButtonState();
-
-    /**
-     * Setup video playback, catching errors if the device can't playback this format.
-     */
-    function addPlaybackErrorHandlingToVideoElements() {
-        // Retrieve all video and screen widgets.
-        const mediaElements = questionDiv.querySelectorAll('.qtype_recordrtc-screen-widget, .qtype_recordrtc-video-widget');
-
-        // We only need to do some if any have a recording.
-        if (!Array.prototype.some.call(mediaElements, media => (media.querySelector('video:not([data-source=""])') !== null))) {
-            return;
-        }
-
-        // Load the template once, before we use the hTML.
-        Templates.renderForPromise('core/notification_error', {
-                closebutton: true,
-                announce: true,
-                message: questionDiv.querySelector(
-                        '.qtype_recordrtc-video-widget, .qtype_recordrtc-screen-widget').dataset.errorMessage,
-            }
-        ).then(({html}) => {
-            // Loop through the mediaElements list.
-            mediaElements.forEach(widget => {
-                const videoElement = widget.querySelector('video');
-
-                // Just handle the case when the video has been recorded.
-                if (videoElement.dataset.source === '') {
-                    return;
-                }
-
-                const buttonElement =  widget.querySelector('button.qtype_recordrtc-main-button[disabled]');
-
-                const sourceElement = document.createElement('source');
-                sourceElement.addEventListener('error', () => {
-                    // Append error template into element.
-                    Templates.appendNodeContents(widget.querySelector('.qtype_recordrtc-media-player'), html);
-                    if (buttonElement) {
-                        buttonElement.disabled = false;
-                    }
-                });
-
-                videoElement.addEventListener('loadeddata', () => {
-                    // Show video element.
-                    videoElement.classList.remove('d-none');
-                    if (buttonElement) {
-                        buttonElement.disabled = false;
-                    }
-                });
-
-                sourceElement.setAttribute('src', videoElement.dataset.source);
-                videoElement.appendChild(sourceElement);
-            });
-        }).catch((error) => {
-            Log.debug("Could not load error template");
-            Log.debug(error);
-        });
-    }
 
     /**
      * Set the state of the question's submit button.
@@ -1195,6 +1136,66 @@ function RecordRtcQuestion(questionId, settings) {
 }
 
 /**
+ * Setup video playback, catching errors if the device can't playback this format.
+ *
+ * @param {string} questionId id of the outer question div.
+ */
+function addPlaybackErrorHandlingToVideoElements(questionId) {
+    const questionDiv = document.getElementById(questionId);
+    // Retrieve all video and screen widgets.
+    const mediaElements = questionDiv.querySelectorAll('.qtype_recordrtc-screen-widget, .qtype_recordrtc-video-widget');
+
+    // We only need to do some if any have a recording.
+    if (!Array.prototype.some.call(mediaElements, media => (media.querySelector('video:not([data-source=""])') !== null))) {
+        return;
+    }
+
+    // Load the template once, before we use the hTML.
+    Templates.renderForPromise('core/notification_error', {
+            closebutton: true,
+            announce: true,
+            message: questionDiv.querySelector(
+                '.qtype_recordrtc-video-widget, .qtype_recordrtc-screen-widget').dataset.errorMessage,
+        }
+    ).then(({html}) => {
+        // Loop through the mediaElements list.
+        mediaElements.forEach(widget => {
+            const videoElement = widget.querySelector('video');
+
+            // Just handle the case when the video has been recorded.
+            if (videoElement.dataset.source === '') {
+                return;
+            }
+
+            const buttonElement = widget.querySelector('button.qtype_recordrtc-main-button[disabled]');
+
+            const sourceElement = document.createElement('source');
+            sourceElement.addEventListener('error', () => {
+                // Append error template into element.
+                Templates.appendNodeContents(widget.querySelector('.qtype_recordrtc-media-player'), html);
+                if (buttonElement) {
+                    buttonElement.disabled = false;
+                }
+            });
+
+            videoElement.addEventListener('loadeddata', () => {
+                // Show video element.
+                videoElement.classList.remove('d-none');
+                if (buttonElement) {
+                    buttonElement.disabled = false;
+                }
+            });
+
+            sourceElement.setAttribute('src', videoElement.dataset.source);
+            videoElement.appendChild(sourceElement);
+        });
+    }).catch((error) => {
+        Log.debug("Could not load error template");
+        Log.debug(error);
+    });
+}
+
+/**
  * Initialise a record audio or video question.
  *
  * @param {string} questionId id of the outer question div.
@@ -1207,5 +1208,6 @@ function init(questionId, settings) {
 }
 
 export {
-    init
+    init,
+    addPlaybackErrorHandlingToVideoElements
 };
