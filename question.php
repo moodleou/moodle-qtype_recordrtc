@@ -34,6 +34,22 @@ class qtype_recordrtc_question extends question_with_responses {
      */
     public $allowpausing;
 
+    /**
+     * @var string Don't use this. The required information is in {@see $widgets}.
+     *
+     * We only need to declare this because the question base class sets it based on
+     * {@see qtype_recordrtc::extra_question_fields()}.
+     */
+    public $mediatype;
+
+    /**
+     * @var string Don't use this. The required information is in {@see $widgets}.
+     *
+     * We only need to declare this because the question base class sets it based on
+     * {@see qtype_recordrtc::extra_question_fields()}.
+     */
+    public $timelimitinseconds;
+
     public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
         global $CFG;
         if (is_readable($CFG->dirroot . '/question/behaviour/selfassess/behaviour.php') &&
