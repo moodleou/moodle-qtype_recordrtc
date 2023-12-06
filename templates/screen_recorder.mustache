@@ -43,6 +43,7 @@
 }}
 <span class="qtype_recordrtc-screen-widget qtype_recordrtc-ratio-{{aspectratio}} d-flex flex-column mw-100"
       style="width: {{width}}px" data-media-type="screen" data-widget-name="{{widgetname}}"
+      data-error-message="{{#str}}err_compatibility, qtype_recordrtc{{/str}}"
       data-state="{{^hasrecording}}new{{/hasrecording}}{{#hasrecording}}recorded{{/hasrecording}}"
       data-max-recording-duration="{{maxrecordingduration}}" data-recording-filename="{{filename}}">
     <span class="qtype_recordrtc-no-recording-placeholder mb-1 text-center{{#hasrecording}} hide{{/hasrecording}}">{{#str}}norecording, qtype_recordrtc{{/str}}</span>

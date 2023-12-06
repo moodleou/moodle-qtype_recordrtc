@@ -1172,7 +1172,7 @@ function addPlaybackErrorHandlingToVideoElements(questionId) {
             const sourceElement = document.createElement('source');
             sourceElement.addEventListener('error', () => {
                 // Append error template into element.
-                Templates.appendNodeContents(widget.querySelector('.qtype_recordrtc-media-player'), html);
+                Templates.appendNodeContents(widget.querySelector('.qtype_recordrtc-media-player'), html, '');
                 if (buttonElement) {
                     buttonElement.disabled = false;
                 }
