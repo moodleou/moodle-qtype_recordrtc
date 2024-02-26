@@ -415,7 +415,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         // Notify form-change-checker that there is now unsaved data.
         // But, don't do this in question preview where it is just annoying.
         if (typeof M.core_formchangechecker !== 'undefined' &&
-            !window.location.pathname.endsWith('/question/preview.php')) {
+            !window.location.pathname.endsWith('/question/bank/previewquestion/preview.php')) {
             M.core_formchangechecker.set_form_changed();
         }
     }
