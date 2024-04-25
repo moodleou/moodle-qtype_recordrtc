@@ -18,4 +18,14 @@
     <licenseversion>3+</licenseversion>
     <repository>https://github.com/zhuker/lamejs</repository>
   </library>
+  <library>
+    <location>js/ebml</location>
+    <name>EBML</name>
+    <description>
+      Library written in Javascript that provides functionality for encoding and decoding webm data in the EBML format.
+    </description>
+    <version>3.0.1</version>
+    <license>MIT</license>
+    <repository>https://github.com/legokichi/ts-ebml</repository>
+  </library>
 </libraries>

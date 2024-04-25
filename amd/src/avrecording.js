@@ -343,7 +343,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         progressBarAnimation.play();
         setButtonLabel('stoprecording');
         startCountdownTimer();
-        if (mediaSettings.name === 'video' || mediaSettings.name === 'screen') {
+        if (isVideoRecording()) {
             button.parentElement.classList.add('hide');
             controlRow.classList.remove('hide');
             controlRow.classList.add('d-flex');
@@ -486,36 +486,89 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
             return;
         }
 
-        // Set source of the media player.
         const blob = new Blob(chunks, {type: mediaRecorder.mimeType});
-        mediaElement.srcObject = null;
-        mediaElement.src = URL.createObjectURL(blob);
+        // Make blob seekable.
+        makeBlobSeekable(blob).then(newBlob => {
+            // Set source of the media player.
+            mediaElement.srcObject = null;
+            mediaElement.src = URL.createObjectURL(newBlob);
 
-        // Show audio player with controls enabled, and unmute.
-        mediaElement.muted = false;
-        mediaElement.controls = true;
-        mediaElement.parentElement.classList.remove('hide');
-        noMediaPlaceholder.classList.add('hide');
-        mediaElement.focus();
+            // Show audio player with controls enabled, and unmute.
+            mediaElement.muted = false;
+            mediaElement.controls = true;
+            mediaElement.parentElement.classList.remove('hide');
+            noMediaPlaceholder.classList.add('hide');
+            mediaElement.focus();
 
-        if (mediaSettings.name === 'audio') {
-            timeDisplay.classList.add('hide');
+            if (mediaSettings.name === 'audio') {
+                timeDisplay.classList.add('hide');
 
-        } else {
-            button.parentElement.classList.remove('hide');
-            controlRow.classList.add('hide');
-            controlRow.classList.remove('d-flex');
-        }
+            } else {
+                button.parentElement.classList.remove('hide');
+                controlRow.classList.add('hide');
+                controlRow.classList.remove('d-flex');
+            }
 
-        // Ensure the button while things change.
-        button.disabled = true;
-        button.classList.remove('btn-danger');
-        button.classList.add('btn-outline-danger');
-        widget.dataset.state = 'recorded';
+            // Ensure the button while things change.
+            button.disabled = true;
+            button.classList.remove('btn-danger');
+            button.classList.add('btn-outline-danger');
+            widget.dataset.state = 'recorded';
 
-        if (chunks.length > 0) {
-            owner.notifyRecordingComplete(recorder);
-        }
+            if (chunks.length > 0) {
+                owner.notifyRecordingComplete(recorder);
+            }
+        });
+    }
+
+    /**
+     * From the given blob, use EBML library to make it seekable.
+     *
+     * @param {Blob} originalBlob The recorded blob that need to be adjusted.
+     * @returns {Promise} The seekable blob promise.
+     */
+    async function makeBlobSeekable(originalBlob) {
+        const ebml = await getEBMLJs();
+        return new Promise((resolve) => {
+            if (!isVideoRecording()) {
+                // We only make changes with video recording.
+                resolve(originalBlob);
+                return;
+            }
+            const reader = new ebml.Reader();
+            const decoder = new ebml.Decoder();
+            const tools = ebml.tools;
+            const fileReader = new FileReader();
+            fileReader.onload = function() {
+                try {
+                    // Try to decode.
+                    const ebmlElms = decoder.decode(this.result);
+                    ebmlElms.forEach(function(element) {
+                        reader.read(element);
+                    });
+                    reader.stop();
+                    // Make seekable.
+                    const refinedMetadataBuf = tools.makeMetadataSeekable(reader.metadatas, reader.duration, reader.cues);
+                    const body = this.result.slice(reader.metadataSize);
+                    const seekableBlob = new Blob([refinedMetadataBuf, body], {type: mediaRecorder.mimeType});
+                    resolve(seekableBlob);
+                } catch (e) {
+                    // The browser can not make video seekable.
+                    resolve(originalBlob);
+                }
+            };
+            // Read blob.
+            fileReader.readAsArrayBuffer(originalBlob);
+        });
+    }
+
+    /**
+     * Helper to get the ebml library.
+     *
+     * @returns {Promise<*>} access to the ebml library.
+     */
+    async function getEBMLJs() {
+        return await import(M.cfg.wwwroot + '/question/type/recordrtc/js/ebml/EBML.min.js');
     }
 
     /**
@@ -898,7 +951,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         // Get the relevant bit rates from settings.
         if (mediaSettings.name === 'audio') {
             options.audioBitsPerSecond = mediaSettings.bitRate;
-        } else if (mediaSettings.name === 'video' || mediaSettings.name === 'screen') {
+        } else if (isVideoRecording()) {
             options.videoBitsPerSecond = mediaSettings.bitRate;
             options.videoWidth = mediaSettings.width;
             options.videoHeight = mediaSettings.height;
@@ -953,6 +1006,13 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         } else {
             progressBarAnimation.play();
         }
+    }
+
+    /**
+     * Check if media setting is video or screen.
+     */
+    function isVideoRecording() {
+        return mediaSettings.name === 'video' || mediaSettings.name === 'screen';
     }
 }
 
