@@ -30,6 +30,16 @@ class qtype_recordrtc_question extends question_with_responses {
     public $widgets;
 
     /**
+     * @var int audio, video custom_av from the constants in question type.
+     */
+    public $mediatype;
+
+    /**
+     * @var int time limit before recording stops.
+     */
+    public $timelimitinseconds;
+
+    /**
      * @var bool whether the user can pause in the middle of recording.
      */
     public $allowpausing;
