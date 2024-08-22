@@ -46,16 +46,6 @@ class questiontype_test extends \question_testcase {
     }
 
     /**
-     * Assert that two XML strings are essentially the same, ignoring irrelevant differences.
-     * @param string $expectedxml Expected.
-     * @param string $xml Actual.
-     */
-    protected function assert_same_xml(string $expectedxml, string $xml) {
-        $this->assertEquals(str_replace("\r\n", "\n", $expectedxml),
-                str_replace("\r\n", "\n", $xml));
-    }
-
-    /**
      * Get the data representing a question, in the form returned by load_question.
      *
      * @return \stdClass
