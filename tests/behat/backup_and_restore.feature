@@ -20,6 +20,8 @@ Feature: Test duplicating a quiz containing record audio and video questions
       | quiz       | Test quiz | C1     | quiz     |
     And quiz "Test quiz" contains the following questions:
       | Record audio question | 1 |
+    And the following config values are set as admin:
+      | enableasyncbackup | 0 |
 
   @javascript
   Scenario: Backup and restore a course containing a record audio and video question
