@@ -228,6 +228,10 @@ class questiontype_test extends \question_testcase {
         $cat = $generator->create_question_category();
 
         $formdata = \test_question_maker::get_question_form_data('recordrtc', 'customav');
+        $formdata->timelimitinseconds = [
+            'timeunit' => MINSECS,
+            'number' => 5,
+        ];
         $formdata->category = "{$cat->id},{$cat->contextid}";
         \qtype_recordrtc_edit_form::mock_submit((array) $formdata);
 
