@@ -75,7 +75,7 @@ if ($ADMIN->fulltree) {
         '768,432' => '768 x 432 (16:9)',
         '768,576' => '768 x 576 (4:3)',
         '1280,720' => '1280 x 720 (16:9)',
-        '1024,768' => '1024 x 768 (4:3)'
+        '1024,768' => '1024 x 768 (4:3)',
     ];
     $settings->add(new admin_setting_configselect('qtype_recordrtc/videosize',
         get_string('videosize', 'qtype_recordrtc'),

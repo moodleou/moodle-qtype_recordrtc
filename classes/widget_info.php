@@ -52,7 +52,7 @@ class widget_info {
      * @param string $type Widget type. One of the qtype_recordrtc::MEDIA_TYPE_... constants.
      * @param int|null $maxduration Maximum recording duration in seconds. (Defaults to DEFAULT_TIMELIMIT.)
      */
-    public function __construct(string $name, string $type, int $maxduration = null) {
+    public function __construct(string $name, string $type, ?int $maxduration = null) {
         $this->name = $name;
         $this->type = $type;
         if ($maxduration !== null) {
@@ -103,7 +103,7 @@ class widget_info {
      * @param int|null $maxduration Maximum recording duration in seconds. (Defaults to DEFAULT_TIMELIMIT.)
      * @return string the placeholder.
      */
-    public static function make_placeholder(string $name, string $type, int $maxduration = null): string {
+    public static function make_placeholder(string $name, string $type, ?int $maxduration = null): string {
         if ($maxduration === null) {
             $maxduration = \qtype_recordrtc::DEFAULT_TIMELIMIT;
         }

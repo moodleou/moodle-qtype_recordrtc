@@ -26,6 +26,8 @@ use renderer_base;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class video_playback extends playback_base {
+
+    #[\Override]
     public function export_for_template(renderer_base $output): array {
         $context = parent::export_for_template($output);
         return video_recorder::add_width_and_aspect($context);

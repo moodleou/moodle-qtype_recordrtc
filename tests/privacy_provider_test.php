@@ -32,16 +32,16 @@ require_once($CFG->dirroot . '/question/type/recordrtc/classes/privacy/provider.
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers    \qtype_recordrtc\privacy\provider
  */
-class privacy_provider_test extends \core_privacy\tests\provider_testcase {
+final class privacy_provider_test extends \core_privacy\tests\provider_testcase {
     // Include the privacy helper which has assertions on it.
 
-    public function test_get_metadata() {
+    public function test_get_metadata(): void {
         $collection = new \core_privacy\local\metadata\collection('qtype_recordrtc');
         $actual = provider::get_metadata($collection);
         $this->assertEquals($collection, $actual);
     }
 
-    public function test_export_user_preferences_no_pref() {
+    public function test_export_user_preferences_no_pref(): void {
         $this->resetAfterTest();
 
         $user = $this->getDataGenerator()->create_user();
@@ -58,7 +58,7 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
      * @param string $value The value stored in the database
      * @param string $expected The expected transformed value
      */
-    public function test_export_user_preferences(string $name, string $value, string $expected) {
+    public function test_export_user_preferences(string $name, string $value, string $expected): void {
         $this->resetAfterTest();
         $user = $this->getDataGenerator()->create_user();
         set_user_preference("qtype_recordrtc_$name", $value, $user);
@@ -82,7 +82,7 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
      *
      * @return array Array of valid user preferences.
      */
-    public function user_preference_provider(): array {
+    public static function user_preference_provider(): array {
         return [
                 'default mark 2' => ['defaultmark', '1.5', '1.5'],
                 'mediatype audio' => ['mediatype', 'audio', get_string('audio', 'qtype_recordrtc')],

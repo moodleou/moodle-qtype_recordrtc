@@ -24,14 +24,14 @@ namespace qtype_recordrtc;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers    \qtype_recordrtc\privacy\recorder_base
  */
-class recorder_base_test extends \advanced_testcase {
+final class recorder_base_test extends \advanced_testcase {
 
     /**
      * Data provider for test_convert_duration_to_seconds.
      *
      * @return array the test cases.
      */
-    public function widget_name_from_filename_cases(): array {
+    public static function widget_name_from_filename_provider(): array {
         return [
             ['recording.mp3', 'recording'],
             ['recording.ogg', 'recording'],
@@ -42,7 +42,7 @@ class recorder_base_test extends \advanced_testcase {
     /**
      * Tests for widget_info::duration_to_seconds.
      *
-     * @dataProvider widget_name_from_filename_cases();
+     * @dataProvider widget_name_from_filename_provider
      *
      * @param string $filename The filename given.
      * @param string $widgetname The expected widget name.

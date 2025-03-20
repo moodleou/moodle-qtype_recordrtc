@@ -68,6 +68,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         return $this->get_default_value('mediatype', qtype_recordrtc::MEDIA_TYPE_AUDIO);
     }
 
+    #[\Override]
     protected function definition_inner($mform) {
         global $CFG;
         $currentmediatype = $this->get_current_mediatype();
@@ -77,7 +78,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
             qtype_recordrtc::MEDIA_TYPE_AUDIO => get_string('audio', 'qtype_recordrtc'),
             qtype_recordrtc::MEDIA_TYPE_VIDEO => get_string('video', 'qtype_recordrtc'),
             qtype_recordrtc::MEDIA_TYPE_SCREEN => get_string('screen', 'qtype_recordrtc'),
-            qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV => get_string('customav', 'qtype_recordrtc')
+            qtype_recordrtc::MEDIA_TYPE_CUSTOM_AV => get_string('customav', 'qtype_recordrtc'),
         ];
         $mediatype = $mform->createElement('select', 'mediatype', get_string('mediatype', 'qtype_recordrtc'), $mediaoptions);
         $mform->insertElementBefore($mediatype, 'questiontext');
@@ -189,6 +190,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         return 'feedbackfor' . $widgetname;
     }
 
+    #[\Override]
     public function data_preprocessing($question): stdClass {
         $question = parent::data_preprocessing($question);
         $question = $this->data_preprocessing_per_input_feedbacks($question);
@@ -230,6 +232,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         return $question;
     }
 
+    #[\Override]
     public function validation($fromform, $files): array {
         $errors = parent::validation($fromform, $files);
 
@@ -283,6 +286,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
         return $errors;
     }
 
+    #[\Override]
     public function qtype(): string {
         return 'recordrtc';
     }

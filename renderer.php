@@ -40,6 +40,7 @@ use qtype_recordrtc\output\screen_recorder;
  */
 class qtype_recordrtc_renderer extends qtype_renderer {
 
+    #[\Override]
     public function formulation_and_controls(question_attempt $qa, question_display_options $options): string {
         /** @var qtype_recordrtc_question $question */
         $question = $qa->get_question();

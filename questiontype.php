@@ -63,18 +63,22 @@ class qtype_recordrtc extends question_type {
     /** @var string get_widget_placeholders pattern. */
     const GET_WIDGET_PLACEHOLDERS = '/\[\[([a-z0-9_-]+):(audio|video|screen):*([0-9]*m*[0-9]*s*)]]/i';
 
+    #[\Override]
     public function is_manual_graded(): bool {
         return true;
     }
 
+    #[\Override]
     public function response_file_areas(): array {
         return ['recording'];
     }
 
+    #[\Override]
     public function extra_question_fields(): array {
         return ['qtype_recordrtc_options', 'mediatype', 'timelimitinseconds', 'allowpausing', 'canselfrate', 'canselfcomment'];
     }
 
+    #[\Override]
     public function save_defaults_for_new_questions(stdClass $fromform): void {
         global $CFG;
 
@@ -89,6 +93,7 @@ class qtype_recordrtc extends question_type {
         }
     }
 
+    #[\Override]
     public function save_question_options($fromform) {
         global $DB;
 
@@ -141,6 +146,7 @@ class qtype_recordrtc extends question_type {
         }
     }
 
+    #[\Override]
     protected function initialise_question_instance(question_definition $question, $questiondata) {
         parent::initialise_question_instance($question, $questiondata);
 
@@ -172,6 +178,7 @@ class qtype_recordrtc extends question_type {
         }
     }
 
+    #[\Override]
     public function export_to_xml($question, qformat_xml $format, $extra = null): string {
         $output = '    <mediatype>' . $question->options->mediatype .
                 "</mediatype>\n";
@@ -184,6 +191,7 @@ class qtype_recordrtc extends question_type {
         return $output;
     }
 
+    #[\Override]
     public function import_from_xml($data, $question, qformat_xml $format, $extra = null) {
         $questiontype = $data['@']['type'];
         if ($questiontype != $this->name()) {
@@ -356,7 +364,7 @@ class qtype_recordrtc extends question_type {
      * @param int|null $questiontimelimit
      * @return widget_info[] indexed by widget name.
      */
-    public function get_widget_placeholders(string $questiontext, int $questiontimelimit = null): array {
+    public function get_widget_placeholders(string $questiontext, ?int $questiontimelimit = null): array {
         if ($questiontimelimit == null) {
             $questiontimelimit = self::DEFAULT_TIMELIMIT;
         }
