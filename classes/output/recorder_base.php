@@ -82,6 +82,12 @@ abstract class recorder_base implements renderable, templatable {
         return str_replace('_', ' ', preg_replace('~\.[a-z0-9]*$~', '', $this->filename));
     }
 
+    /**
+     * Base renderable function for audio.
+     *
+     * @param renderer_base $output
+     * @return array
+     */
     public function export_for_template(renderer_base $output): array {
         return [
             'filename' => $this->filename,

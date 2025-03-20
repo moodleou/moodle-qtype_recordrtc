@@ -35,7 +35,7 @@ require_once($CFG->dirroot . '/question/type/recordrtc/question.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers    \qtype_recordrtc_question
  */
-class question_test extends \advanced_testcase {
+final class question_test extends \advanced_testcase {
 
     /**
      * Get a question instance to test.
@@ -62,13 +62,19 @@ class question_test extends \advanced_testcase {
 
     }
 
-    public function test_summarise_response_blank() {
+    /**
+     * Test summarise response with blank response.
+     */
+    public function test_summarise_response_blank(): void {
         $q = $this->get_a_test_question();
         $this->assertEquals('No recording', $q->summarise_response([]));
         $this->assertEquals('No recording', $q->summarise_response(['recording' => '']));
     }
 
-    public function test_summarise_response_with_file() {
+    /**
+     * Test summarise response with response that has file.
+     */
+    public function test_summarise_response_with_file(): void {
         [$q, $response] = $this->get_a_test_question_and_response();
         $this->assertEquals('recording.ogg', $q->summarise_response($response));
     }
@@ -93,7 +99,7 @@ class question_test extends \advanced_testcase {
     /**
      * Test summarise_response with blank responses for customav question.
      */
-    public function test_summarise_responses_blank() {
+    public function test_summarise_responses_blank(): void {
         $q = \test_question_maker::make_question('recordrtc', 'customav');
         $this->assertEquals('No recording', $q->summarise_response([]));
         $this->assertEquals('No recording', $q->summarise_response(['development' => '', 'installation' => '']));
@@ -102,49 +108,49 @@ class question_test extends \advanced_testcase {
     /**
      * Test summarise_response with multiple responses for customav question.
      */
-    public function test_summarise_response_with_files() {
+    public function test_summarise_response_with_files(): void {
         [$q, $responses] = $this->get_a_test_question_and_responses();
         $this->assertEquals('development.ogg, installation.mp3, user_experience.ogg',
             $q->summarise_response($responses));
     }
 
-    public function test_is_complete_response_blank() {
+    public function test_is_complete_response_blank(): void {
         $q = $this->get_a_test_question();
         $this->assertFalse($q->is_complete_response([]));
     }
 
-    public function test_is_complete_response_with_file() {
+    public function test_is_complete_response_with_file(): void {
         [$q, $response] = $this->get_a_test_question_and_response();
         $this->assertTrue($q->is_complete_response($response));
     }
 
-    public function test_get_validation_error_blank() {
+    public function test_get_validation_error_blank(): void {
         $q = $this->get_a_test_question();
         $this->assertEquals('Please complete your answer.',
             $q->get_validation_error([]));
     }
 
-    public function test_get_validation_error_with_file() {
+    public function test_get_validation_error_with_file(): void {
         [$q, $response] = $this->get_a_test_question_and_response();
         $this->assertEquals('', $q->get_validation_error($response));
     }
 
-    public function test_is_same_response_both_blank() {
+    public function test_is_same_response_both_blank(): void {
         $q = $this->get_a_test_question();
         $this->assertTrue($q->is_same_response([], []));
     }
 
-    public function test_is_same_response_one_blank() {
+    public function test_is_same_response_one_blank(): void {
         [$q, $response] = $this->get_a_test_question_and_response();
         $this->assertFalse($q->is_same_response([], $response));
     }
 
-    public function test_is_same_response_same_files() {
+    public function test_is_same_response_same_files(): void {
         [$q, $response] = $this->get_a_test_question_and_response();
         $this->assertTrue($q->is_same_response($response, $response));
     }
 
-    public function test_is_same_response_different_files() {
+    public function test_is_same_response_different_files(): void {
         [$q, $response] = $this->get_a_test_question_and_response();
         $otherresponse = ['recording' =>
             qtype_recordrtc_test_helper::make_recordings_saver(['moodle-sharon.ogg' => 'recording.ogg'])];

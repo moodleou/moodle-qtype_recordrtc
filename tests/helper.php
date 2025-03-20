@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Contains the helper class for the record audio and video question type.
  *
@@ -28,6 +29,12 @@ use qtype_recordrtc\widget_info;
  * Test helper class for the record audio, video and screen question type.
  */
 class qtype_recordrtc_test_helper extends question_test_helper {
+
+    /**
+     * Get template name.
+     *
+     * @return array|string[]
+     */
     public function get_test_questions(): array {
         return ['audio', 'customav', 'screen'];
     }

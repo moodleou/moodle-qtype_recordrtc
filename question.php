@@ -50,6 +50,7 @@ class qtype_recordrtc_question extends question_with_responses {
      */
     public $timelimitinseconds;
 
+    #[\Override]
     public function make_behaviour(question_attempt $qa, $preferredbehaviour) {
         global $CFG;
         if (is_readable($CFG->dirroot . '/question/behaviour/selfassess/behaviour.php') &&
@@ -60,6 +61,7 @@ class qtype_recordrtc_question extends question_with_responses {
         }
     }
 
+    #[\Override]
     public function get_expected_data(): array {
         return ['recording' => question_attempt::PARAM_FILES];
     }
@@ -87,6 +89,7 @@ class qtype_recordrtc_question extends question_with_responses {
         return get_user_max_upload_file_size($context, $CFG->maxbytes, $coursebytes);
     }
 
+    #[\Override]
     public function summarise_response(array $response) {
         if (!isset($response['recording']) || $response['recording'] === '') {
             return get_string('norecording', 'qtype_recordrtc');
@@ -106,6 +109,7 @@ class qtype_recordrtc_question extends question_with_responses {
         return implode(', ', $savedfiles);
     }
 
+    #[\Override]
     public function is_complete_response(array $response): bool {
         // Have all parts of the question been answered?
         if (!isset($response['recording']) || $response['recording'] === '') {
@@ -122,6 +126,7 @@ class qtype_recordrtc_question extends question_with_responses {
         return true;
     }
 
+    #[\Override]
     public function is_gradable_response(array $response): bool {
         // Has any parts of the question been answered? If so we might give partial credit.
         if (!isset($response['recording']) || $response['recording'] === '') {
@@ -160,6 +165,7 @@ class qtype_recordrtc_question extends question_with_responses {
         return null;
     }
 
+    #[\Override]
     public function get_validation_error(array $response): string {
         if ($this->is_complete_response($response)) {
             return '';
@@ -167,16 +173,19 @@ class qtype_recordrtc_question extends question_with_responses {
         return get_string('pleaserecordsomethingineachpart', 'qtype_recordrtc');
     }
 
+    #[\Override]
     public function is_same_response(array $prevresponse, array $newresponse): bool {
         return question_utils::arrays_same_at_key_missing_is_blank(
                 $prevresponse, $newresponse, 'recording');
     }
 
+    #[\Override]
     public function get_correct_response(): ?array {
         // Not possible to give a correct response.
         return null;
     }
 
+    #[\Override]
     public function check_file_access($qa, $options, $component, $filearea,
             $args, $forcedownload): bool {
         if ($component == 'question' && $filearea == 'response_recording') {

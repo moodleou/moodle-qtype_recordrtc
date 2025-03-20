@@ -33,27 +33,27 @@ require_once($CFG->dirroot . '/question/type/recordrtc/question.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers    \qtype_recordrtc\widget_info
  */
-class widget_info_test extends \advanced_testcase {
+final class widget_info_test extends \advanced_testcase {
 
     /**
      * Data provider for test_convert_duration_to_seconds.
      *
      * @return array the test cases.
      */
-    public function duration_to_seconds_cases(): array {
+    public static function duration_to_seconds_provider(): array {
         return [
             '20 seconds as 20s' => ['20s', 20, '20s'],
             '1 minute as 1m' => ['1m', 60, '1m00s'],
             '2 minutes and 10 seconds as 02m10s' => ['2m10s', 130, '2m10s'],
             '666 seconds as 11m6s' => ['11m6s', 666, '11m06s'],
-            '1 hour as 60m00s' => ['60m00s', 3600, '60m00s']
+            '1 hour as 60m00s' => ['60m00s', 3600, '60m00s'],
         ];
     }
 
     /**
      * Tests for widget_info::duration_to_seconds.
      *
-     * @dataProvider duration_to_seconds_cases();
+     * @dataProvider duration_to_seconds_provider
      *
      * @param string $duration The input duration string.
      * @param int $seconds how many seconds that translates to.
@@ -65,7 +65,7 @@ class widget_info_test extends \advanced_testcase {
     /**
      * Tests for widget_info::duration_to_seconds.
      *
-     * @dataProvider duration_to_seconds_cases();
+     * @dataProvider duration_to_seconds_provider
      *
      * @param string $notused Not used - just so we can use the same data provides for two tests.
      * @param int $seconds a period in seconds.
@@ -79,7 +79,7 @@ class widget_info_test extends \advanced_testcase {
         $this->assertEquals('[[welcome:audio:30s]]', widget_info::make_placeholder('welcome', 'audio', 30));
     }
 
-    public function test_constructor() {
+    public function test_constructor(): void {
         $widget = new widget_info('welcome', 'audio');
         $this->assertEquals('welcome', $widget->name);
         $this->assertEquals(qtype_recordrtc::MEDIA_TYPE_AUDIO, $widget->type);
@@ -89,7 +89,7 @@ class widget_info_test extends \advanced_testcase {
         $this->assertEquals(FORMAT_HTML, $widget->feedbackformat);
     }
 
-    public function test_constructor_enforces_admin_time_limits_for_audio() {
+    public function test_constructor_enforces_admin_time_limits_for_audio(): void {
         $this->resetAfterTest();
 
         set_config('audiotimelimit', 123, 'qtype_recordrtc');
@@ -101,7 +101,7 @@ class widget_info_test extends \advanced_testcase {
         $this->assertEquals(45, $widget->maxduration);
     }
 
-    public function test_constructor_enforces_admin_time_limits_for_video() {
+    public function test_constructor_enforces_admin_time_limits_for_video(): void {
         $this->resetAfterTest();
 
         set_config('videotimelimit', 67, 'qtype_recordrtc');
@@ -113,7 +113,7 @@ class widget_info_test extends \advanced_testcase {
         $this->assertEquals(45, $widget->maxduration);
     }
 
-    public function test_constructor_enforces_admin_time_limits_for_screen() {
+    public function test_constructor_enforces_admin_time_limits_for_screen(): void {
         $this->resetAfterTest();
 
         set_config('screentimelimit', 67, 'qtype_recordrtc');

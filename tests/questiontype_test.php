@@ -36,12 +36,13 @@ require_once($CFG->dirroot . '/question/format/xml/format.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers    \qtype_recordrtc
  */
-class questiontype_test extends \question_testcase {
+final class questiontype_test extends \question_testcase {
 
     /** @var qtype_recordrtc $qtype an instance of the question type class. */
     protected $qtype;
 
     protected function setUp(): void {
+        parent::setUp();
         $this->qtype = new qtype_recordrtc();
     }
 
@@ -54,7 +55,7 @@ class questiontype_test extends \question_testcase {
         return \test_question_maker::get_question_data('recordrtc', 'customav');
     }
 
-    public function test_name() {
+    public function test_name(): void {
         $this->assertEquals('recordrtc', $this->qtype->name());
     }
 
@@ -104,7 +105,7 @@ class questiontype_test extends \question_testcase {
      * Data provider for {@link test_validate_widget_placeholders()}.
      * @return array
      */
-    public function validate_widget_placeholders_testcases(): array {
+    public static function validate_widget_placeholders_testcases(): array {
         $formatmessage = get_string('err_placeholderformat', 'qtype_recordrtc');
         return [
             'valid' => [
@@ -252,7 +253,7 @@ class questiontype_test extends \question_testcase {
         }
     }
 
-    public function test_xml_import() {
+    public function test_xml_import(): void {
         $xml = '  <question type="recordrtc">
     <name>
       <text>Record audio question</text>
@@ -294,7 +295,7 @@ class questiontype_test extends \question_testcase {
         $this->assert(new \question_check_specified_fields_expectation($expectedq), $q);
     }
 
-    public function test_xml_import_custom_av() {
+    public function test_xml_import_custom_av(): void {
         $xml = '  <question type="recordrtc">
     <name>
       <text>Record audio question</text>
@@ -375,7 +376,7 @@ class questiontype_test extends \question_testcase {
         $this->assert(new \question_check_specified_fields_expectation($expectedq), $q);
     }
 
-    public function test_xml_import_custom_av_with_empty_feedback() {
+    public function test_xml_import_custom_av_with_empty_feedback(): void {
         $xml = '  <question type="recordrtc">
     <name>
       <text>Record audio question</text>
@@ -450,7 +451,7 @@ class questiontype_test extends \question_testcase {
         $this->assert(new \question_check_specified_fields_expectation($expectedq), $q);
     }
 
-    public function test_xml_import_custom_av_no_feedback() {
+    public function test_xml_import_custom_av_no_feedback(): void {
         $xml = '  <question type="recordrtc">
     <name>
       <text>Record audio question</text>
@@ -494,7 +495,7 @@ class questiontype_test extends \question_testcase {
         $this->assert(new \question_check_specified_fields_expectation($expectedq), $q);
     }
 
-    public function test_xml_export() {
+    public function test_xml_export(): void {
         $qdata = new \stdClass();
         $qdata->id = 123;
         $qdata->contextid = \context_system::instance()->id;

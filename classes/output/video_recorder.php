@@ -44,6 +44,7 @@ class video_recorder extends recorder_base {
         return $context;
     }
 
+    #[\Override]
     public function export_for_template(renderer_base $output): array {
         $context = parent::export_for_template($output);
         return self::add_width_and_aspect($context);

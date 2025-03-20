@@ -32,7 +32,7 @@ require_once($CFG->dirroot . '/question/engine/tests/helpers.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers    \qtype_recordrtc_question
  */
-class walkthrough_test extends \qbehaviour_walkthrough_test_base {
+final class walkthrough_test extends \qbehaviour_walkthrough_test_base {
 
     /**
      * Helper to get the qa of the qusetion being attempted.
@@ -107,7 +107,7 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
         $this->process_submission($this->store_submission_files($fixturefiles));
     }
 
-    public function test_deferred_feedback_audio_with_attempt_on_last() {
+    public function test_deferred_feedback_audio_with_attempt_on_last(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -173,7 +173,7 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
         $this->check_step_count(1);
     }
 
-    public function test_custom_av_with_per_widget_feedback() {
+    public function test_custom_av_with_per_widget_feedback(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -242,7 +242,7 @@ class walkthrough_test extends \qbehaviour_walkthrough_test_base {
         $this->assertStringNotContainsString($q->widgets['action']->feedback, $this->currentoutput);
     }
 
-    public function test_custom_av_rendering_with_glossary_filter() {
+    public function test_custom_av_rendering_with_glossary_filter(): void {
         global $CFG, $PAGE;
         $this->resetAfterTest();
         $this->setAdminUser();

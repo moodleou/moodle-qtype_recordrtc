@@ -58,6 +58,12 @@ abstract class playback_base implements renderable, templatable {
         $this->candownload = $candownload;
     }
 
+    /**
+     * Base renderable function for playback video.
+     *
+     * @param renderer_base $output
+     * @return array
+     */
     public function export_for_template(renderer_base $output): array {
         return [
             'hasrecording' => $this->recordingurl !== null,
