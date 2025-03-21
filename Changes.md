@@ -1,5 +1,14 @@
 # Change log for the Record audio and video question type
 
+## Changes in 1.8
+
+* Fix various bugs related to video and screen recorder.
+* Improve the js loading.
+* Add support PHP8.2.
+* Make video seekable.
+* This version works with Moodle 4.5x.
+
+
 ## Changes in 1.7
 
 * Now, if you have multiple recording questions on one page, students are prevented from
