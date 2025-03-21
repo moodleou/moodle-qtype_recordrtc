@@ -1,5 +1,15 @@
 # Change log for the Record audio and video question type
 
+## Changes in 1.8
+
+* Fix various bugs related to video and screen recorder.
+* The videos are now allowed to be seekable and could be moved to different points in the recording
+  such as fast-forwarding or rewinding.
+* Improved js loading.
+* Improvements to make videos work better on iOS devices.
+* This version is compatible with Moodle 4.5.
+
+
 ## Changes in 1.7
 
 * Now, if you have multiple recording questions on one page, students are prevented from
