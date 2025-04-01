@@ -102,7 +102,7 @@ final class questiontype_test extends \question_testcase {
     }
 
     /**
-     * Data provider for {@link test_validate_widget_placeholders()}.
+     * Data provider for {@see test_validate_widget_placeholders()}.
      * @return array
      */
     public static function validate_widget_placeholders_testcases(): array {

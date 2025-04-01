@@ -165,7 +165,13 @@ class qtype_recordrtc_question extends question_with_responses {
         return null;
     }
 
-    #[\Override]
+    /**
+     * Return empty string if is_complete_response() returns true
+     * otherwise, return the 'Please complete your answer' error message.
+     *
+     * @param array $response
+     * @return string
+     */
     public function get_validation_error(array $response): string {
         if ($this->is_complete_response($response)) {
             return '';
