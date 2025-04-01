@@ -24,11 +24,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025032000;
+$plugin->version   = 2025040100;
 $plugin->requires  = 2024042200;
 $plugin->component = 'qtype_recordrtc';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.8 for Moodle 4.4+';
+$plugin->release   = '1.9 for Moodle 4.4+';
 
 $plugin->dependencies = [
     'qbehaviour_selfassess' => 2023020300,

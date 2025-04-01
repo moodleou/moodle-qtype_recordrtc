@@ -1,5 +1,10 @@
 # Change log for the Record audio and video question type
 
+## Changes in 1.9
+
+* Fix Moodle code checker and PHPDoc checker issues.
+
+
 ## Changes in 1.8
 
 * Fix various bugs related to video and screen recorder.
