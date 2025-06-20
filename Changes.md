@@ -1,5 +1,11 @@
 # Change log for the Record audio and video question type
 
+## Changes in 2.0
+* This version is compatible with Moodle 5.0.
+* A new Behat test has been added to test the answer sheet report for Record RTC questions
+  when the ‘Export quiz attempts’ plugin is used.
+
+
 ## Changes in 1.9
 
 * Fix Moodle code checker and PHPDoc checker issues.
