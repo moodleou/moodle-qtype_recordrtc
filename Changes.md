@@ -1,5 +1,11 @@
 # Change log for the Record audio and video question type
 
+## Changes in 2.0
+* This version works with Moodle 5.0.
+* Cherry-picked commits since Apr 2024 till now:
+  * Update Quiz/answersheets to work with Moodle 4.5
+* Upgrade the CI to support Moodle 5.0 (PHP 8.3), and update the branch to support branch MOODLE_405_STABLE, and MOODLE_500_STABLE.
+
 ## Changes in 1.9
 
 * Fix Moodle code checker and PHPDoc checker issues.
