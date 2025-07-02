@@ -30,18 +30,18 @@ Feature: Test record audio and video questions in report answer sheet
       | question | page |
       | RTC1     | 1    |
 
-    @javascript
-    Scenario: Sheet's special message for un-submitted RecordRTC question type
-      # We need to work around for this case because Moodle is creating response file for current logged in user.
-      Given the quiz_answersheets plugin is installed
-      When I am on the "quiz1" "Activity" page logged in as "student1"
-      And I click on "Attempt quiz" "button"
-      And "student1" has recorded "moodle-sharon.ogg" into the record RTC question
-      And I press "Finish attempt ..."
-      And I press "Submit all and finish"
-      And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
-      And I log out
-      And I am on the "Quiz 1" "quiz_answersheets > Report" page logged in as "teacher"
-      When I click on "Review sheet" "link" in the "Student One" "table_row"
-      Then I should not see "No recording"
-      And "Response recorded: recorder1.ogg" "text" in the "First question" "question" should not be visible
+  @javascript
+  Scenario: Sheet's special message for submitted RecordRTC question type
+    # We need to work around for this case because Moodle is creating response file for current logged in user.
+    Given the quiz_answersheets plugin is installed
+    When I am on the "quiz1" "Activity" page logged in as "student1"
+    And I click on "Attempt quiz" "button"
+    And "student1" has recorded "moodle-sharon.ogg" into the record RTC question
+    And I press "Finish attempt ..."
+    And I press "Submit all and finish"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
+    And I log out
+    And I am on the "Quiz 1" "quiz_answersheets > Report" page logged in as "teacher"
+    When I click on "Review sheet" "link" in the "Student One" "table_row"
+    Then I should not see "No recording"
+    And "Response recorded: recorder1.ogg" "text" in the "First question" "question" should not be visible
