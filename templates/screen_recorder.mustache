@@ -54,8 +54,8 @@
     <span>
         <button {{#hasrecording}}disabled {{/hasrecording}} type="button" class="qtype_recordrtc-main-button btn btn-secondary osep-smallbutton m-0 w-100">
             {{! Seemingly unnecessary space inside the span is needed for screen-readers, and it must be a non-breaking space. }}
-            {{^hasrecording}}{{#str}}startsharescreenx, qtype_recordrtc, <span class="sr-only">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
-            {{#hasrecording}}{{#str}}recordagainx, qtype_recordrtc, <span class="sr-only">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
+            {{^hasrecording}}{{#str}}startsharescreenx, qtype_recordrtc, <span class="sr-only visually-hidden">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
+            {{#hasrecording}}{{#str}}recordagainx, qtype_recordrtc, <span class="sr-only visually-hidden">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
         </button>
     </span>
     <span class="qtype_recordrtc-control-row w-100 hide">

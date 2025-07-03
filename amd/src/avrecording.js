@@ -915,7 +915,7 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
     function setButtonLabel(langString, a) {
         if (a === undefined) {
             // Seemingly unnecessary space inside the span is needed for screen-readers, and it must be a non-breaking space.
-            a = '<span class="sr-only">&nbsp;' + widget.dataset.widgetName + '</span>';
+            a = '<span class="sr-only visually-hidden">&nbsp;' + widget.dataset.widgetName + '</span>';
         }
         button.innerHTML = M.util.get_string(langString, 'qtype_recordrtc', a);
     }

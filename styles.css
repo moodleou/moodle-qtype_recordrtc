@@ -32,7 +32,8 @@
 }
 
 /* Styles used on the editing form. */
-body#page-question-type-recordrtc.path-question-type .form-group[data-groupname=timelimitinseconds] .sr-only {
+body#page-question-type-recordrtc.path-question-type .form-group[data-groupname=timelimitinseconds] .sr-only,
+body#page-question-type-recordrtc.path-question-type .form-group[data-groupname=timelimitinseconds] .visually-hidden {
     display: none;
 }
 
