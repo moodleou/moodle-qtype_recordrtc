@@ -56,12 +56,12 @@
     </span>
     {{#allowpausing}}
         <span class="qtype_recordrtc-pause-button hide">
-            <button type="button" data-pause="1" class="btn btn-secondary osep-smallbutton ml-1 mr-0">
+            <button type="button" data-pause="1" class="btn btn-secondary osep-smallbutton ms-1 me-0">
                 {{#str}}pause, qtype_recordrtc{{/str}}
             </button>
         </span>
     {{/allowpausing}}
-    <button type="button" class="qtype_recordrtc-main-button btn btn-secondary osep-smallbutton ml-1 mr-0 text-nowrap">
+    <button type="button" class="qtype_recordrtc-main-button btn btn-secondary osep-smallbutton ms-1 me-0 text-nowrap">
         {{! Seemingly unnecessary space inside the span is needed for screen-readers, and it must be a non-breaking space. }}
         {{^hasrecording}}{{#str}}startrecordingx, qtype_recordrtc, <span class="sr-only">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}
         {{#hasrecording}}{{#str}}recordagainx, qtype_recordrtc, <span class="sr-only">&nbsp;{{widgetname}}</span>{{/str}}{{/hasrecording}}

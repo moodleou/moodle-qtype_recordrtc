@@ -95,7 +95,7 @@ class qtype_recordrtc_edit_form extends question_edit_form {
             function($placehodler) {
                 return html_writer::empty_tag('input', ['type' => 'text', 'readonly' => 'readonly', 'size' => '24',
                         'value' => $placehodler, 'onfocus' => 'this.select()',
-                        'class' => 'form-control-plaintext d-inline-block w-auto mr-3']);
+                        'class' => 'form-control-plaintext d-inline-block w-auto me-3']);
             }, $placeholders);
         $avplaceholder = $mform->createElement('static', 'avplaceholder', '', implode("\n", $placeholders));
         $avplaceholdergroup = $mform->createElement('group', 'avplaceholdergroup',
