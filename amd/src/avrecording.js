@@ -233,7 +233,12 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
         // If the audioPromise is "rejected" (indicating that the user does not want to share their voice),
         // we will proceed to record their screen without audio.
         // Therefore, we will use Promise.allSettled instead of Promise.all.
-        Promise.allSettled([audioPromise, screenPromise]).then(combineAudioAndScreenRecording);
+        Promise.allSettled([audioPromise, screenPromise])
+            .then(combineAudioAndScreenRecording)
+            .catch(() => {
+                return false;
+            }
+        );
     }
 
     /**
@@ -518,6 +523,9 @@ function Recorder(widget, mediaSettings, owner, uploadInfo) {
             if (chunks.length > 0) {
                 owner.notifyRecordingComplete(recorder);
             }
+            return true;
+        }).catch(() => {
+            return false;
         });
     }
 
@@ -1249,6 +1257,7 @@ function addPlaybackErrorHandlingToVideoElements(questionId) {
             sourceElement.setAttribute('src', videoElement.dataset.source);
             videoElement.appendChild(sourceElement);
         });
+        return true;
     }).catch((error) => {
         Log.debug("Could not load error template");
         Log.debug(error);
