@@ -271,7 +271,7 @@ final class questiontype_test extends \question_testcase {
     <mediatype>audio</mediatype>
     <timelimitinseconds>30</timelimitinseconds>
   </question>';
-        $xmldata = xmlize($xml);
+        $xmldata = $this->parse_data($xml);
 
         $importer = new \qformat_xml();
         $q = $importer->try_importing_using_qtypes($xmldata['question']);
@@ -337,7 +337,7 @@ final class questiontype_test extends \question_testcase {
       </feedback>
     </answer>
   </question>';
-        $xmldata = xmlize($xml);
+        $xmldata = $this->parse_data($xml);
 
         $importer = new \qformat_xml();
         $q = $importer->try_importing_using_qtypes($xmldata['question']);
@@ -415,7 +415,7 @@ final class questiontype_test extends \question_testcase {
       </feedback>
     </answer>
   </question>';
-        $xmldata = xmlize($xml);
+        $xmldata = $this->parse_data($xml);
 
         $importer = new \qformat_xml();
         $q = $importer->try_importing_using_qtypes($xmldata['question']);
@@ -472,7 +472,7 @@ final class questiontype_test extends \question_testcase {
     <mediatype>customav</mediatype>
     <timelimitinseconds>30</timelimitinseconds>
   </question>';
-        $xmldata = xmlize($xml);
+        $xmldata = $this->parse_data($xml);
 
         $importer = new \qformat_xml();
         $q = $importer->try_importing_using_qtypes($xmldata['question']);
@@ -599,5 +599,20 @@ final class questiontype_test extends \question_testcase {
         }
 
         $this->assert_same_xml($expectedxml, $xml);
+    }
+
+    /**
+     * Helper function to parse XML using either the new or old parser.
+     *
+     * @param string $xml the XML to parse.
+     * @return array the parsed XML.
+     */
+    private function parse_data(string $xml): array {
+        if (class_exists('\core\xml_parser')) {
+            $xmlparser = new \core\xml_parser();
+            return $xmlparser->parse($xml);
+        } else {
+            return xmlize($xml);
+        }
     }
 }
